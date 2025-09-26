@@ -24,7 +24,7 @@ async fn main() -> Result<()> {
 
     // Setup the API parameters
     let params =
-        CompressedAggregateTradesListParams::builder("symbol_example".to_string()).build()?;
+        CompressedAggregateTradesListParams::builder("BTCUSDT".to_string()).build()?;
 
     // Make the API call
     let response = rest_client

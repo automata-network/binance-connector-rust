@@ -26,14 +26,14 @@ pub const DERIVATIVES_TRADING_COIN_FUTURES_WS_STREAMS_TESTNET_URL: &str =
     "wss://dstream.binancefuture.com";
 
 // Derivatives Trading (USDS Futures) constants
-pub const DERIVATIVES_TRADING_USDS_FUTURES_REST_API_PROD_URL: &str = "https://fapi.binance.com";
+pub const DERIVATIVES_TRADING_USDS_FUTURES_REST_API_PROD_URL: &str = "https://fapi.asterdex.com";
 pub const DERIVATIVES_TRADING_USDS_FUTURES_REST_API_TESTNET_URL: &str =
     "https://testnet.binancefuture.com";
 pub const DERIVATIVES_TRADING_USDS_FUTURES_WS_API_PROD_URL: &str =
-    "wss://ws-fapi.binance.com/ws-fapi/v1";
+    "wss://fstream.asterdex.com";
 pub const DERIVATIVES_TRADING_USDS_FUTURES_WS_API_TESTNET_URL: &str =
     "wss://testnet.binancefuture.com/ws-fapi/v1";
-pub const DERIVATIVES_TRADING_USDS_FUTURES_WS_STREAMS_PROD_URL: &str = "wss://fstream.binance.com";
+pub const DERIVATIVES_TRADING_USDS_FUTURES_WS_STREAMS_PROD_URL: &str = "wss://fstream.asterdex.com";
 pub const DERIVATIVES_TRADING_USDS_FUTURES_WS_STREAMS_TESTNET_URL: &str =
     "wss://stream.binancefuture.com";
 
@@ -53,7 +53,7 @@ pub const DERIVATIVES_TRADING_PORTFOLIO_MARGIN_WS_STREAMS_TESTNET_URL: &str =
 
 // Derivatives Trading (Portfolio Margin Pro) constants
 pub const DERIVATIVES_TRADING_PORTFOLIO_MARGIN_PRO_REST_API_PROD_URL: &str =
-    "https://fapi.binance.com";
+    "https://fapi.asterdex.com";
 pub const DERIVATIVES_TRADING_PORTFOLIO_MARGIN_PRO_REST_API_TESTNET_URL: &str =
     "https://testnet.binancefuture.com";
 pub const DERIVATIVES_TRADING_PORTFOLIO_MARGIN_PRO_WS_STREAMS_PROD_URL: &str =

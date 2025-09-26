@@ -734,7 +734,7 @@ pub async fn send_request<T: DeserializeOwned + Send + 'static>(
         .transpose()?;
 
     let mut url = Url::parse(&full_url)?;
-    {
+    if !params.is_empty() || signature.is_some() {
         let mut pairs = url.query_pairs_mut();
         for (key, value) in &params {
             let val_str = match value {

@@ -24,7 +24,7 @@ async fn main() -> Result<()> {
 
     // Setup the API parameters
     let params =
-        ChangePositionModeParams::builder("dual_side_position_example".to_string()).build()?;
+        ChangePositionModeParams::builder("true".to_string()).build()?;
 
     // Make the API call
     let response = rest_client

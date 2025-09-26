@@ -843,7 +843,7 @@ impl AccountApi for AccountApiClient {
 
         send_request::<Vec<models::FuturesAccountBalanceV2ResponseInner>>(
             &self.configuration,
-            "/fapi/v2/balance",
+            "/fapi/v1/balance",
             reqwest::Method::GET,
             query_params,
             if HAS_TIME_UNIT {
