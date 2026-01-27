@@ -89,11 +89,11 @@ pub const REBATE_REST_API_PROD_URL: &str = "https://api.binance.com";
 pub const SIMPLE_EARN_REST_API_PROD_URL: &str = "https://api.binance.com";
 
 // Spot constants
-pub const SPOT_REST_API_PROD_URL: &str = "https://api.binance.com";
+pub const SPOT_REST_API_PROD_URL: &str = "https://sapi.asterdex.com";
 pub const SPOT_REST_API_TESTNET_URL: &str = "https://testnet.binance.vision";
-pub const SPOT_WS_API_PROD_URL: &str = "wss://ws-api.binance.com:443/ws-api/v3";
+pub const SPOT_WS_API_PROD_URL: &str = "wss://sstream.asterdex.com";
 pub const SPOT_WS_API_TESTNET_URL: &str = "wss://ws-api.testnet.binance.vision/ws-api/v3";
-pub const SPOT_WS_STREAMS_PROD_URL: &str = "wss://stream.binance.com:9443";
+pub const SPOT_WS_STREAMS_PROD_URL: &str = "wss://sstream.asterdex.com";
 pub const SPOT_WS_STREAMS_TESTNET_URL: &str = "wss://stream.testnet.binance.vision";
 pub const SPOT_REST_API_MARKET_URL: &str = "https://data-api.binance.vision";
 pub const SPOT_WS_STREAMS_MARKET_URL: &str = "wss://data-stream.binance.vision";
