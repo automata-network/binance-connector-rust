@@ -47,6 +47,13 @@ pub trait UserDataStreamApi: Send + Sync {
         &self,
         params: PutUserDataStreamParams,
     ) -> anyhow::Result<RestApiResponse<Value>>;
+    async fn start_listen_key(
+        &self,
+    ) -> anyhow::Result<RestApiResponse<models::NewUserDataStreamResponse>>;
+    async fn keepalive_listen_key(
+        &self,
+    ) -> anyhow::Result<RestApiResponse<models::NewUserDataStreamResponse>>;
+    async fn close_listen_key(&self) -> anyhow::Result<RestApiResponse<Value>>;
 }
 
 #[derive(Debug, Clone)]
@@ -129,7 +136,7 @@ impl UserDataStreamApi for UserDataStreamApiClient {
 
         send_request::<Value>(
             &self.configuration,
-            "/api/v3/userDataStream",
+            "/api/v1/userDataStream",
             reqwest::Method::DELETE,
             query_params,
             if HAS_TIME_UNIT {
@@ -149,7 +156,7 @@ impl UserDataStreamApi for UserDataStreamApiClient {
 
         send_request::<models::NewUserDataStreamResponse>(
             &self.configuration,
-            "/api/v3/userDataStream",
+            "/api/v1/userDataStream",
             reqwest::Method::POST,
             query_params,
             if HAS_TIME_UNIT {
@@ -174,8 +181,66 @@ impl UserDataStreamApi for UserDataStreamApiClient {
 
         send_request::<Value>(
             &self.configuration,
-            "/api/v3/userDataStream",
+            "/api/v1/userDataStream",
             reqwest::Method::PUT,
+            query_params,
+            if HAS_TIME_UNIT {
+                self.configuration.time_unit
+            } else {
+                None
+            },
+            false,
+        )
+        .await
+    }
+
+    async fn start_listen_key(
+        &self,
+    ) -> anyhow::Result<RestApiResponse<models::NewUserDataStreamResponse>> {
+        let query_params = BTreeMap::new();
+
+        send_request::<models::NewUserDataStreamResponse>(
+            &self.configuration,
+            "/api/v1/listenKey",
+            reqwest::Method::POST,
+            query_params,
+            if HAS_TIME_UNIT {
+                self.configuration.time_unit
+            } else {
+                None
+            },
+            false,
+        )
+        .await
+    }
+
+    async fn keepalive_listen_key(
+        &self,
+    ) -> anyhow::Result<RestApiResponse<models::NewUserDataStreamResponse>> {
+        let query_params = BTreeMap::new();
+
+        send_request::<models::NewUserDataStreamResponse>(
+            &self.configuration,
+            "/api/v1/listenKey",
+            reqwest::Method::PUT,
+            query_params,
+            if HAS_TIME_UNIT {
+                self.configuration.time_unit
+            } else {
+                None
+            },
+            false,
+        )
+        .await
+    }
+
+    async fn close_listen_key(&self) -> anyhow::Result<RestApiResponse<Value>> {
+        let query_params = BTreeMap::new();
+
+        send_request::<Value>(
+            &self.configuration,
+            "/api/v1/listenKey",
+            reqwest::Method::DELETE,
             query_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
@@ -270,6 +335,73 @@ mod tests {
             &self,
             _params: PutUserDataStreamParams,
         ) -> anyhow::Result<RestApiResponse<Value>> {
+            if self.force_error {
+                return Err(
+                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
+                );
+            }
+
+            let dummy_response = Value::Null;
+
+            let dummy = DummyRestApiResponse {
+                inner: Box::new(move || Box::pin(async move { Ok(dummy_response) })),
+                status: 200,
+                headers: HashMap::new(),
+                rate_limits: None,
+            };
+
+            Ok(dummy.into())
+        }
+
+        async fn start_listen_key(
+            &self,
+        ) -> anyhow::Result<RestApiResponse<models::NewUserDataStreamResponse>> {
+            if self.force_error {
+                return Err(
+                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
+                );
+            }
+
+            let resp_json: Value = serde_json::from_str(r#"{"listenKey":"pqia91ma19a5s61cv6a81va65sdf19v8a65a1a5s61cv6a81va65sdf19v8a65a1"}"#).unwrap();
+            let dummy_response: models::NewUserDataStreamResponse =
+                serde_json::from_value(resp_json.clone())
+                    .expect("should parse into models::NewUserDataStreamResponse");
+
+            let dummy = DummyRestApiResponse {
+                inner: Box::new(move || Box::pin(async move { Ok(dummy_response) })),
+                status: 200,
+                headers: HashMap::new(),
+                rate_limits: None,
+            };
+
+            Ok(dummy.into())
+        }
+
+        async fn keepalive_listen_key(
+            &self,
+        ) -> anyhow::Result<RestApiResponse<models::NewUserDataStreamResponse>> {
+            if self.force_error {
+                return Err(
+                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
+                );
+            }
+
+            let resp_json: Value = serde_json::from_str(r#"{"listenKey":"pqia91ma19a5s61cv6a81va65sdf19v8a65a1a5s61cv6a81va65sdf19v8a65a1"}"#).unwrap();
+            let dummy_response: models::NewUserDataStreamResponse =
+                serde_json::from_value(resp_json.clone())
+                    .expect("should parse into models::NewUserDataStreamResponse");
+
+            let dummy = DummyRestApiResponse {
+                inner: Box::new(move || Box::pin(async move { Ok(dummy_response) })),
+                status: 200,
+                headers: HashMap::new(),
+                rate_limits: None,
+            };
+
+            Ok(dummy.into())
+        }
+
+        async fn close_listen_key(&self) -> anyhow::Result<RestApiResponse<Value>> {
             if self.force_error {
                 return Err(
                     ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
@@ -447,6 +579,96 @@ mod tests {
                 .unwrap();
 
             match client.put_user_data_stream(params).await {
+                Ok(_) => panic!("Expected an error"),
+                Err(err) => {
+                    assert_eq!(err.to_string(), "Connector client error: ResponseError");
+                }
+            }
+        });
+    }
+
+    #[test]
+    fn start_listen_key_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockUserDataStreamApiClient { force_error: false };
+
+            let resp_json: Value = serde_json::from_str(r#"{"listenKey":"pqia91ma19a5s61cv6a81va65sdf19v8a65a1a5s61cv6a81va65sdf19v8a65a1"}"#).unwrap();
+            let expected_response: models::NewUserDataStreamResponse =
+                serde_json::from_value(resp_json.clone())
+                    .expect("should parse into models::NewUserDataStreamResponse");
+
+            let resp = client.start_listen_key().await.expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn start_listen_key_response_error() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockUserDataStreamApiClient { force_error: true };
+
+            match client.start_listen_key().await {
+                Ok(_) => panic!("Expected an error"),
+                Err(err) => {
+                    assert_eq!(err.to_string(), "Connector client error: ResponseError");
+                }
+            }
+        });
+    }
+
+    #[test]
+    fn keepalive_listen_key_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockUserDataStreamApiClient { force_error: false };
+
+            let resp_json: Value = serde_json::from_str(r#"{"listenKey":"pqia91ma19a5s61cv6a81va65sdf19v8a65a1a5s61cv6a81va65sdf19v8a65a1"}"#).unwrap();
+            let expected_response: models::NewUserDataStreamResponse =
+                serde_json::from_value(resp_json.clone())
+                    .expect("should parse into models::NewUserDataStreamResponse");
+
+            let resp = client.keepalive_listen_key().await.expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn keepalive_listen_key_response_error() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockUserDataStreamApiClient { force_error: true };
+
+            match client.keepalive_listen_key().await {
+                Ok(_) => panic!("Expected an error"),
+                Err(err) => {
+                    assert_eq!(err.to_string(), "Connector client error: ResponseError");
+                }
+            }
+        });
+    }
+
+    #[test]
+    fn close_listen_key_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockUserDataStreamApiClient { force_error: false };
+
+            let expected_response = Value::Null;
+
+            let resp = client.close_listen_key().await.expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn close_listen_key_response_error() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockUserDataStreamApiClient { force_error: true };
+
+            match client.close_listen_key().await {
                 Ok(_) => panic!("Expected an error"),
                 Err(err) => {
                     assert_eq!(err.to_string(), "Connector client error: ResponseError");

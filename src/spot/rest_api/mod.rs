@@ -1386,6 +1386,48 @@ impl RestApi {
         self.market_api_client.ui_klines(params).await
     }
 
+    /// Cancel All Open Orders
+    ///
+    /// Cancels all active orders on a symbol. You can optionally specify order IDs or client order IDs to cancel specific orders.
+    /// Weight: 1
+    ///
+    /// # Arguments
+    ///
+    /// - `params`: [`CancelAllOpenOrdersParams`]
+    ///   The parameters for this operation.
+    ///
+    /// # Returns
+    ///
+    /// [`RestApiResponse<models::CancelAllOpenOrdersResponse>`] on success.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an [`anyhow::Error`] if:
+    /// - the HTTP request fails
+    /// - any parameter is invalid
+    /// - the response cannot be parsed
+    /// - or one of the following occurs:
+    ///   - `RequiredError`
+    ///   - `ConnectorClientError`
+    ///   - `UnauthorizedError`
+    ///   - `ForbiddenError`
+    ///   - `TooManyRequestsError`
+    ///   - `RateLimitBanError`
+    ///   - `ServerError`
+    ///   - `NotFoundError`
+    ///   - `NetworkError`
+    ///   - `BadRequestError`
+    ///
+    ///
+    /// For full API details, see the [Aster API Documentation](https://github.com/asterdex/api-docs/blob/master/aster-finance-spot-api_CN.md).
+    ///
+    pub async fn cancel_all_open_orders(
+        &self,
+        params: CancelAllOpenOrdersParams,
+    ) -> anyhow::Result<RestApiResponse<models::CancelAllOpenOrdersResponse>> {
+        self.trade_api_client.cancel_all_open_orders(params).await
+    }
+
     /// Cancel All Open Orders on a Symbol
     ///
     /// Cancels all active orders on a symbol.
@@ -2000,6 +2042,25 @@ impl RestApi {
         self.trade_api_client.sor_order_test(params).await
     }
 
+    /// Get account trade history
+    ///
+    /// Get trades for a specific account.
+    ///
+    /// # Arguments
+    ///
+    /// - `params`: [`UserTradesParams`]
+    ///   The parameters for this operation.
+    ///
+    /// # Returns
+    ///
+    /// [`RestApiResponse<Vec<models::UserTradesResponseInner>>`] on success.
+    pub async fn user_trades(
+        &self,
+        params: UserTradesParams,
+    ) -> anyhow::Result<RestApiResponse<Vec<models::UserTradesResponseInner>>> {
+        self.trade_api_client.user_trades(params).await
+    }
+
     /// Close user data stream
     ///
     /// Close out a user data stream.
@@ -2131,6 +2192,50 @@ impl RestApi {
     ) -> anyhow::Result<RestApiResponse<Value>> {
         self.user_data_stream_api_client
             .put_user_data_stream(params)
+            .await
+    }
+
+    /// Start a new user data stream
+    ///
+    /// Start a new user data stream. The stream will close after 60 minutes
+    /// unless a keepalive is sent.
+    ///
+    /// # Returns
+    ///
+    /// [`RestApiResponse<models::NewUserDataStreamResponse>`] on success.
+    pub async fn start_listen_key(
+        &self,
+    ) -> anyhow::Result<RestApiResponse<models::NewUserDataStreamResponse>> {
+        self.user_data_stream_api_client
+            .start_listen_key()
+            .await
+    }
+
+    /// Keepalive a user data stream
+    ///
+    /// Keepalive a user data stream to prevent a time out.
+    ///
+    /// # Returns
+    ///
+    /// [`RestApiResponse<models::NewUserDataStreamResponse>`] on success.
+    pub async fn keepalive_listen_key(
+        &self,
+    ) -> anyhow::Result<RestApiResponse<models::NewUserDataStreamResponse>> {
+        self.user_data_stream_api_client
+            .keepalive_listen_key()
+            .await
+    }
+
+    /// Close a user data stream
+    ///
+    /// Close out a user data stream.
+    ///
+    /// # Returns
+    ///
+    /// [`RestApiResponse<Value>`] on success.
+    pub async fn close_listen_key(&self) -> anyhow::Result<RestApiResponse<Value>> {
+        self.user_data_stream_api_client
+            .close_listen_key()
             .await
     }
 }

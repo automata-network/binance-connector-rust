@@ -637,7 +637,7 @@ impl AccountApi for AccountApiClient {
 
         send_request::<models::AccountCommissionResponse>(
             &self.configuration,
-            "/api/v3/account/commission",
+            "/api/v1/account/commission",
             reqwest::Method::GET,
             query_params,
             if HAS_TIME_UNIT {
@@ -686,7 +686,7 @@ impl AccountApi for AccountApiClient {
 
         send_request::<Vec<models::AllOrderListResponseInner>>(
             &self.configuration,
-            "/api/v3/allOrderList",
+            "/api/v1/allOrderList",
             reqwest::Method::GET,
             query_params,
             if HAS_TIME_UNIT {
@@ -738,7 +738,7 @@ impl AccountApi for AccountApiClient {
 
         send_request::<Vec<models::AllOrdersResponseInner>>(
             &self.configuration,
-            "/api/v3/allOrders",
+            "/api/v1/allOrders",
             reqwest::Method::GET,
             query_params,
             if HAS_TIME_UNIT {
@@ -772,7 +772,7 @@ impl AccountApi for AccountApiClient {
 
         send_request::<models::GetAccountResponse>(
             &self.configuration,
-            "/api/v3/account",
+            "/api/v1/account",
             reqwest::Method::GET,
             query_params,
             if HAS_TIME_UNIT {
@@ -806,7 +806,7 @@ impl AccountApi for AccountApiClient {
 
         send_request::<Vec<models::AllOrdersResponseInner>>(
             &self.configuration,
-            "/api/v3/openOrders",
+            "/api/v1/openOrders",
             reqwest::Method::GET,
             query_params,
             if HAS_TIME_UNIT {
@@ -848,7 +848,7 @@ impl AccountApi for AccountApiClient {
 
         send_request::<models::GetOrderResponse>(
             &self.configuration,
-            "/api/v3/order",
+            "/api/v1/order",
             reqwest::Method::GET,
             query_params,
             if HAS_TIME_UNIT {
@@ -887,7 +887,7 @@ impl AccountApi for AccountApiClient {
 
         send_request::<models::GetOrderListResponse>(
             &self.configuration,
-            "/api/v3/orderList",
+            "/api/v1/orderList",
             reqwest::Method::GET,
             query_params,
             if HAS_TIME_UNIT {
@@ -944,7 +944,7 @@ impl AccountApi for AccountApiClient {
 
         send_request::<Vec<models::MyAllocationsResponseInner>>(
             &self.configuration,
-            "/api/v3/myAllocations",
+            "/api/v1/myAllocations",
             reqwest::Method::GET,
             query_params,
             if HAS_TIME_UNIT {
@@ -996,7 +996,7 @@ impl AccountApi for AccountApiClient {
 
         send_request::<Vec<models::MyPreventedMatchesResponseInner>>(
             &self.configuration,
-            "/api/v3/myPreventedMatches",
+            "/api/v1/myPreventedMatches",
             reqwest::Method::GET,
             query_params,
             if HAS_TIME_UNIT {
@@ -1053,7 +1053,7 @@ impl AccountApi for AccountApiClient {
 
         send_request::<Vec<models::MyTradesResponseInner>>(
             &self.configuration,
-            "/api/v3/myTrades",
+            "/api/v1/myTrades",
             reqwest::Method::GET,
             query_params,
             if HAS_TIME_UNIT {
@@ -1080,7 +1080,7 @@ impl AccountApi for AccountApiClient {
 
         send_request::<Vec<models::OpenOrderListResponseInner>>(
             &self.configuration,
-            "/api/v3/openOrderList",
+            "/api/v1/openOrderList",
             reqwest::Method::GET,
             query_params,
             if HAS_TIME_UNIT {
@@ -1125,7 +1125,7 @@ impl AccountApi for AccountApiClient {
 
         send_request::<Vec<models::OrderAmendmentsResponseInner>>(
             &self.configuration,
-            "/api/v3/order/amendments",
+            "/api/v1/order/amendments",
             reqwest::Method::GET,
             query_params,
             if HAS_TIME_UNIT {
@@ -1152,7 +1152,7 @@ impl AccountApi for AccountApiClient {
 
         send_request::<Vec<models::RateLimitOrderResponseInner>>(
             &self.configuration,
-            "/api/v3/rateLimit/order",
+            "/api/v1/rateLimit/order",
             reqwest::Method::GET,
             query_params,
             if HAS_TIME_UNIT {

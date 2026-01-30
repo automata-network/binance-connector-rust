@@ -36,6 +36,10 @@ const HAS_TIME_UNIT: bool = true;
 
 #[async_trait]
 pub trait TradeApi: Send + Sync {
+    async fn cancel_all_open_orders(
+        &self,
+        params: CancelAllOpenOrdersParams,
+    ) -> anyhow::Result<RestApiResponse<models::CancelAllOpenOrdersResponse>>;
     async fn delete_open_orders(
         &self,
         params: DeleteOpenOrdersParams,
@@ -88,6 +92,10 @@ pub trait TradeApi: Send + Sync {
         &self,
         params: SorOrderTestParams,
     ) -> anyhow::Result<RestApiResponse<models::SorOrderTestResponse>>;
+    async fn user_trades(
+        &self,
+        params: UserTradesParams,
+    ) -> anyhow::Result<RestApiResponse<Vec<models::UserTradesResponseInner>>>;
 }
 
 #[derive(Debug, Clone)]
@@ -3042,6 +3050,49 @@ impl std::str::FromStr for SorOrderTestSelfTradePreventionModeEnum {
     }
 }
 
+/// Request parameters for the [`cancel_all_open_orders`] operation.
+///
+/// This struct holds all of the inputs you can pass when calling
+/// [`cancel_all_open_orders`](#method.cancel_all_open_orders).
+#[derive(Clone, Debug, Builder)]
+#[builder(pattern = "owned", build_fn(error = "ParamBuildError"))]
+pub struct CancelAllOpenOrdersParams {
+    ///
+    /// The `symbol` parameter.
+    ///
+    /// This field is **required.
+    #[builder(setter(into))]
+    pub symbol: String,
+    /// Array of order IDs to cancel. Max length 10.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub order_id_list: Option<Vec<i64>>,
+    /// Array of client order IDs to cancel. Max length 10.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub orig_client_order_id_list: Option<Vec<String>>,
+    /// The value cannot be greater than `60000`.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub recv_window: Option<i64>,
+}
+
+impl CancelAllOpenOrdersParams {
+    /// Create a builder for [`cancel_all_open_orders`].
+    ///
+    /// Required parameters:
+    ///
+    /// * `symbol` — String
+    ///
+    #[must_use]
+    pub fn builder(symbol: String) -> CancelAllOpenOrdersParamsBuilder {
+        CancelAllOpenOrdersParamsBuilder::default().symbol(symbol)
+    }
+}
+
 /// Request parameters for the [`delete_open_orders`] operation.
 ///
 /// This struct holds all of the inputs you can pass when calling
@@ -4760,8 +4811,108 @@ impl SorOrderTestParams {
     }
 }
 
+/// Request parameters for the [`user_trades`] operation.
+///
+/// This struct holds all of the inputs you can pass when calling
+/// [`user_trades`](#method.user_trades).
+#[derive(Clone, Debug, Builder)]
+#[builder(pattern = "owned", build_fn(error = "ParamBuildError"))]
+pub struct UserTradesParams {
+    ///
+    /// The `symbol` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub symbol: Option<String>,
+    ///
+    /// The `order_id` parameter. Must be used with `symbol` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub order_id: Option<i64>,
+    ///
+    /// The `start_time` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub start_time: Option<i64>,
+    ///
+    /// The `end_time` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub end_time: Option<i64>,
+    /// ID to get aggregate trades from INCLUSIVE.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub from_id: Option<i64>,
+    /// Default 500; max 1000
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub limit: Option<i64>,
+    ///
+    /// The `recv_window` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub recv_window: Option<i64>,
+}
+
+impl UserTradesParams {
+    /// Create a builder for [`user_trades`].
+    ///
+    #[must_use]
+    pub fn builder() -> UserTradesParamsBuilder {
+        UserTradesParamsBuilder::default()
+    }
+}
+
 #[async_trait]
 impl TradeApi for TradeApiClient {
+    async fn cancel_all_open_orders(
+        &self,
+        params: CancelAllOpenOrdersParams,
+    ) -> anyhow::Result<RestApiResponse<models::CancelAllOpenOrdersResponse>> {
+        let CancelAllOpenOrdersParams {
+            symbol,
+            order_id_list,
+            orig_client_order_id_list,
+            recv_window,
+        } = params;
+
+        let mut query_params = BTreeMap::new();
+
+        query_params.insert("symbol".to_string(), json!(symbol));
+
+        if let Some(ids) = order_id_list {
+            query_params.insert("orderIdList".to_string(), json!(ids));
+        }
+
+        if let Some(ids) = orig_client_order_id_list {
+            query_params.insert("origClientOrderIdList".to_string(), json!(ids));
+        }
+
+        if let Some(rw) = recv_window {
+            query_params.insert("recvWindow".to_string(), json!(rw));
+        }
+
+        send_request::<models::CancelAllOpenOrdersResponse>(
+            &self.configuration,
+            "/api/v1/allOpenOrders",
+            reqwest::Method::DELETE,
+            query_params,
+            if HAS_TIME_UNIT {
+                self.configuration.time_unit
+            } else {
+                None
+            },
+            true,
+        )
+        .await
+    }
+
     async fn delete_open_orders(
         &self,
         params: DeleteOpenOrdersParams,
@@ -4781,7 +4932,7 @@ impl TradeApi for TradeApiClient {
 
         send_request::<Vec<models::DeleteOpenOrdersResponseInner>>(
             &self.configuration,
-            "/api/v3/openOrders",
+            "/api/v1/openOrders",
             reqwest::Method::DELETE,
             query_params,
             if HAS_TIME_UNIT {
@@ -4833,7 +4984,7 @@ impl TradeApi for TradeApiClient {
 
         send_request::<models::DeleteOrderResponse>(
             &self.configuration,
-            "/api/v3/order",
+            "/api/v1/order",
             reqwest::Method::DELETE,
             query_params,
             if HAS_TIME_UNIT {
@@ -4880,7 +5031,7 @@ impl TradeApi for TradeApiClient {
 
         send_request::<models::DeleteOrderListResponse>(
             &self.configuration,
-            "/api/v3/orderList",
+            "/api/v1/orderList",
             reqwest::Method::DELETE,
             query_params,
             if HAS_TIME_UNIT {
@@ -4993,7 +5144,7 @@ impl TradeApi for TradeApiClient {
 
         send_request::<models::NewOrderResponse>(
             &self.configuration,
-            "/api/v3/order",
+            "/api/v1/order",
             reqwest::Method::POST,
             query_params,
             if HAS_TIME_UNIT {
@@ -5043,7 +5194,7 @@ impl TradeApi for TradeApiClient {
 
         send_request::<models::OrderAmendKeepPriorityResponse>(
             &self.configuration,
-            "/api/v3/order/amend/keepPriority",
+            "/api/v1/order/amend/keepPriority",
             reqwest::Method::PUT,
             query_params,
             if HAS_TIME_UNIT {
@@ -5184,7 +5335,7 @@ impl TradeApi for TradeApiClient {
 
         send_request::<models::OrderCancelReplaceResponse>(
             &self.configuration,
-            "/api/v3/order/cancelReplace",
+            "/api/v1/order/cancelReplace",
             reqwest::Method::POST,
             query_params,
             if HAS_TIME_UNIT {
@@ -5353,7 +5504,7 @@ impl TradeApi for TradeApiClient {
 
         send_request::<models::OrderListOcoResponse>(
             &self.configuration,
-            "/api/v3/orderList/oco",
+            "/api/v1/orderList/oco",
             reqwest::Method::POST,
             query_params,
             if HAS_TIME_UNIT {
@@ -5516,7 +5667,7 @@ impl TradeApi for TradeApiClient {
 
         send_request::<models::OrderListOtoResponse>(
             &self.configuration,
-            "/api/v3/orderList/oto",
+            "/api/v1/orderList/oto",
             reqwest::Method::POST,
             query_params,
             if HAS_TIME_UNIT {
@@ -5739,7 +5890,7 @@ impl TradeApi for TradeApiClient {
 
         send_request::<models::OrderListOtocoResponse>(
             &self.configuration,
-            "/api/v3/orderList/otoco",
+            "/api/v1/orderList/otoco",
             reqwest::Method::POST,
             query_params,
             if HAS_TIME_UNIT {
@@ -5853,7 +6004,7 @@ impl TradeApi for TradeApiClient {
 
         send_request::<models::OrderOcoResponse>(
             &self.configuration,
-            "/api/v3/order/oco",
+            "/api/v1/order/oco",
             reqwest::Method::POST,
             query_params,
             if HAS_TIME_UNIT {
@@ -5971,7 +6122,7 @@ impl TradeApi for TradeApiClient {
 
         send_request::<models::OrderTestResponse>(
             &self.configuration,
-            "/api/v3/order/test",
+            "/api/v1/order/test",
             reqwest::Method::POST,
             query_params,
             if HAS_TIME_UNIT {
@@ -6052,7 +6203,7 @@ impl TradeApi for TradeApiClient {
 
         send_request::<models::SorOrderResponse>(
             &self.configuration,
-            "/api/v3/sor/order",
+            "/api/v1/sor/order",
             reqwest::Method::POST,
             query_params,
             if HAS_TIME_UNIT {
@@ -6138,8 +6289,67 @@ impl TradeApi for TradeApiClient {
 
         send_request::<models::SorOrderTestResponse>(
             &self.configuration,
-            "/api/v3/sor/order/test",
+            "/api/v1/sor/order/test",
             reqwest::Method::POST,
+            query_params,
+            if HAS_TIME_UNIT {
+                self.configuration.time_unit
+            } else {
+                None
+            },
+            true,
+        )
+        .await
+    }
+
+    async fn user_trades(
+        &self,
+        params: UserTradesParams,
+    ) -> anyhow::Result<RestApiResponse<Vec<models::UserTradesResponseInner>>> {
+        let UserTradesParams {
+            symbol,
+            order_id,
+            start_time,
+            end_time,
+            from_id,
+            limit,
+            recv_window,
+        } = params;
+
+        let mut query_params = BTreeMap::new();
+
+        if let Some(s) = symbol {
+            query_params.insert("symbol".to_string(), json!(s));
+        }
+
+        if let Some(rw) = order_id {
+            query_params.insert("orderId".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = start_time {
+            query_params.insert("startTime".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = end_time {
+            query_params.insert("endTime".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = from_id {
+            query_params.insert("fromId".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = limit {
+            query_params.insert("limit".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = recv_window {
+            query_params.insert("recvWindow".to_string(), json!(rw));
+        }
+
+        send_request::<Vec<models::UserTradesResponseInner>>(
+            &self.configuration,
+            "/api/v1/userTrades",
+            reqwest::Method::GET,
             query_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
@@ -6184,6 +6394,34 @@ mod tests {
 
     #[async_trait]
     impl TradeApi for MockTradeApiClient {
+        async fn cancel_all_open_orders(
+            &self,
+            _params: CancelAllOpenOrdersParams,
+        ) -> anyhow::Result<RestApiResponse<models::CancelAllOpenOrdersResponse>> {
+            if self.force_error {
+                return Err(
+                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
+                );
+            }
+
+            let resp_json: Value = serde_json::from_str(
+                r#"{"code":200,"msg":"The operation of cancel all open order is done."}"#,
+            )
+            .unwrap();
+            let dummy_response: models::CancelAllOpenOrdersResponse =
+                serde_json::from_value(resp_json.clone())
+                    .expect("should parse into models::CancelAllOpenOrdersResponse");
+
+            let dummy = DummyRestApiResponse {
+                inner: Box::new(move || Box::pin(async move { Ok(dummy_response) })),
+                status: 200,
+                headers: HashMap::new(),
+                rate_limits: None,
+            };
+
+            Ok(dummy.into())
+        }
+
         async fn delete_open_orders(
             &self,
             _params: DeleteOpenOrdersParams,
@@ -6508,6 +6746,106 @@ mod tests {
 
             Ok(dummy.into())
         }
+
+        async fn user_trades(
+            &self,
+            _params: UserTradesParams,
+        ) -> anyhow::Result<RestApiResponse<Vec<models::UserTradesResponseInner>>> {
+            if self.force_error {
+                return Err(
+                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
+                );
+            }
+
+            let resp_json: Value = serde_json::from_str(r#"[{"symbol":"BNBUSDT","id":28457,"orderId":100234,"side":"BUY","price":"4.00000100","qty":"12.00000000","quoteQty":"48.00001200","commission":"10.10000000","commissionAsset":"BNB","time":1499865549590,"counterpartyId":12345,"maker":true,"buyer":true}]"#).unwrap();
+            let dummy_response: Vec<models::UserTradesResponseInner> =
+                serde_json::from_value(resp_json.clone())
+                    .expect("should parse into Vec<models::UserTradesResponseInner>");
+
+            let dummy = DummyRestApiResponse {
+                inner: Box::new(move || Box::pin(async move { Ok(dummy_response) })),
+                status: 200,
+                headers: HashMap::new(),
+                rate_limits: None,
+            };
+
+            Ok(dummy.into())
+        }
+    }
+
+    #[test]
+    fn cancel_all_open_orders_required_params_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockTradeApiClient { force_error: false };
+
+            let params = CancelAllOpenOrdersParams::builder("BNBUSDT".to_string())
+                .build()
+                .unwrap();
+
+            let resp_json: Value = serde_json::from_str(
+                r#"{"code":200,"msg":"The operation of cancel all open order is done."}"#,
+            )
+            .unwrap();
+            let expected_response: models::CancelAllOpenOrdersResponse =
+                serde_json::from_value(resp_json.clone())
+                    .expect("should parse into models::CancelAllOpenOrdersResponse");
+
+            let resp = client
+                .cancel_all_open_orders(params)
+                .await
+                .expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn cancel_all_open_orders_optional_params_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockTradeApiClient { force_error: false };
+
+            let params = CancelAllOpenOrdersParams::builder("BNBUSDT".to_string())
+                .order_id_list([1234567, 2345678].to_vec())
+                .orig_client_order_id_list(["my_id_1".to_string(), "my_id_2".to_string()].to_vec())
+                .recv_window(5000)
+                .build()
+                .unwrap();
+
+            let resp_json: Value = serde_json::from_str(
+                r#"{"code":200,"msg":"The operation of cancel all open order is done."}"#,
+            )
+            .unwrap();
+            let expected_response: models::CancelAllOpenOrdersResponse =
+                serde_json::from_value(resp_json.clone())
+                    .expect("should parse into models::CancelAllOpenOrdersResponse");
+
+            let resp = client
+                .cancel_all_open_orders(params)
+                .await
+                .expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn cancel_all_open_orders_response_error() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockTradeApiClient { force_error: true };
+
+            let params = CancelAllOpenOrdersParams::builder("BNBUSDT".to_string())
+                .build()
+                .unwrap();
+
+            match client.cancel_all_open_orders(params).await {
+                Ok(_) => panic!("Expected an error"),
+                Err(err) => {
+                    assert_eq!(err.to_string(), "Connector client error: ResponseError");
+                }
+            }
+        });
     }
 
     #[test]
@@ -7231,6 +7569,69 @@ mod tests {
             .unwrap();
 
             match client.sor_order_test(params).await {
+                Ok(_) => panic!("Expected an error"),
+                Err(err) => {
+                    assert_eq!(err.to_string(), "Connector client error: ResponseError");
+                }
+            }
+        });
+    }
+
+    #[test]
+    fn user_trades_no_params_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockTradeApiClient { force_error: false };
+
+            let params = UserTradesParams::builder().build().unwrap();
+
+            let resp_json: Value = serde_json::from_str(r#"[{"symbol":"BNBUSDT","id":28457,"orderId":100234,"side":"BUY","price":"4.00000100","qty":"12.00000000","quoteQty":"48.00001200","commission":"10.10000000","commissionAsset":"BNB","time":1499865549590,"counterpartyId":12345,"maker":true,"buyer":true}]"#).unwrap();
+            let expected_response: Vec<models::UserTradesResponseInner> =
+                serde_json::from_value(resp_json.clone())
+                    .expect("should parse into Vec<models::UserTradesResponseInner>");
+
+            let resp = client.user_trades(params).await.expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn user_trades_optional_params_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockTradeApiClient { force_error: false };
+
+            let params = UserTradesParams::builder()
+                .symbol("BNBUSDT".to_string())
+                .order_id(100234)
+                .start_time(1623319461670)
+                .end_time(1641782889000)
+                .from_id(1)
+                .limit(500)
+                .recv_window(5000)
+                .build()
+                .unwrap();
+
+            let resp_json: Value = serde_json::from_str(r#"[{"symbol":"BNBUSDT","id":28457,"orderId":100234,"side":"BUY","price":"4.00000100","qty":"12.00000000","quoteQty":"48.00001200","commission":"10.10000000","commissionAsset":"BNB","time":1499865549590,"counterpartyId":12345,"maker":true,"buyer":true}]"#).unwrap();
+            let expected_response: Vec<models::UserTradesResponseInner> =
+                serde_json::from_value(resp_json.clone())
+                    .expect("should parse into Vec<models::UserTradesResponseInner>");
+
+            let resp = client.user_trades(params).await.expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn user_trades_response_error() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockTradeApiClient { force_error: true };
+
+            let params = UserTradesParams::builder().build().unwrap();
+
+            match client.user_trades(params).await {
                 Ok(_) => panic!("Expected an error"),
                 Err(err) => {
                     assert_eq!(err.to_string(), "Connector client error: ResponseError");

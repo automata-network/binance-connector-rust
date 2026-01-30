@@ -180,7 +180,7 @@ impl GeneralApi for GeneralApiClient {
 
         send_request::<models::ExchangeInfoResponse>(
             &self.configuration,
-            "/api/v3/exchangeInfo",
+            "/api/v1/exchangeInfo",
             reqwest::Method::GET,
             query_params,
             if HAS_TIME_UNIT {
@@ -198,7 +198,7 @@ impl GeneralApi for GeneralApiClient {
 
         send_request::<Value>(
             &self.configuration,
-            "/api/v3/ping",
+            "/api/v1/ping",
             reqwest::Method::GET,
             query_params,
             if HAS_TIME_UNIT {
@@ -216,7 +216,7 @@ impl GeneralApi for GeneralApiClient {
 
         send_request::<models::TimeResponse>(
             &self.configuration,
-            "/api/v3/time",
+            "/api/v1/time",
             reqwest::Method::GET,
             query_params,
             if HAS_TIME_UNIT {

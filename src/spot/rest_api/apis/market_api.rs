@@ -1227,7 +1227,7 @@ impl MarketApi for MarketApiClient {
 
         send_request::<Vec<models::AggTradesResponseInner>>(
             &self.configuration,
-            "/api/v3/aggTrades",
+            "/api/v1/aggTrades",
             reqwest::Method::GET,
             query_params,
             if HAS_TIME_UNIT {
@@ -1252,7 +1252,7 @@ impl MarketApi for MarketApiClient {
 
         send_request::<models::AvgPriceResponse>(
             &self.configuration,
-            "/api/v3/avgPrice",
+            "/api/v1/avgPrice",
             reqwest::Method::GET,
             query_params,
             if HAS_TIME_UNIT {
@@ -1281,7 +1281,7 @@ impl MarketApi for MarketApiClient {
 
         send_request::<models::DepthResponse>(
             &self.configuration,
-            "/api/v3/depth",
+            "/api/v1/depth",
             reqwest::Method::GET,
             query_params,
             if HAS_TIME_UNIT {
@@ -1310,7 +1310,7 @@ impl MarketApi for MarketApiClient {
 
         send_request::<Vec<models::HistoricalTradesResponseInner>>(
             &self.configuration,
-            "/api/v3/trades",
+            "/api/v1/trades",
             reqwest::Method::GET,
             query_params,
             if HAS_TIME_UNIT {
@@ -1347,7 +1347,7 @@ impl MarketApi for MarketApiClient {
 
         send_request::<Vec<models::HistoricalTradesResponseInner>>(
             &self.configuration,
-            "/api/v3/historicalTrades",
+            "/api/v1/historicalTrades",
             reqwest::Method::GET,
             query_params,
             if HAS_TIME_UNIT {
@@ -1397,7 +1397,7 @@ impl MarketApi for MarketApiClient {
 
         send_request::<Vec<Vec<models::KlinesItemInner>>>(
             &self.configuration,
-            "/api/v3/klines",
+            "/api/v1/klines",
             reqwest::Method::GET,
             query_params,
             if HAS_TIME_UNIT {
@@ -1441,7 +1441,7 @@ impl MarketApi for MarketApiClient {
 
         send_request::<models::TickerResponse>(
             &self.configuration,
-            "/api/v3/ticker",
+            "/api/v1/ticker",
             reqwest::Method::GET,
             query_params,
             if HAS_TIME_UNIT {
@@ -1480,7 +1480,7 @@ impl MarketApi for MarketApiClient {
 
         send_request::<models::Ticker24hrResponse>(
             &self.configuration,
-            "/api/v3/ticker/24hr",
+            "/api/v1/ticker/24hr",
             reqwest::Method::GET,
             query_params,
             if HAS_TIME_UNIT {
@@ -1511,7 +1511,7 @@ impl MarketApi for MarketApiClient {
 
         send_request::<models::TickerBookTickerResponse>(
             &self.configuration,
-            "/api/v3/ticker/bookTicker",
+            "/api/v1/ticker/bookTicker",
             reqwest::Method::GET,
             query_params,
             if HAS_TIME_UNIT {
@@ -1542,7 +1542,7 @@ impl MarketApi for MarketApiClient {
 
         send_request::<models::TickerPriceResponse>(
             &self.configuration,
-            "/api/v3/ticker/price",
+            "/api/v1/ticker/price",
             reqwest::Method::GET,
             query_params,
             if HAS_TIME_UNIT {
@@ -1586,7 +1586,7 @@ impl MarketApi for MarketApiClient {
 
         send_request::<models::TickerTradingDayResponse>(
             &self.configuration,
-            "/api/v3/ticker/tradingDay",
+            "/api/v1/ticker/tradingDay",
             reqwest::Method::GET,
             query_params,
             if HAS_TIME_UNIT {
@@ -1636,7 +1636,7 @@ impl MarketApi for MarketApiClient {
 
         send_request::<Vec<Vec<models::KlinesItemInner>>>(
             &self.configuration,
-            "/api/v3/uiKlines",
+            "/api/v1/uiKlines",
             reqwest::Method::GET,
             query_params,
             if HAS_TIME_UNIT {
