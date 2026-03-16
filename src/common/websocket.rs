@@ -2825,6 +2825,9 @@ mod tests {
             Some("api_secret".into()),
             None::<PrivateKey>,
             None::<String>,
+            None,
+            None,
+            None,
         );
         let config = ConfigurationWebsocketApi {
             api_key: Some("api_key".into()),
@@ -2840,6 +2843,9 @@ mod tests {
             auto_session_relogon,
             agent: None,
             user_agent: build_user_agent("product"),
+            user: None,
+            signer: None,
+            signer_private_key: None,
         };
         let conn1 = WebsocketConnection::new("c1");
         let conn2 = WebsocketConnection::new("c2");
@@ -4840,6 +4846,9 @@ mod tests {
                         Some("api_secret".to_string()),
                         None::<PrivateKey>,
                         None::<String>,
+                        None,
+                        None,
+                        None,
                     );
 
                     let config = ConfigurationWebsocketApi {
@@ -4856,6 +4865,9 @@ mod tests {
                         auto_session_relogon: false,
                         agent: None,
                         user_agent: build_user_agent("product"),
+                        user: None,
+                        signer: None,
+                        signer_private_key: None,
                     };
 
                     let api = WebsocketApi::new(config, pool.clone());
@@ -4884,6 +4896,9 @@ mod tests {
                         Some("api_secret".into()),
                         None::<PrivateKey>,
                         None::<String>,
+                        None,
+                        None,
+                        None,
                     );
                     let cfg = ConfigurationWebsocketApi {
                         api_key: Some("api_key".into()),
@@ -4899,6 +4914,9 @@ mod tests {
                         auto_session_relogon: false,
                         agent: None,
                         user_agent: build_user_agent("product"),
+                        user: None,
+                        signer: None,
+                        signer_private_key: None,
                     };
                     let api = WebsocketApi::new(cfg, vec![conn.clone()]);
                     let res = api.clone().connect().await;
@@ -4919,6 +4937,9 @@ mod tests {
                         Some("api_secret".to_string()),
                         None::<PrivateKey>,
                         None::<String>,
+                        None,
+                        None,
+                        None,
                     );
                     let cfg = ConfigurationWebsocketApi {
                         api_key: Some("api_key".to_string()),
@@ -4934,6 +4955,9 @@ mod tests {
                         auto_session_relogon: false,
                         agent: None,
                         user_agent: build_user_agent("product"),
+                        user: None,
+                        signer: None,
+                        signer_private_key: None,
                     };
                     let api = WebsocketApi::new(cfg, vec![conn.clone()]);
                     let res = api.connect().await;
@@ -4949,6 +4973,9 @@ mod tests {
                         Some("api_secret".to_string()),
                         None::<PrivateKey>,
                         None::<String>,
+                        None,
+                        None,
+                        None,
                     );
                     let cfg = ConfigurationWebsocketApi {
                         api_key: Some("api_key".to_string()),
@@ -4964,6 +4991,9 @@ mod tests {
                         auto_session_relogon: false,
                         agent: None,
                         user_agent: build_user_agent("product"),
+                        user: None,
+                        signer: None,
+                        signer_private_key: None,
                     };
                     let api = WebsocketApi::new(cfg, vec![conn.clone()]);
                     let res = api.connect().await;
@@ -4979,6 +5009,9 @@ mod tests {
                         Some("api_secret".to_string()),
                         None::<PrivateKey>,
                         None::<String>,
+                        None,
+                        None,
+                        None,
                     );
                     let cfg = ConfigurationWebsocketApi {
                         api_key: Some("api_key".to_string()),
@@ -4994,6 +5027,9 @@ mod tests {
                         auto_session_relogon: false,
                         agent: None,
                         user_agent: build_user_agent("product"),
+                        user: None,
+                        signer: None,
+                        signer_private_key: None,
                     };
                     let api = WebsocketApi::new(cfg, vec![conn.clone()]);
                     let fut1 = tokio::spawn(api.clone().connect());
@@ -5014,6 +5050,9 @@ mod tests {
                         Some("api_secret".to_string()),
                         None::<PrivateKey>,
                         None::<String>,
+                        None,
+                        None,
+                        None,
                     );
                     let cfg = ConfigurationWebsocketApi {
                         api_key: Some("api_key".into()),
@@ -5029,6 +5068,9 @@ mod tests {
                         auto_session_relogon: false,
                         agent: None,
                         user_agent: build_user_agent("product"),
+                        user: None,
+                        signer: None,
+                        signer_private_key: None,
                     };
                     let api = WebsocketApi::new(cfg, vec![conn.clone()]);
                     let res = api.clone().connect().await;
@@ -5635,6 +5677,9 @@ mod tests {
                     Some("api_secret".to_string()),
                     None::<_>,
                     None::<String>,
+                    None,
+                    None,
+                    None,
                 );
                 let config = ConfigurationWebsocketApi {
                     api_key: Some("api_key".to_string()),
@@ -5650,6 +5695,9 @@ mod tests {
                     auto_session_relogon: true,
                     agent: None,
                     user_agent: build_user_agent("product"),
+                    user: None,
+                    signer: None,
+                    signer_private_key: None,
                 };
                 let conn = WebsocketConnection::new("test-conn");
                 let api = WebsocketApi::new(config, vec![conn.clone()]);
@@ -5807,6 +5855,9 @@ mod tests {
                     Some("api_secret".to_string()),
                     None::<_>,
                     None::<String>,
+                    None,
+                    None,
+                    None,
                 );
                 let config = ConfigurationWebsocketApi {
                     api_key: Some("api_key".to_string()),
@@ -5822,6 +5873,9 @@ mod tests {
                     auto_session_relogon: false,
                     agent: None,
                     user_agent: build_user_agent("product"),
+                    user: None,
+                    signer: None,
+                    signer_private_key: None,
                 };
                 let conn = WebsocketConnection::new("test");
                 let api = WebsocketApi::new(config, vec![conn.clone()]);

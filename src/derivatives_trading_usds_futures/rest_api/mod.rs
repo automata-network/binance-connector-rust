@@ -3622,6 +3622,18 @@ impl RestApi {
         self.trade_api_client.new_order(params).await
     }
 
+    /// Noop - Send a no-op request to cancel a pending order by reusing its nonce.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the request fails.
+    pub async fn noop(
+        &self,
+        params: NoopParams,
+    ) -> anyhow::Result<RestApiResponse<models::NoopResponse>> {
+        self.trade_api_client.noop(params).await
+    }
+
     /// Place Multiple Orders(TRADE)
     ///
     /// Place Multiple Orders

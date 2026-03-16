@@ -99,6 +99,10 @@ pub trait TradeApi: Send + Sync {
         &self,
         params: NewOrderParams,
     ) -> anyhow::Result<RestApiResponse<models::NewOrderResponse>>;
+    async fn noop(
+        &self,
+        params: NoopParams,
+    ) -> anyhow::Result<RestApiResponse<models::NoopResponse>>;
     async fn place_multiple_orders(
         &self,
         params: PlaceMultipleOrdersParams,
@@ -1745,6 +1749,37 @@ impl NewOrderParams {
             .r#type(r#type)
     }
 }
+
+/// Request parameters for the [`noop`] operation.
+///
+/// Noop is used to cancel a pending order by reusing its nonce.
+#[derive(Clone, Debug, Default)]
+pub struct NoopParams {
+    /// Optional nonce to reuse from a target order (microsecond timestamp).
+    pub nonce: Option<u64>,
+    /// Optional recvWindow override.
+    pub recv_window: Option<i64>,
+}
+
+impl NoopParams {
+    #[must_use]
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    #[must_use]
+    pub fn nonce(mut self, nonce: u64) -> Self {
+        self.nonce = Some(nonce);
+        self
+    }
+
+    #[must_use]
+    pub fn recv_window(mut self, recv_window: i64) -> Self {
+        self.recv_window = Some(recv_window);
+        self
+    }
+}
+
 /// Request parameters for the [`place_multiple_orders`] operation.
 ///
 /// This struct holds all of the inputs you can pass when calling
@@ -3322,6 +3357,37 @@ impl TradeApi for TradeApiClient {
         )
         .await
     }
+
+    async fn noop(
+        &self,
+        params: NoopParams,
+    ) -> anyhow::Result<RestApiResponse<models::NoopResponse>> {
+        let NoopParams { nonce, recv_window } = params;
+
+        let mut query_params = BTreeMap::new();
+
+        if let Some(rw) = nonce {
+            query_params.insert("nonce".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = recv_window {
+            query_params.insert("recvWindow".to_string(), json!(rw));
+        }
+
+        send_request::<models::NoopResponse>(
+            &self.configuration,
+            "/fapi/v3/noop",
+            reqwest::Method::POST,
+            query_params,
+            if HAS_TIME_UNIT {
+                self.configuration.time_unit
+            } else {
+                None
+            },
+            true,
+        )
+        .await
+    }
 }
 
 #[cfg(all(test, feature = "derivatives_trading_usds_futures"))]
@@ -3987,6 +4053,32 @@ mod tests {
             let dummy_response: Vec<models::UsersForceOrdersResponseInner> =
                 serde_json::from_value(resp_json.clone())
                     .expect("should parse into Vec<models::UsersForceOrdersResponseInner>");
+
+            let dummy = DummyRestApiResponse {
+                inner: Box::new(move || Box::pin(async move { Ok(dummy_response) })),
+                status: 200,
+                headers: HashMap::new(),
+                rate_limits: None,
+            };
+
+            Ok(dummy.into())
+        }
+
+        async fn noop(
+            &self,
+            _params: NoopParams,
+        ) -> anyhow::Result<RestApiResponse<models::NoopResponse>> {
+            if self.force_error {
+                return Err(
+                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
+                );
+            }
+
+            let resp_json: Value =
+                serde_json::from_str(r#"{"code":200,"msg":"success"}"#).unwrap();
+            let dummy_response: models::NoopResponse =
+                serde_json::from_value(resp_json.clone())
+                    .expect("should parse into models::NoopResponse");
 
             let dummy = DummyRestApiResponse {
                 inner: Box::new(move || Box::pin(async move { Ok(dummy_response) })),

@@ -149,6 +149,8 @@ pub mod multi_assets_mode_asset_index_response2_inner;
 pub use self::multi_assets_mode_asset_index_response2_inner::MultiAssetsModeAssetIndexResponse2Inner;
 pub mod new_order_response;
 pub use self::new_order_response::NewOrderResponse;
+pub mod noop_response;
+pub use self::noop_response::NoopResponse;
 pub mod notional_and_leverage_brackets_response;
 pub use self::notional_and_leverage_brackets_response::NotionalAndLeverageBracketsResponse;
 pub mod notional_and_leverage_brackets_response1_inner;

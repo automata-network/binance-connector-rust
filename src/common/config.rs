@@ -94,6 +94,15 @@ pub struct ConfigurationRestApi {
     #[builder(setter(strip_option), default)]
     pub time_unit: Option<TimeUnit>,
 
+    #[builder(setter(into, strip_option), default)]
+    pub user: Option<String>,
+
+    #[builder(setter(into, strip_option), default)]
+    pub signer: Option<String>,
+
+    #[builder(setter(into, strip_option), default)]
+    pub signer_private_key: Option<String>,
+
     #[builder(setter(skip))]
     pub(crate) client: Client,
 
@@ -133,6 +142,9 @@ impl ConfigurationRestApiBuilder {
             cfg.api_secret.clone(),
             cfg.private_key.clone(),
             cfg.private_key_passphrase.clone(),
+            cfg.user.clone(),
+            cfg.signer.clone(),
+            cfg.signer_private_key.clone(),
         );
 
         Ok(cfg)
@@ -174,6 +186,15 @@ pub struct ConfigurationWebsocketApi {
 
     #[builder(setter(strip_option), default)]
     pub time_unit: Option<TimeUnit>,
+
+    #[builder(setter(into, strip_option), default)]
+    pub user: Option<String>,
+
+    #[builder(setter(into, strip_option), default)]
+    pub signer: Option<String>,
+
+    #[builder(setter(into, strip_option), default)]
+    pub signer_private_key: Option<String>,
 
     #[builder(default = "true")]
     pub auto_session_relogon: bool,
@@ -223,6 +244,9 @@ impl ConfigurationWebsocketApiBuilder {
             cfg.api_secret.clone(),
             cfg.private_key.clone(),
             cfg.private_key_passphrase.clone(),
+            cfg.user.clone(),
+            cfg.signer.clone(),
+            cfg.signer_private_key.clone(),
         );
 
         Ok(cfg)
