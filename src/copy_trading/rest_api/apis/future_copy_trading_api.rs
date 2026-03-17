@@ -108,6 +108,7 @@ impl FutureCopyTradingApi for FutureCopyTradingApiClient {
         let GetFuturesLeadTraderStatusParams { recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = recv_window {
             query_params.insert("recvWindow".to_string(), json!(rw));
@@ -118,6 +119,7 @@ impl FutureCopyTradingApi for FutureCopyTradingApiClient {
             "/sapi/v1/copyTrading/futures/userStatus",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -135,6 +137,7 @@ impl FutureCopyTradingApi for FutureCopyTradingApiClient {
         let GetFuturesLeadTradingSymbolWhitelistParams { recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = recv_window {
             query_params.insert("recvWindow".to_string(), json!(rw));
@@ -145,6 +148,7 @@ impl FutureCopyTradingApi for FutureCopyTradingApiClient {
             "/sapi/v1/copyTrading/futures/leadSymbol",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -193,9 +197,11 @@ mod tests {
             _params: GetFuturesLeadTraderStatusParams,
         ) -> anyhow::Result<RestApiResponse<models::GetFuturesLeadTraderStatusResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"code":"000000","message":"success","data":{"isLeadTrader":true,"time":1717382310843},"success":true}"#).unwrap();
@@ -219,9 +225,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::GetFuturesLeadTradingSymbolWhitelistResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"code":"000000","message":"success","data":[{"symbol":"BTCUSDT","baseAsset":"BTC","quoteAsset":"USDT"},{"symbol":"ETHUSDT","baseAsset":"ETH","quoteAsset":"USDT"}]}"#).unwrap();

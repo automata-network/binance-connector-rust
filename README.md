@@ -32,6 +32,7 @@ rustup default 1.86.0
 All connectors are bundled within the single `binance-sdk` crate. Enable only the modules you need by specifying feature flags. Available features are:
 
 * [`algo`](./src/algo) – Algo Trading connector
+* [`alpha`](./src/alpha) – Alpha connector
 * [`c2c`](./src/c2c) – C2C connector
 * [`convert`](./src/convert) – Convert connector
 * [`copy_trading`](./src/copy_trading) – Copy Trading connector
@@ -75,6 +76,26 @@ If you require all available connectors:
 ```toml
 [dependencies]
 binance-sdk = { version = "1.0.0", features = ["all"] }
+```
+
+## TLS Backend Selection
+
+This library supports both **OpenSSL** (default) and **Rustls** backends.
+
+**Default (OpenSSL):** Standard installation uses OpenSSL. This requires OpenSSL development headers to be installed on your system.
+
+```toml
+[dependencies]
+binance-sdk = { version = "1.0.0", features = ["spot"] }
+```
+
+**Using Rustls (Pure Rust):** To use rustls (useful for cross-compilation or avoiding C-dependencies), you must disable default features and enable rustls-tls.
+
+Note: Private key signing features currently require the openssl-tls feature.
+
+```toml
+[dependencies]
+binance-sdk = { version = "1.0.0", default-features = false, features = ["rustls-tls", "spot"] }
 ```
 
 ## Contributing

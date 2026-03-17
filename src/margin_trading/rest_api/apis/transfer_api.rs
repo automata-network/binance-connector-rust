@@ -70,7 +70,7 @@ pub struct GetCrossMarginTransferHistoryParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub r#type: Option<String>,
-    /// 只支持查询最近90天的数据
+    /// Only supports querying data from the past 90 days.
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -167,6 +167,7 @@ impl TransferApi for TransferApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = asset {
             query_params.insert("asset".to_string(), json!(rw));
@@ -205,6 +206,7 @@ impl TransferApi for TransferApiClient {
             "/sapi/v1/margin/transfer",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -226,6 +228,7 @@ impl TransferApi for TransferApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("asset".to_string(), json!(asset));
 
@@ -242,6 +245,7 @@ impl TransferApi for TransferApiClient {
             "/sapi/v1/margin/maxTransferable",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -291,9 +295,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::GetCrossMarginTransferHistoryResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"rows":[{"amount":"0.10000000","asset":"BNB","status":"CONFIRMED","timestamp":1566898617,"txId":5240372201,"type":"ROLL_IN","transFrom":"SPOT","transTo":"ISOLATED_MARGIN"},{"amount":"5.00000000","asset":"USDT","status":"CONFIRMED","timestamp":1566888436,"txId":5239810406,"type":"ROLL_OUT","transFrom":"ISOLATED_MARGIN","transTo":"ISOLATED_MARGIN","fromSymbol":"BNBUSDT","toSymbol":"BTCUSDT"},{"amount":"1.00000000","asset":"EOS","status":"CONFIRMED","timestamp":1566888403,"txId":5239808703,"type":"ROLL_IN"}],"total":3}"#).unwrap();
@@ -316,9 +322,11 @@ mod tests {
             _params: QueryMaxTransferOutAmountParams,
         ) -> anyhow::Result<RestApiResponse<models::QueryMaxTransferOutAmountResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"amount":"3.59498107"}"#).unwrap();

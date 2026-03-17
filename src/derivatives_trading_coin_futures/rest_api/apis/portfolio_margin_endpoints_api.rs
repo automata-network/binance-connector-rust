@@ -92,6 +92,7 @@ impl PortfolioMarginEndpointsApi for PortfolioMarginEndpointsApiClient {
         let ClassicPortfolioMarginAccountInformationParams { asset, recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("asset".to_string(), json!(asset));
 
@@ -104,6 +105,7 @@ impl PortfolioMarginEndpointsApi for PortfolioMarginEndpointsApiClient {
             "/dapi/v1/pmAccountInfo",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -153,9 +155,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::ClassicPortfolioMarginAccountInformationResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"maxWithdrawAmountUSD":"25347.92083245","asset":"BTC","maxWithdrawAmount":"1.33663654"}"#).unwrap();

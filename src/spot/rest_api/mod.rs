@@ -37,7 +37,6 @@ pub struct RestApi {
     general_api_client: GeneralApiClient,
     market_api_client: MarketApiClient,
     trade_api_client: TradeApiClient,
-    user_data_stream_api_client: UserDataStreamApiClient,
 }
 
 impl RestApi {
@@ -46,7 +45,6 @@ impl RestApi {
         let general_api_client = GeneralApiClient::new(configuration.clone());
         let market_api_client = MarketApiClient::new(configuration.clone());
         let trade_api_client = TradeApiClient::new(configuration.clone());
-        let user_data_stream_api_client = UserDataStreamApiClient::new(configuration.clone());
 
         Self {
             configuration,
@@ -54,7 +52,6 @@ impl RestApi {
             general_api_client,
             market_api_client,
             trade_api_client,
-            user_data_stream_api_client,
         }
     }
 
@@ -64,7 +61,8 @@ impl RestApi {
     ///
     /// * `endpoint` - The API endpoint to send the request to
     /// * `method` - The HTTP method to use for the request
-    /// * `params` - A map of parameters to send with the request
+    /// * `query_params` - A map of query parameters to send with the request
+    /// * `body_params` - A map of body parameters to send with the request
     ///
     /// # Returns
     ///
@@ -77,9 +75,19 @@ impl RestApi {
         &self,
         endpoint: &str,
         method: Method,
-        params: BTreeMap<String, Value>,
+        query_params: BTreeMap<String, Value>,
+        body_params: BTreeMap<String, Value>,
     ) -> anyhow::Result<RestApiResponse<R>> {
-        send_request::<R>(&self.configuration, endpoint, method, params, None, false).await
+        send_request::<R>(
+            &self.configuration,
+            endpoint,
+            method,
+            query_params,
+            body_params,
+            None,
+            false,
+        )
+        .await
     }
 
     /// Send a signed request to the API
@@ -88,7 +96,8 @@ impl RestApi {
     ///
     /// * `endpoint` - The API endpoint to send the request to
     /// * `method` - The HTTP method to use for the request
-    /// * `params` - A map of parameters to send with the request
+    /// * `query_params` - A map of query parameters to send with the request
+    /// * `body_params` - A map of body parameters to send with the request
     ///
     /// # Returns
     ///
@@ -101,9 +110,19 @@ impl RestApi {
         &self,
         endpoint: &str,
         method: Method,
-        params: BTreeMap<String, Value>,
+        query_params: BTreeMap<String, Value>,
+        body_params: BTreeMap<String, Value>,
     ) -> anyhow::Result<RestApiResponse<R>> {
-        send_request::<R>(&self.configuration, endpoint, method, params, None, true).await
+        send_request::<R>(
+            &self.configuration,
+            endpoint,
+            method,
+            query_params,
+            body_params,
+            None,
+            true,
+        )
+        .await
     }
 
     /// Query Commission Rates
@@ -444,6 +463,48 @@ impl RestApi {
         self.account_api_client.my_allocations(params).await
     }
 
+    /// Query relevant filters
+    ///
+    /// Retrieves the list of [filters](filters.md) relevant to an account on a given symbol. This is the only endpoint that shows if an account has `MAX_ASSET` filters applied to it.
+    /// Weight: 40
+    ///
+    /// # Arguments
+    ///
+    /// - `params`: [`MyFiltersParams`]
+    ///   The parameters for this operation.
+    ///
+    /// # Returns
+    ///
+    /// [`RestApiResponse<models::MyFiltersResponse>`] on success.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an [`anyhow::Error`] if:
+    /// - the HTTP request fails
+    /// - any parameter is invalid
+    /// - the response cannot be parsed
+    /// - or one of the following occurs:
+    ///   - `RequiredError`
+    ///   - `ConnectorClientError`
+    ///   - `UnauthorizedError`
+    ///   - `ForbiddenError`
+    ///   - `TooManyRequestsError`
+    ///   - `RateLimitBanError`
+    ///   - `ServerError`
+    ///   - `NotFoundError`
+    ///   - `NetworkError`
+    ///   - `BadRequestError`
+    ///
+    ///
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/binance-spot-api-docs/rest-api/account-endpoints#query-relevant-filters-user_data).
+    ///
+    pub async fn my_filters(
+        &self,
+        params: MyFiltersParams,
+    ) -> anyhow::Result<RestApiResponse<models::MyFiltersResponse>> {
+        self.account_api_client.my_filters(params).await
+    }
+
     /// Query Prevented Matches
     ///
     /// Displays the list of orders that were expired due to STP.
@@ -708,6 +769,53 @@ impl RestApi {
         params: ExchangeInfoParams,
     ) -> anyhow::Result<RestApiResponse<models::ExchangeInfoResponse>> {
         self.general_api_client.exchange_info(params).await
+    }
+
+    /// Query Execution Rules
+    ///
+    ///
+    /// Weight: Parameter | Weight|
+    /// ---        | ---
+    /// `symbol`  | 2
+    /// `symbols` | 2 for each `symbol`, capped at a max of 40|
+    /// `symbolStatus` |40|
+    /// None            |40|
+    ///
+    /// # Arguments
+    ///
+    /// - `params`: [`ExecutionRulesParams`]
+    ///   The parameters for this operation.
+    ///
+    /// # Returns
+    ///
+    /// [`RestApiResponse<models::ExecutionRulesResponse>`] on success.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an [`anyhow::Error`] if:
+    /// - the HTTP request fails
+    /// - any parameter is invalid
+    /// - the response cannot be parsed
+    /// - or one of the following occurs:
+    ///   - `RequiredError`
+    ///   - `ConnectorClientError`
+    ///   - `UnauthorizedError`
+    ///   - `ForbiddenError`
+    ///   - `TooManyRequestsError`
+    ///   - `RateLimitBanError`
+    ///   - `ServerError`
+    ///   - `NotFoundError`
+    ///   - `NetworkError`
+    ///   - `BadRequestError`
+    ///
+    ///
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/binance-spot-api-docs/rest-api/general-endpoints#query-execution-rules).
+    ///
+    pub async fn execution_rules(
+        &self,
+        params: ExecutionRulesParams,
+    ) -> anyhow::Result<RestApiResponse<models::ExecutionRulesResponse>> {
+        self.general_api_client.execution_rules(params).await
     }
 
     /// Test connectivity
@@ -1046,6 +1154,92 @@ impl RestApi {
         params: KlinesParams,
     ) -> anyhow::Result<RestApiResponse<Vec<Vec<models::KlinesItemInner>>>> {
         self.market_api_client.klines(params).await
+    }
+
+    /// Query Reference Price
+    ///
+    ///
+    /// Weight: 2
+    ///
+    /// # Arguments
+    ///
+    /// - `params`: [`ReferencePriceParams`]
+    ///   The parameters for this operation.
+    ///
+    /// # Returns
+    ///
+    /// [`RestApiResponse<models::ReferencePriceResponse>`] on success.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an [`anyhow::Error`] if:
+    /// - the HTTP request fails
+    /// - any parameter is invalid
+    /// - the response cannot be parsed
+    /// - or one of the following occurs:
+    ///   - `RequiredError`
+    ///   - `ConnectorClientError`
+    ///   - `UnauthorizedError`
+    ///   - `ForbiddenError`
+    ///   - `TooManyRequestsError`
+    ///   - `RateLimitBanError`
+    ///   - `ServerError`
+    ///   - `NotFoundError`
+    ///   - `NetworkError`
+    ///   - `BadRequestError`
+    ///
+    ///
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/binance-spot-api-docs/rest-api/market-data-endpoints#query-reference-price).
+    ///
+    pub async fn reference_price(
+        &self,
+        params: ReferencePriceParams,
+    ) -> anyhow::Result<RestApiResponse<models::ReferencePriceResponse>> {
+        self.market_api_client.reference_price(params).await
+    }
+
+    /// Query Reference Price Calculation
+    ///
+    /// Describes how reference price is calculated for a given symbol.
+    /// Weight: 2
+    ///
+    /// # Arguments
+    ///
+    /// - `params`: [`ReferencePriceCalculationParams`]
+    ///   The parameters for this operation.
+    ///
+    /// # Returns
+    ///
+    /// [`RestApiResponse<models::ReferencePriceCalculationResponse>`] on success.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an [`anyhow::Error`] if:
+    /// - the HTTP request fails
+    /// - any parameter is invalid
+    /// - the response cannot be parsed
+    /// - or one of the following occurs:
+    ///   - `RequiredError`
+    ///   - `ConnectorClientError`
+    ///   - `UnauthorizedError`
+    ///   - `ForbiddenError`
+    ///   - `TooManyRequestsError`
+    ///   - `RateLimitBanError`
+    ///   - `ServerError`
+    ///   - `NotFoundError`
+    ///   - `NetworkError`
+    ///   - `BadRequestError`
+    ///
+    ///
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/binance-spot-api-docs/rest-api/market-data-endpoints#query-reference-price-calculation).
+    ///
+    pub async fn reference_price_calculation(
+        &self,
+        params: ReferencePriceCalculationParams,
+    ) -> anyhow::Result<RestApiResponse<models::ReferencePriceCalculationResponse>> {
+        self.market_api_client
+            .reference_price_calculation(params)
+            .await
     }
 
     /// Rolling window price change statistics
@@ -1649,11 +1843,10 @@ impl RestApi {
 
     /// Cancel an Existing Order and Send a New Order
     ///
-    /// Cancels an existing order and places a new order on the same symbol.
-    ///
-    /// Filters and Order Count are evaluated before the processing of the cancellation and order placement occurs.
-    ///
-    /// A new order that was not attempted (i.e. when `newOrderResult: NOT_ATTEMPTED`), will still increase the unfilled order count by 1.
+    /// * Cancels an existing order and places a new order on the same symbol.
+    /// * Filters and Order Count are evaluated before the processing of the cancellation and order placement occurs.
+    /// * A new order that was not attempted (i.e. when `newOrderResult: NOT_ATTEMPTED`), will still increase the unfilled order count by 1.
+    /// * You can only cancel an individual order from an orderList using this endpoint, but the result is the same as canceling the entire orderList.
     /// Weight: 1
     ///
     /// # Arguments
@@ -1746,6 +1939,96 @@ impl RestApi {
         params: OrderListOcoParams,
     ) -> anyhow::Result<RestApiResponse<models::OrderListOcoResponse>> {
         self.trade_api_client.order_list_oco(params).await
+    }
+
+    /// New Order List - OPO
+    ///
+    /// Place an [OPO](./faqs/opo.md).
+    ///
+    /// * OPOs add 2 orders to the `EXCHANGE_MAX_NUM_ORDERS` filter and `MAX_NUM_ORDERS` filter.
+    /// Weight: 1
+    ///
+    /// Unfilled Order Count: 2
+    ///
+    /// # Arguments
+    ///
+    /// - `params`: [`OrderListOpoParams`]
+    ///   The parameters for this operation.
+    ///
+    /// # Returns
+    ///
+    /// [`RestApiResponse<models::OrderListOpoResponse>`] on success.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an [`anyhow::Error`] if:
+    /// - the HTTP request fails
+    /// - any parameter is invalid
+    /// - the response cannot be parsed
+    /// - or one of the following occurs:
+    ///   - `RequiredError`
+    ///   - `ConnectorClientError`
+    ///   - `UnauthorizedError`
+    ///   - `ForbiddenError`
+    ///   - `TooManyRequestsError`
+    ///   - `RateLimitBanError`
+    ///   - `ServerError`
+    ///   - `NotFoundError`
+    ///   - `NetworkError`
+    ///   - `BadRequestError`
+    ///
+    ///
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/binance-spot-api-docs/rest-api/trading-endpoints#new-order-list---opo-trade).
+    ///
+    pub async fn order_list_opo(
+        &self,
+        params: OrderListOpoParams,
+    ) -> anyhow::Result<RestApiResponse<models::OrderListOpoResponse>> {
+        self.trade_api_client.order_list_opo(params).await
+    }
+
+    /// New Order List - OPOCO
+    ///
+    /// Place an [OPOCO](./faqs/opo.md).
+    /// Weight: 1
+    ///
+    /// Unfilled Order Count: 3
+    ///
+    /// # Arguments
+    ///
+    /// - `params`: [`OrderListOpocoParams`]
+    ///   The parameters for this operation.
+    ///
+    /// # Returns
+    ///
+    /// [`RestApiResponse<models::OrderListOpocoResponse>`] on success.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an [`anyhow::Error`] if:
+    /// - the HTTP request fails
+    /// - any parameter is invalid
+    /// - the response cannot be parsed
+    /// - or one of the following occurs:
+    ///   - `RequiredError`
+    ///   - `ConnectorClientError`
+    ///   - `UnauthorizedError`
+    ///   - `ForbiddenError`
+    ///   - `TooManyRequestsError`
+    ///   - `RateLimitBanError`
+    ///   - `ServerError`
+    ///   - `NotFoundError`
+    ///   - `NetworkError`
+    ///   - `BadRequestError`
+    ///
+    ///
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/binance-spot-api-docs/rest-api/trading-endpoints#new-order-list---opoco-trade).
+    ///
+    pub async fn order_list_opoco(
+        &self,
+        params: OrderListOpocoParams,
+    ) -> anyhow::Result<RestApiResponse<models::OrderListOpocoResponse>> {
+        self.trade_api_client.order_list_opoco(params).await
     }
 
     /// New Order list - OTO
@@ -1895,6 +2178,10 @@ impl RestApi {
     ///
     /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/binance-spot-api-docs/rest-api/trading-endpoints#new-oco---deprecated-trade).
     ///
+    /// # Deprecation
+    ///
+    /// **Deprecated:** This method may be removed in a future version.
+    #[deprecated]
     pub async fn order_oco(
         &self,
         params: OrderOcoParams,
@@ -2206,9 +2493,7 @@ impl RestApi {
     pub async fn start_listen_key(
         &self,
     ) -> anyhow::Result<RestApiResponse<models::NewUserDataStreamResponse>> {
-        self.user_data_stream_api_client
-            .start_listen_key()
-            .await
+        self.user_data_stream_api_client.start_listen_key().await
     }
 
     /// Keepalive a user data stream
@@ -2234,8 +2519,6 @@ impl RestApi {
     ///
     /// [`RestApiResponse<Value>`] on success.
     pub async fn close_listen_key(&self) -> anyhow::Result<RestApiResponse<Value>> {
-        self.user_data_stream_api_client
-            .close_listen_key()
-            .await
+        self.user_data_stream_api_client.close_listen_key().await
     }
 }

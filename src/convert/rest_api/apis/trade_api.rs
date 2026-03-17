@@ -385,6 +385,7 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("quoteId".to_string(), json!(quote_id));
 
@@ -397,6 +398,7 @@ impl TradeApi for TradeApiClient {
             "/sapi/v1/convert/acceptQuote",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -417,6 +419,7 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("orderId".to_string(), json!(order_id));
 
@@ -429,6 +432,7 @@ impl TradeApi for TradeApiClient {
             "/sapi/v1/convert/limit/cancelOrder",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -451,6 +455,7 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("startTime".to_string(), json!(start_time));
 
@@ -469,6 +474,7 @@ impl TradeApi for TradeApiClient {
             "/sapi/v1/convert/tradeFlow",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -486,6 +492,7 @@ impl TradeApi for TradeApiClient {
         let OrderStatusParams { order_id, quote_id } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = order_id {
             query_params.insert("orderId".to_string(), json!(rw));
@@ -500,6 +507,7 @@ impl TradeApi for TradeApiClient {
             "/sapi/v1/convert/orderStatus",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -527,16 +535,13 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("baseAsset".to_string(), json!(base_asset));
 
         query_params.insert("quoteAsset".to_string(), json!(quote_asset));
 
         query_params.insert("limitPrice".to_string(), json!(limit_price));
-
-        query_params.insert("side".to_string(), json!(side));
-
-        query_params.insert("expiredType".to_string(), json!(expired_type));
 
         if let Some(rw) = base_amount {
             query_params.insert("baseAmount".to_string(), json!(rw));
@@ -546,9 +551,13 @@ impl TradeApi for TradeApiClient {
             query_params.insert("quoteAmount".to_string(), json!(rw));
         }
 
+        query_params.insert("side".to_string(), json!(side));
+
         if let Some(rw) = wallet_type {
             query_params.insert("walletType".to_string(), json!(rw));
         }
+
+        query_params.insert("expiredType".to_string(), json!(expired_type));
 
         if let Some(rw) = recv_window {
             query_params.insert("recvWindow".to_string(), json!(rw));
@@ -559,6 +568,7 @@ impl TradeApi for TradeApiClient {
             "/sapi/v1/convert/limit/placeOrder",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -576,6 +586,7 @@ impl TradeApi for TradeApiClient {
         let QueryLimitOpenOrdersParams { recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = recv_window {
             query_params.insert("recvWindow".to_string(), json!(rw));
@@ -586,6 +597,7 @@ impl TradeApi for TradeApiClient {
             "/sapi/v1/convert/limit/queryOpenOrders",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -611,6 +623,7 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("fromAsset".to_string(), json!(from_asset));
 
@@ -641,6 +654,7 @@ impl TradeApi for TradeApiClient {
             "/sapi/v1/convert/getQuote",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -689,9 +703,11 @@ mod tests {
             _params: AcceptQuoteParams,
         ) -> anyhow::Result<RestApiResponse<models::AcceptQuoteResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"orderId":"933256278426274426","createTime":1623381330472,"orderStatus":"PROCESS"}"#).unwrap();
@@ -714,9 +730,11 @@ mod tests {
             _params: CancelLimitOrderParams,
         ) -> anyhow::Result<RestApiResponse<models::CancelLimitOrderResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value =
@@ -741,9 +759,11 @@ mod tests {
             _params: GetConvertTradeHistoryParams,
         ) -> anyhow::Result<RestApiResponse<models::GetConvertTradeHistoryResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"list":[{"quoteId":"f3b91c525b2644c7bc1e1cd31b6e1aa6","orderId":940708407462087200,"orderStatus":"SUCCESS","fromAsset":"USDT","fromAmount":"20","toAsset":"BNB","toAmount":"0.06154036","ratio":"0.00307702","inverseRatio":"324.99","createTime":1624248872184}],"startTime":1623824139000,"endTime":1626416139000,"limit":100,"moreData":false}"#).unwrap();
@@ -766,9 +786,11 @@ mod tests {
             _params: OrderStatusParams,
         ) -> anyhow::Result<RestApiResponse<models::OrderStatusResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"orderId":933256278426274400,"orderStatus":"SUCCESS","fromAsset":"BTC","fromAmount":"0.00054414","toAsset":"USDT","toAmount":"20","ratio":"36755","inverseRatio":"0.00002721","createTime":1623381330472}"#).unwrap();
@@ -791,12 +813,16 @@ mod tests {
             _params: PlaceLimitOrderParams,
         ) -> anyhow::Result<RestApiResponse<models::PlaceLimitOrderResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
-            let resp_json: Value = serde_json::from_str(r#"{"quoteId":"12415572564","ratio":"38163.7","inverseRatio":"0.0000262","validTimestamp":1623319461670,"toAmount":"3816.37","fromAmount":"0.1"}"#).unwrap();
+            let resp_json: Value =
+                serde_json::from_str(r#"{"orderId":1603680255057330400,"status":"PROCESS"}"#)
+                    .unwrap();
             let dummy_response: models::PlaceLimitOrderResponse =
                 serde_json::from_value(resp_json.clone())
                     .expect("should parse into models::PlaceLimitOrderResponse");
@@ -816,9 +842,11 @@ mod tests {
             _params: QueryLimitOpenOrdersParams,
         ) -> anyhow::Result<RestApiResponse<models::QueryLimitOpenOrdersResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"list":[{"quoteId":"18sdf87kh9df","orderId":1150901289839,"orderStatus":"SUCCESS","fromAsset":"BNB","fromAmount":"10","toAsset":"USDT","toAmount":"2317.89","ratio":"231.789","inverseRatio":"0.00431427","createTime":1614089498000,"expiredTimestamp":1614099498000}]}"#).unwrap();
@@ -841,9 +869,11 @@ mod tests {
             _params: SendQuoteRequestParams,
         ) -> anyhow::Result<RestApiResponse<models::SendQuoteRequestResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"quoteId":"12415572564","ratio":"38163.7","inverseRatio":"0.0000262","validTimestamp":1623319461670,"toAmount":"3816.37","fromAmount":"0.1"}"#).unwrap();
@@ -1086,12 +1116,27 @@ mod tests {
         TOKIO_SHARED_RT.block_on(async {
             let client = MockTradeApiClient { force_error: false };
 
-            let params = PlaceLimitOrderParams::builder("base_asset_example".to_string(),"quote_asset_example".to_string(),dec!(1.0),"BUY".to_string(),"expired_type_example".to_string(),).build().unwrap();
+            let params = PlaceLimitOrderParams::builder(
+                "base_asset_example".to_string(),
+                "quote_asset_example".to_string(),
+                dec!(1.0),
+                "BUY".to_string(),
+                "expired_type_example".to_string(),
+            )
+            .build()
+            .unwrap();
 
-            let resp_json: Value = serde_json::from_str(r#"{"quoteId":"12415572564","ratio":"38163.7","inverseRatio":"0.0000262","validTimestamp":1623319461670,"toAmount":"3816.37","fromAmount":"0.1"}"#).unwrap();
-            let expected_response : models::PlaceLimitOrderResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::PlaceLimitOrderResponse");
+            let resp_json: Value =
+                serde_json::from_str(r#"{"orderId":1603680255057330400,"status":"PROCESS"}"#)
+                    .unwrap();
+            let expected_response: models::PlaceLimitOrderResponse =
+                serde_json::from_value(resp_json.clone())
+                    .expect("should parse into models::PlaceLimitOrderResponse");
 
-            let resp = client.place_limit_order(params).await.expect("Expected a response");
+            let resp = client
+                .place_limit_order(params)
+                .await
+                .expect("Expected a response");
             let data_future = resp.data();
             let actual_response = data_future.await.unwrap();
             assert_eq!(actual_response, expected_response);
@@ -1103,12 +1148,31 @@ mod tests {
         TOKIO_SHARED_RT.block_on(async {
             let client = MockTradeApiClient { force_error: false };
 
-            let params = PlaceLimitOrderParams::builder("base_asset_example".to_string(),"quote_asset_example".to_string(),dec!(1.0),"BUY".to_string(),"expired_type_example".to_string(),).base_amount(dec!(1.0)).quote_amount(dec!(1.0)).wallet_type(String::new()).recv_window(5000).build().unwrap();
+            let params = PlaceLimitOrderParams::builder(
+                "base_asset_example".to_string(),
+                "quote_asset_example".to_string(),
+                dec!(1.0),
+                "BUY".to_string(),
+                "expired_type_example".to_string(),
+            )
+            .base_amount(dec!(1.0))
+            .quote_amount(dec!(1.0))
+            .wallet_type(String::new())
+            .recv_window(5000)
+            .build()
+            .unwrap();
 
-            let resp_json: Value = serde_json::from_str(r#"{"quoteId":"12415572564","ratio":"38163.7","inverseRatio":"0.0000262","validTimestamp":1623319461670,"toAmount":"3816.37","fromAmount":"0.1"}"#).unwrap();
-            let expected_response : models::PlaceLimitOrderResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::PlaceLimitOrderResponse");
+            let resp_json: Value =
+                serde_json::from_str(r#"{"orderId":1603680255057330400,"status":"PROCESS"}"#)
+                    .unwrap();
+            let expected_response: models::PlaceLimitOrderResponse =
+                serde_json::from_value(resp_json.clone())
+                    .expect("should parse into models::PlaceLimitOrderResponse");
 
-            let resp = client.place_limit_order(params).await.expect("Expected a response");
+            let resp = client
+                .place_limit_order(params)
+                .await
+                .expect("Expected a response");
             let data_future = resp.data();
             let actual_response = data_future.await.unwrap();
             assert_eq!(actual_response, expected_response);

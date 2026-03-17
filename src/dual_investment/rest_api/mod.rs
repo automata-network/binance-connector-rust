@@ -50,7 +50,8 @@ impl RestApi {
     ///
     /// * `endpoint` - The API endpoint to send the request to
     /// * `method` - The HTTP method to use for the request
-    /// * `params` - A map of parameters to send with the request
+    /// * `query_params` - A map of query parameters to send with the request
+    /// * `body_params` - A map of body parameters to send with the request
     ///
     /// # Returns
     ///
@@ -63,9 +64,19 @@ impl RestApi {
         &self,
         endpoint: &str,
         method: Method,
-        params: BTreeMap<String, Value>,
+        query_params: BTreeMap<String, Value>,
+        body_params: BTreeMap<String, Value>,
     ) -> anyhow::Result<RestApiResponse<R>> {
-        send_request::<R>(&self.configuration, endpoint, method, params, None, false).await
+        send_request::<R>(
+            &self.configuration,
+            endpoint,
+            method,
+            query_params,
+            body_params,
+            None,
+            false,
+        )
+        .await
     }
 
     /// Send a signed request to the API
@@ -74,7 +85,8 @@ impl RestApi {
     ///
     /// * `endpoint` - The API endpoint to send the request to
     /// * `method` - The HTTP method to use for the request
-    /// * `params` - A map of parameters to send with the request
+    /// * `query_params` - A map of query parameters to send with the request
+    /// * `body_params` - A map of body parameters to send with the request
     ///
     /// # Returns
     ///
@@ -87,9 +99,19 @@ impl RestApi {
         &self,
         endpoint: &str,
         method: Method,
-        params: BTreeMap<String, Value>,
+        query_params: BTreeMap<String, Value>,
+        body_params: BTreeMap<String, Value>,
     ) -> anyhow::Result<RestApiResponse<R>> {
-        send_request::<R>(&self.configuration, endpoint, method, params, None, true).await
+        send_request::<R>(
+            &self.configuration,
+            endpoint,
+            method,
+            query_params,
+            body_params,
+            None,
+            true,
+        )
+        .await
     }
 
     /// Get Dual Investment product list
@@ -126,7 +148,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/dual_investment/market-data/Get-Dual-Investment-product-list).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/advanced_earn/dual-investment/market-data/Get-Dual-Investment-product-list).
     ///
     pub async fn get_dual_investment_product_list(
         &self,
@@ -171,7 +193,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/dual_investment/trade/Change-Auto-Compound-status).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/advanced_earn/dual-investment/trade/Change-Auto-Compound-status).
     ///
     pub async fn change_auto_compound_status(
         &self,
@@ -216,7 +238,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/dual_investment/trade/Check-Dual-Investment-accounts).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/advanced_earn/dual-investment/trade/Check-Dual-Investment-accounts).
     ///
     pub async fn check_dual_investment_accounts(
         &self,
@@ -261,7 +283,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/dual_investment/trade/Get-Dual-Investment-positions).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/advanced_earn/dual-investment/trade/Get-Dual-Investment-positions).
     ///
     pub async fn get_dual_investment_positions(
         &self,
@@ -309,7 +331,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/dual_investment/trade/Subscribe-Dual-Investment-products).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/advanced_earn/dual-investment/trade/Subscribe-Dual-Investment-products).
     ///
     pub async fn subscribe_dual_investment_products(
         &self,

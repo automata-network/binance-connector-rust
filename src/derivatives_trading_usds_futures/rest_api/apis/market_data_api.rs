@@ -31,6 +31,10 @@ const HAS_TIME_UNIT: bool = false;
 
 #[async_trait]
 pub trait MarketDataApi: Send + Sync {
+    async fn adl_risk(
+        &self,
+        params: AdlRiskParams,
+    ) -> anyhow::Result<RestApiResponse<models::AdlRiskResponse>>;
     async fn basis(
         &self,
         params: BasisParams,
@@ -126,6 +130,10 @@ pub trait MarketDataApi: Send + Sync {
         &self,
         params: RecentTradesListParams,
     ) -> anyhow::Result<RestApiResponse<Vec<models::RecentTradesListResponseInner>>>;
+    async fn rpi_order_book(
+        &self,
+        params: RpiOrderBookParams,
+    ) -> anyhow::Result<RestApiResponse<models::RpiOrderBookResponse>>;
     async fn symbol_order_book_ticker(
         &self,
         params: SymbolOrderBookTickerParams,
@@ -155,6 +163,9 @@ pub trait MarketDataApi: Send + Sync {
         &self,
         params: TopTraderLongShortRatioPositionsParams,
     ) -> anyhow::Result<RestApiResponse<Vec<models::TopTraderLongShortRatioPositionsResponseInner>>>;
+    async fn trading_schedule(
+        &self,
+    ) -> anyhow::Result<RestApiResponse<models::TradingScheduleResponse>>;
 }
 
 #[derive(Debug, Clone)]
@@ -1055,6 +1066,29 @@ impl std::str::FromStr for TopTraderLongShortRatioPositionsPeriodEnum {
     }
 }
 
+/// Request parameters for the [`adl_risk`] operation.
+///
+/// This struct holds all of the inputs you can pass when calling
+/// [`adl_risk`](#method.adl_risk).
+#[derive(Clone, Debug, Builder, Default)]
+#[builder(pattern = "owned", build_fn(error = "ParamBuildError"))]
+pub struct AdlRiskParams {
+    ///
+    /// The `symbol` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub symbol: Option<String>,
+}
+
+impl AdlRiskParams {
+    /// Create a builder for [`adl_risk`].
+    ///
+    #[must_use]
+    pub fn builder() -> AdlRiskParamsBuilder {
+        AdlRiskParamsBuilder::default()
+    }
+}
 /// Request parameters for the [`basis`] operation.
 ///
 /// This struct holds all of the inputs you can pass when calling
@@ -1884,6 +1918,38 @@ impl RecentTradesListParams {
         RecentTradesListParamsBuilder::default().symbol(symbol)
     }
 }
+/// Request parameters for the [`rpi_order_book`] operation.
+///
+/// This struct holds all of the inputs you can pass when calling
+/// [`rpi_order_book`](#method.rpi_order_book).
+#[derive(Clone, Debug, Builder)]
+#[builder(pattern = "owned", build_fn(error = "ParamBuildError"))]
+pub struct RpiOrderBookParams {
+    ///
+    /// The `symbol` parameter.
+    ///
+    /// This field is **required.
+    #[builder(setter(into))]
+    pub symbol: String,
+    /// Default 100; max 1000
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub limit: Option<i64>,
+}
+
+impl RpiOrderBookParams {
+    /// Create a builder for [`rpi_order_book`].
+    ///
+    /// Required parameters:
+    ///
+    /// * `symbol` — String
+    ///
+    #[must_use]
+    pub fn builder(symbol: String) -> RpiOrderBookParamsBuilder {
+        RpiOrderBookParamsBuilder::default().symbol(symbol)
+    }
+}
 /// Request parameters for the [`symbol_order_book_ticker`] operation.
 ///
 /// This struct holds all of the inputs you can pass when calling
@@ -2144,6 +2210,35 @@ impl TopTraderLongShortRatioPositionsParams {
 
 #[async_trait]
 impl MarketDataApi for MarketDataApiClient {
+    async fn adl_risk(
+        &self,
+        params: AdlRiskParams,
+    ) -> anyhow::Result<RestApiResponse<models::AdlRiskResponse>> {
+        let AdlRiskParams { symbol } = params;
+
+        let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
+
+        if let Some(rw) = symbol {
+            query_params.insert("symbol".to_string(), json!(rw));
+        }
+
+        send_request::<models::AdlRiskResponse>(
+            &self.configuration,
+            "/fapi/v1/symbolAdlRisk",
+            reqwest::Method::GET,
+            query_params,
+            body_params,
+            if HAS_TIME_UNIT {
+                self.configuration.time_unit
+            } else {
+                None
+            },
+            false,
+        )
+        .await
+    }
+
     async fn basis(
         &self,
         params: BasisParams,
@@ -2158,6 +2253,7 @@ impl MarketDataApi for MarketDataApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("pair".to_string(), json!(pair));
 
@@ -2180,6 +2276,7 @@ impl MarketDataApi for MarketDataApiClient {
             "/futures/data/basis",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2194,12 +2291,14 @@ impl MarketDataApi for MarketDataApiClient {
         &self,
     ) -> anyhow::Result<RestApiResponse<models::CheckServerTimeResponse>> {
         let query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         send_request::<models::CheckServerTimeResponse>(
             &self.configuration,
             "/fapi/v1/time",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2218,6 +2317,7 @@ impl MarketDataApi for MarketDataApiClient {
         let CompositeIndexSymbolInformationParams { symbol } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = symbol {
             query_params.insert("symbol".to_string(), json!(rw));
@@ -2228,6 +2328,7 @@ impl MarketDataApi for MarketDataApiClient {
             "/fapi/v1/indexInfo",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2252,6 +2353,7 @@ impl MarketDataApi for MarketDataApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
 
@@ -2276,6 +2378,7 @@ impl MarketDataApi for MarketDataApiClient {
             "/fapi/v1/aggTrades",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2302,6 +2405,7 @@ impl MarketDataApi for MarketDataApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("pair".to_string(), json!(pair));
 
@@ -2326,6 +2430,7 @@ impl MarketDataApi for MarketDataApiClient {
             "/fapi/v1/continuousKlines",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2340,12 +2445,14 @@ impl MarketDataApi for MarketDataApiClient {
         &self,
     ) -> anyhow::Result<RestApiResponse<models::ExchangeInformationResponse>> {
         let query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         send_request::<models::ExchangeInformationResponse>(
             &self.configuration,
             "/fapi/v1/exchangeInfo",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2368,6 +2475,7 @@ impl MarketDataApi for MarketDataApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = symbol {
             query_params.insert("symbol".to_string(), json!(rw));
@@ -2390,6 +2498,7 @@ impl MarketDataApi for MarketDataApiClient {
             "/fapi/v1/fundingRate",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2404,12 +2513,14 @@ impl MarketDataApi for MarketDataApiClient {
         &self,
     ) -> anyhow::Result<RestApiResponse<Vec<models::GetFundingRateInfoResponseInner>>> {
         let query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         send_request::<Vec<models::GetFundingRateInfoResponseInner>>(
             &self.configuration,
             "/fapi/v1/fundingInfo",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2435,6 +2546,7 @@ impl MarketDataApi for MarketDataApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("pair".to_string(), json!(pair));
 
@@ -2457,6 +2569,7 @@ impl MarketDataApi for MarketDataApiClient {
             "/fapi/v1/indexPriceKlines",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2481,6 +2594,7 @@ impl MarketDataApi for MarketDataApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
 
@@ -2503,6 +2617,7 @@ impl MarketDataApi for MarketDataApiClient {
             "/fapi/v1/klines",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2526,6 +2641,7 @@ impl MarketDataApi for MarketDataApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
 
@@ -2548,6 +2664,7 @@ impl MarketDataApi for MarketDataApiClient {
             "/futures/data/globalLongShortAccountRatio",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2565,6 +2682,7 @@ impl MarketDataApi for MarketDataApiClient {
         let MarkPriceParams { symbol } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = symbol {
             query_params.insert("symbol".to_string(), json!(rw));
@@ -2575,6 +2693,7 @@ impl MarketDataApi for MarketDataApiClient {
             "/fapi/v1/premiumIndex",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2600,6 +2719,7 @@ impl MarketDataApi for MarketDataApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
 
@@ -2622,6 +2742,7 @@ impl MarketDataApi for MarketDataApiClient {
             "/fapi/v1/markPriceKlines",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2639,6 +2760,7 @@ impl MarketDataApi for MarketDataApiClient {
         let MultiAssetsModeAssetIndexParams { symbol } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = symbol {
             query_params.insert("symbol".to_string(), json!(rw));
@@ -2649,6 +2771,7 @@ impl MarketDataApi for MarketDataApiClient {
             "/fapi/v1/assetIndex",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2670,6 +2793,7 @@ impl MarketDataApi for MarketDataApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
 
@@ -2686,6 +2810,7 @@ impl MarketDataApi for MarketDataApiClient {
             "/fapi/v1/historicalTrades",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2703,6 +2828,7 @@ impl MarketDataApi for MarketDataApiClient {
         let OpenInterestParams { symbol } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
 
@@ -2711,6 +2837,7 @@ impl MarketDataApi for MarketDataApiClient {
             "/fapi/v1/openInterest",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2734,6 +2861,7 @@ impl MarketDataApi for MarketDataApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
 
@@ -2756,6 +2884,7 @@ impl MarketDataApi for MarketDataApiClient {
             "/futures/data/openInterestHist",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2773,6 +2902,7 @@ impl MarketDataApi for MarketDataApiClient {
         let OrderBookParams { symbol, limit } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
 
@@ -2785,6 +2915,7 @@ impl MarketDataApi for MarketDataApiClient {
             "/fapi/v1/depth",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2809,6 +2940,7 @@ impl MarketDataApi for MarketDataApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
 
@@ -2831,6 +2963,7 @@ impl MarketDataApi for MarketDataApiClient {
             "/fapi/v1/premiumIndexKlines",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2849,6 +2982,7 @@ impl MarketDataApi for MarketDataApiClient {
         let QuarterlyContractSettlementPriceParams { pair } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("pair".to_string(), json!(pair));
 
@@ -2857,6 +2991,7 @@ impl MarketDataApi for MarketDataApiClient {
             "/futures/data/delivery-price",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2874,6 +3009,7 @@ impl MarketDataApi for MarketDataApiClient {
         let QueryIndexPriceConstituentsParams { symbol } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
 
@@ -2882,6 +3018,7 @@ impl MarketDataApi for MarketDataApiClient {
             "/fapi/v1/constituents",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2899,6 +3036,7 @@ impl MarketDataApi for MarketDataApiClient {
         let QueryInsuranceFundBalanceSnapshotParams { symbol } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = symbol {
             query_params.insert("symbol".to_string(), json!(rw));
@@ -2909,6 +3047,7 @@ impl MarketDataApi for MarketDataApiClient {
             "/fapi/v1/insuranceBalance",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2926,6 +3065,7 @@ impl MarketDataApi for MarketDataApiClient {
         let RecentTradesListParams { symbol, limit } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
 
@@ -2938,6 +3078,38 @@ impl MarketDataApi for MarketDataApiClient {
             "/fapi/v1/trades",
             reqwest::Method::GET,
             query_params,
+            body_params,
+            if HAS_TIME_UNIT {
+                self.configuration.time_unit
+            } else {
+                None
+            },
+            false,
+        )
+        .await
+    }
+
+    async fn rpi_order_book(
+        &self,
+        params: RpiOrderBookParams,
+    ) -> anyhow::Result<RestApiResponse<models::RpiOrderBookResponse>> {
+        let RpiOrderBookParams { symbol, limit } = params;
+
+        let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
+
+        query_params.insert("symbol".to_string(), json!(symbol));
+
+        if let Some(rw) = limit {
+            query_params.insert("limit".to_string(), json!(rw));
+        }
+
+        send_request::<models::RpiOrderBookResponse>(
+            &self.configuration,
+            "/fapi/v1/rpiDepth",
+            reqwest::Method::GET,
+            query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2955,6 +3127,7 @@ impl MarketDataApi for MarketDataApiClient {
         let SymbolOrderBookTickerParams { symbol } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = symbol {
             query_params.insert("symbol".to_string(), json!(rw));
@@ -2965,6 +3138,7 @@ impl MarketDataApi for MarketDataApiClient {
             "/fapi/v1/ticker/bookTicker",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2982,6 +3156,7 @@ impl MarketDataApi for MarketDataApiClient {
         let SymbolPriceTickerParams { symbol } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = symbol {
             query_params.insert("symbol".to_string(), json!(rw));
@@ -2992,6 +3167,7 @@ impl MarketDataApi for MarketDataApiClient {
             "/fapi/v1/ticker/price",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -3009,6 +3185,7 @@ impl MarketDataApi for MarketDataApiClient {
         let SymbolPriceTickerV2Params { symbol } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = symbol {
             query_params.insert("symbol".to_string(), json!(rw));
@@ -3019,6 +3196,7 @@ impl MarketDataApi for MarketDataApiClient {
             "/fapi/v2/ticker/price",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -3042,6 +3220,7 @@ impl MarketDataApi for MarketDataApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
 
@@ -3064,6 +3243,7 @@ impl MarketDataApi for MarketDataApiClient {
             "/futures/data/takerlongshortRatio",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -3076,12 +3256,14 @@ impl MarketDataApi for MarketDataApiClient {
 
     async fn test_connectivity(&self) -> anyhow::Result<RestApiResponse<Value>> {
         let query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         send_request::<Value>(
             &self.configuration,
             "/fapi/v1/ping",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -3099,6 +3281,7 @@ impl MarketDataApi for MarketDataApiClient {
         let Ticker24hrPriceChangeStatisticsParams { symbol } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = symbol {
             query_params.insert("symbol".to_string(), json!(rw));
@@ -3109,6 +3292,7 @@ impl MarketDataApi for MarketDataApiClient {
             "/fapi/v1/ticker/24hr",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -3133,6 +3317,7 @@ impl MarketDataApi for MarketDataApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
 
@@ -3155,6 +3340,7 @@ impl MarketDataApi for MarketDataApiClient {
             "/futures/data/topLongShortAccountRatio",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -3179,6 +3365,7 @@ impl MarketDataApi for MarketDataApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
 
@@ -3201,6 +3388,29 @@ impl MarketDataApi for MarketDataApiClient {
             "/futures/data/topLongShortPositionRatio",
             reqwest::Method::GET,
             query_params,
+            body_params,
+            if HAS_TIME_UNIT {
+                self.configuration.time_unit
+            } else {
+                None
+            },
+            false,
+        )
+        .await
+    }
+
+    async fn trading_schedule(
+        &self,
+    ) -> anyhow::Result<RestApiResponse<models::TradingScheduleResponse>> {
+        let query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
+
+        send_request::<models::TradingScheduleResponse>(
+            &self.configuration,
+            "/fapi/v1/tradingSchedule",
+            reqwest::Method::GET,
+            query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -3244,14 +3454,45 @@ mod tests {
 
     #[async_trait]
     impl MarketDataApi for MockMarketDataApiClient {
+        async fn adl_risk(
+            &self,
+            _params: AdlRiskParams,
+        ) -> anyhow::Result<RestApiResponse<models::AdlRiskResponse>> {
+            if self.force_error {
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
+            }
+
+            let resp_json: Value = serde_json::from_str(
+                r#"{"symbol":"BTCUSDT","adlRisk":"low","updateTime":1597370495002}"#,
+            )
+            .unwrap();
+            let dummy_response: models::AdlRiskResponse = serde_json::from_value(resp_json.clone())
+                .expect("should parse into models::AdlRiskResponse");
+
+            let dummy = DummyRestApiResponse {
+                inner: Box::new(move || Box::pin(async move { Ok(dummy_response) })),
+                status: 200,
+                headers: HashMap::new(),
+                rate_limits: None,
+            };
+
+            Ok(dummy.into())
+        }
+
         async fn basis(
             &self,
             _params: BasisParams,
         ) -> anyhow::Result<RestApiResponse<Vec<models::BasisResponseInner>>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"indexPrice":"34400.15945055","contractType":"PERPETUAL","basisRate":"0.0004","futuresPrice":"34414.10","annualizedBasisRate":"","basis":"13.94054945","pair":"BTCUSDT","timestamp":1698742800000}]"#).unwrap();
@@ -3273,9 +3514,11 @@ mod tests {
             &self,
         ) -> anyhow::Result<RestApiResponse<models::CheckServerTimeResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"serverTime":1499827319559}"#).unwrap();
@@ -3300,9 +3543,11 @@ mod tests {
             RestApiResponse<Vec<models::CompositeIndexSymbolInformationResponseInner>>,
         > {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"symbol":"DEFIUSDT","time":1589437530011,"component":"baseAsset","baseAssetList":[{"baseAsset":"BAL","quoteAsset":"USDT","weightInQuantity":"1.04406228","weightInPercentage":"0.02783900"},{"baseAsset":"BAND","quoteAsset":"USDT","weightInQuantity":"3.53782729","weightInPercentage":"0.03935200"}]}]"#).unwrap();
@@ -3327,9 +3572,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<Vec<models::CompressedAggregateTradesListResponseInner>>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"a":26129,"p":"0.01633102","q":"4.70443515","f":27781,"l":27781,"T":1498793709153,"m":true}]"#).unwrap();
@@ -3357,9 +3604,11 @@ mod tests {
             >,
         > {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[[1607444700000,"18879.99","18900.00","18878.98","18896.13","492.363",1607444759999,"9302145.66080",1874,"385.983","7292402.33267","0"]]"#).unwrap();
@@ -3379,12 +3628,14 @@ mod tests {
             &self,
         ) -> anyhow::Result<RestApiResponse<models::ExchangeInformationResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
-            let resp_json: Value = serde_json::from_str(r#"{"exchangeFilters":[],"rateLimits":[{"interval":"MINUTE","intervalNum":1,"limit":2400,"rateLimitType":"REQUEST_WEIGHT"},{"interval":"MINUTE","intervalNum":1,"limit":1200,"rateLimitType":"ORDERS"}],"serverTime":1565613908500,"assets":[{"asset":"BTC","marginAvailable":true,"autoAssetExchange":"-0.10"},{"asset":"USDT","marginAvailable":true,"autoAssetExchange":"0"},{"asset":"BNB","marginAvailable":false,"autoAssetExchange":null}],"symbols":[{"symbol":"BLZUSDT","pair":"BLZUSDT","contractType":"PERPETUAL","deliveryDate":4133404800000,"onboardDate":1598252400000,"status":"TRADING","maintMarginPercent":"2.5000","requiredMarginPercent":"5.0000","baseAsset":"BLZ","quoteAsset":"USDT","marginAsset":"USDT","pricePrecision":5,"quantityPrecision":0,"baseAssetPrecision":8,"quotePrecision":8,"underlyingType":"COIN","underlyingSubType":["STORAGE"],"settlePlan":0,"triggerProtect":"0.15","filters":[{"filterType":"PRICE_FILTER","maxPrice":"300","minPrice":"0.0001","tickSize":"0.0001"},{"filterType":"LOT_SIZE","maxQty":"10000000","minQty":"1","stepSize":"1"},{"filterType":"MARKET_LOT_SIZE","maxQty":"590119","minQty":"1","stepSize":"1"},{"filterType":"MAX_NUM_ORDERS","limit":200},{"filterType":"MAX_NUM_ALGO_ORDERS","limit":10},{"filterType":"MIN_NOTIONAL","notional":"5.0"},{"filterType":"PERCENT_PRICE","multiplierUp":"1.1500","multiplierDown":"0.8500","multiplierDecimal":"4"}],"OrderType":["LIMIT","MARKET","STOP","STOP_MARKET","TAKE_PROFIT","TAKE_PROFIT_MARKET","TRAILING_STOP_MARKET"],"timeInForce":["GTC","IOC","FOK","GTX"],"liquidationFee":"0.010000","marketTakeBound":"0.30"}],"timezone":"UTC"}"#).unwrap();
+            let resp_json: Value = serde_json::from_str(r#"{"exchangeFilters":[],"rateLimits":[{"interval":"MINUTE","intervalNum":1,"limit":2400,"rateLimitType":"REQUEST_WEIGHT"},{"interval":"MINUTE","intervalNum":1,"limit":1200,"rateLimitType":"ORDERS"}],"serverTime":1565613908500,"assets":[{"asset":"BTC","marginAvailable":true,"autoAssetExchange":"-0.10"},{"asset":"USDT","marginAvailable":true,"autoAssetExchange":"0"},{"asset":"BNB","marginAvailable":false,"autoAssetExchange":null}],"symbols":[{"symbol":"BLZUSDT","pair":"BLZUSDT","contractType":"PERPETUAL","deliveryDate":4133404800000,"onboardDate":1598252400000,"status":"TRADING","maintMarginPercent":"2.5000","requiredMarginPercent":"5.0000","baseAsset":"BLZ","quoteAsset":"USDT","marginAsset":"USDT","pricePrecision":5,"quantityPrecision":0,"baseAssetPrecision":8,"quotePrecision":8,"underlyingType":"COIN","underlyingSubType":["STORAGE"],"settlePlan":0,"triggerProtect":"0.15","filters":[{"filterType":"PRICE_FILTER","maxPrice":"300","minPrice":"0.0001","tickSize":"0.0001"},{"filterType":"LOT_SIZE","maxQty":"10000000","minQty":"1","stepSize":"1"},{"filterType":"MARKET_LOT_SIZE","maxQty":"590119","minQty":"1","stepSize":"1"},{"filterType":"MAX_NUM_ORDERS","limit":200},{"filterType":"MIN_NOTIONAL","notional":"5.0"},{"filterType":"PERCENT_PRICE","multiplierUp":"1.1500","multiplierDown":"0.8500","multiplierDecimal":"4"}],"orderTypes":["LIMIT","MARKET","STOP","STOP_MARKET","TAKE_PROFIT","TAKE_PROFIT_MARKET","TRAILING_STOP_MARKET"],"timeInForce":["GTC","IOC","FOK","GTX"],"liquidationFee":"0.010000","marketTakeBound":"0.30"}],"timezone":"UTC"}"#).unwrap();
             let dummy_response: models::ExchangeInformationResponse =
                 serde_json::from_value(resp_json.clone())
                     .expect("should parse into models::ExchangeInformationResponse");
@@ -3405,9 +3656,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<Vec<models::GetFundingRateHistoryResponseInner>>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"symbol":"BTCUSDT","fundingRate":"-0.03750000","fundingTime":1570608000000,"markPrice":"34287.54619963"},{"symbol":"BTCUSDT","fundingRate":"0.00010000","fundingTime":1570636800000,"markPrice":"34287.54619963"}]"#).unwrap();
@@ -3429,9 +3682,11 @@ mod tests {
             &self,
         ) -> anyhow::Result<RestApiResponse<Vec<models::GetFundingRateInfoResponseInner>>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"symbol":"BLZUSDT","adjustedFundingRateCap":"0.02500000","adjustedFundingRateFloor":"-0.02500000","fundingIntervalHours":8,"disclaimer":false}]"#).unwrap();
@@ -3456,9 +3711,11 @@ mod tests {
             RestApiResponse<Vec<Vec<models::IndexPriceKlineCandlestickDataResponseItemInner>>>,
         > {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[[1591256400000,"9653.69440000","9653.69640000","9651.38600000","9651.55200000","0",1591256459999,"0",60,"0","0","0"]]"#).unwrap();
@@ -3480,9 +3737,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<Vec<Vec<models::KlineCandlestickDataResponseItemInner>>>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[[1499040000000,"0.01634790","0.80000000","0.01575800","0.01577100","148976.11427815",1499644799999,"2434.19055334",308,"1756.87402397","28.46694368","17928899.62484339"]]"#).unwrap();
@@ -3506,9 +3765,11 @@ mod tests {
             _params: LongShortRatioParams,
         ) -> anyhow::Result<RestApiResponse<Vec<models::LongShortRatioResponseInner>>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"symbol":"BTCUSDT","longShortRatio":"0.1960","longAccount":"0.6622","shortAccount":"0.3378","timestamp":"1583139600000"},{"symbol":"BTCUSDT","longShortRatio":"1.9559","longAccount":"0.6617","shortAccount":"0.3382","timestamp":"1583139900000"}]"#).unwrap();
@@ -3531,9 +3792,11 @@ mod tests {
             _params: MarkPriceParams,
         ) -> anyhow::Result<RestApiResponse<models::MarkPriceResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"symbol":"BTCUSDT","markPrice":"11793.63104562","indexPrice":"11781.80495970","estimatedSettlePrice":"11781.16138815","lastFundingRate":"0.00038246","interestRate":"0.00010000","nextFundingTime":1597392000000,"time":1597370495002}"#).unwrap();
@@ -3558,9 +3821,11 @@ mod tests {
             RestApiResponse<Vec<Vec<models::MarkPriceKlineCandlestickDataResponseItemInner>>>,
         > {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[[1591256460000,"9653.29201333","9654.56401333","9653.07367333","9653.07367333","0",1591256519999,"0",60,"0","0","0"]]"#).unwrap();
@@ -3581,9 +3846,11 @@ mod tests {
             _params: MultiAssetsModeAssetIndexParams,
         ) -> anyhow::Result<RestApiResponse<models::MultiAssetsModeAssetIndexResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"symbol":"ADAUSD","time":1635740268004,"index":"1.92957370","bidBuffer":"0.10000000","askBuffer":"0.10000000","bidRate":"1.73661633","askRate":"2.12253107","autoExchangeBidBuffer":"0.05000000","autoExchangeAskBuffer":"0.05000000","autoExchangeBidRate":"1.83309501","autoExchangeAskRate":"2.02605238"}"#).unwrap();
@@ -3606,12 +3873,14 @@ mod tests {
             _params: OldTradesLookupParams,
         ) -> anyhow::Result<RestApiResponse<Vec<models::OldTradesLookupResponseInner>>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
-            let resp_json: Value = serde_json::from_str(r#"[{"id":28457,"price":"4.00000100","qty":"12.00000000","quoteQty":"8000.00","time":1499865549590,"isBuyerMaker":true}]"#).unwrap();
+            let resp_json: Value = serde_json::from_str(r#"[{"id":28457,"price":"4.00000100","qty":"12.00000000","quoteQty":"8000.00","time":1499865549590,"isBuyerMaker":true,"isRPITrade":true}]"#).unwrap();
             let dummy_response: Vec<models::OldTradesLookupResponseInner> =
                 serde_json::from_value(resp_json.clone())
                     .expect("should parse into Vec<models::OldTradesLookupResponseInner>");
@@ -3631,9 +3900,11 @@ mod tests {
             _params: OpenInterestParams,
         ) -> anyhow::Result<RestApiResponse<models::OpenInterestResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(
@@ -3660,9 +3931,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<Vec<models::OpenInterestStatisticsResponseInner>>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"symbol":"BTCUSDT","sumOpenInterest":"20403.63700000","sumOpenInterestValue":"150570784.07809979","CMCCirculatingSupply":"165880.538","timestamp":"1583127900000"},{"symbol":"BTCUSDT","sumOpenInterest":"20401.36700000","sumOpenInterestValue":"149940752.14464448","CMCCirculatingSupply":"165900.14853","timestamp":"1583128200000"}]"#).unwrap();
@@ -3685,9 +3958,11 @@ mod tests {
             _params: OrderBookParams,
         ) -> anyhow::Result<RestApiResponse<models::OrderBookResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"lastUpdateId":1027024,"E":1589436922972,"T":1589436922959,"bids":[["4.00000000","431.00000000"]],"asks":[["4.00000200","12.00000000"]]}"#).unwrap();
@@ -3711,9 +3986,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<Vec<Vec<models::PremiumIndexKlineDataResponseItemInner>>>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[[1691603820000,"-0.00042931","-0.00023641","-0.00059406","-0.00043659","0",1691603879999,"0",12,"0","0","0"]]"#).unwrap();
@@ -3739,9 +4016,11 @@ mod tests {
             RestApiResponse<Vec<models::QuarterlyContractSettlementPriceResponseInner>>,
         > {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"deliveryTime":1695945600000,"deliveryPrice":27103},{"deliveryTime":1688083200000,"deliveryPrice":30733.6},{"deliveryTime":1680220800000,"deliveryPrice":27814.2},{"deliveryTime":1648166400000,"deliveryPrice":44066.3}]"#).unwrap();
@@ -3765,9 +4044,11 @@ mod tests {
             _params: QueryIndexPriceConstituentsParams,
         ) -> anyhow::Result<RestApiResponse<models::QueryIndexPriceConstituentsResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"symbol":"BTCUSDT","time":1745401553408,"constituents":[{"exchange":"binance","symbol":"BTCUSDT","price":"94057.03000000","weight":"0.51282051"},{"exchange":"coinbase","symbol":"BTC-USDT","price":"94140.58000000","weight":"0.15384615"},{"exchange":"gateio","symbol":"BTC_USDT","price":"94060.10000000","weight":"0.02564103"},{"exchange":"kucoin","symbol":"BTC-USDT","price":"94096.70000000","weight":"0.07692308"},{"exchange":"mxc","symbol":"BTCUSDT","price":"94057.02000000","weight":"0.07692308"},{"exchange":"bitget","symbol":"BTCUSDT","price":"94064.03000000","weight":"0.07692308"},{"exchange":"bybit","symbol":"BTCUSDT","price":"94067.90000000","weight":"0.07692308"}]}"#).unwrap();
@@ -3791,9 +4072,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::QueryInsuranceFundBalanceSnapshotResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"symbols":["BNBUSDT","BTCUSDT","BTCUSDT_250627","BTCUSDT_250926","ETHBTC","ETHUSDT","ETHUSDT_250627","ETHUSDT_250926"],"assets":[{"asset":"USDC","marginBalance":"299999998.6497832","updateTime":1745366402000},{"asset":"USDT","marginBalance":"793930579.315848","updateTime":1745366402000},{"asset":"BTC","marginBalance":"61.73143554","updateTime":1745366402000},{"asset":"BNFCR","marginBalance":"633223.99396922","updateTime":1745366402000}]}"#).unwrap();
@@ -3816,15 +4099,44 @@ mod tests {
             _params: RecentTradesListParams,
         ) -> anyhow::Result<RestApiResponse<Vec<models::RecentTradesListResponseInner>>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
-            let resp_json: Value = serde_json::from_str(r#"[{"id":28457,"price":"4.00000100","qty":"12.00000000","quoteQty":"48.00","time":1499865549590,"isBuyerMaker":true}]"#).unwrap();
+            let resp_json: Value = serde_json::from_str(r#"[{"id":28457,"price":"4.00000100","qty":"12.00000000","quoteQty":"48.00","time":1499865549590,"isBuyerMaker":true,"isRPITrade":true}]"#).unwrap();
             let dummy_response: Vec<models::RecentTradesListResponseInner> =
                 serde_json::from_value(resp_json.clone())
                     .expect("should parse into Vec<models::RecentTradesListResponseInner>");
+
+            let dummy = DummyRestApiResponse {
+                inner: Box::new(move || Box::pin(async move { Ok(dummy_response) })),
+                status: 200,
+                headers: HashMap::new(),
+                rate_limits: None,
+            };
+
+            Ok(dummy.into())
+        }
+
+        async fn rpi_order_book(
+            &self,
+            _params: RpiOrderBookParams,
+        ) -> anyhow::Result<RestApiResponse<models::RpiOrderBookResponse>> {
+            if self.force_error {
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
+            }
+
+            let resp_json: Value = serde_json::from_str(r#"{"lastUpdateId":1027024,"E":1589436922972,"T":1589436922959,"bids":[["4.00000000","431.00000000"]],"asks":[["4.00000200","12.00000000"]]}"#).unwrap();
+            let dummy_response: models::RpiOrderBookResponse =
+                serde_json::from_value(resp_json.clone())
+                    .expect("should parse into models::RpiOrderBookResponse");
 
             let dummy = DummyRestApiResponse {
                 inner: Box::new(move || Box::pin(async move { Ok(dummy_response) })),
@@ -3841,9 +4153,11 @@ mod tests {
             _params: SymbolOrderBookTickerParams,
         ) -> anyhow::Result<RestApiResponse<models::SymbolOrderBookTickerResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"symbol":"BTCUSDT","bidPrice":"4.00000000","bidQty":"431.00000000","askPrice":"4.00000200","askQty":"9.00000000","time":1589437530011}"#).unwrap();
@@ -3866,9 +4180,11 @@ mod tests {
             _params: SymbolPriceTickerParams,
         ) -> anyhow::Result<RestApiResponse<models::SymbolPriceTickerResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(
@@ -3894,9 +4210,11 @@ mod tests {
             _params: SymbolPriceTickerV2Params,
         ) -> anyhow::Result<RestApiResponse<models::SymbolPriceTickerV2Response>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(
@@ -3922,9 +4240,11 @@ mod tests {
             _params: TakerBuySellVolumeParams,
         ) -> anyhow::Result<RestApiResponse<Vec<models::TakerBuySellVolumeResponseInner>>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"buySellRatio":"1.5586","buyVol":"387.3300","sellVol":"248.5030","timestamp":"1585614900000"},{"buySellRatio":"1.3104","buyVol":"343.9290","sellVol":"248.5030","timestamp":"1583139900000"}]"#).unwrap();
@@ -3944,9 +4264,11 @@ mod tests {
 
         async fn test_connectivity(&self) -> anyhow::Result<RestApiResponse<Value>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let dummy_response = Value::Null;
@@ -3967,9 +4289,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::Ticker24hrPriceChangeStatisticsResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"symbol":"BTCUSDT","priceChange":"-94.99999800","priceChangePercent":"-95.960","weightedAvgPrice":"0.29628482","lastPrice":"4.00000200","lastQty":"200.00000000","openPrice":"99.00000000","highPrice":"100.00000000","lowPrice":"0.10000000","volume":"8913.30000000","quoteVolume":"15.30000000","openTime":1499783499040,"closeTime":1499869899040,"firstId":28385,"lastId":28460,"count":76}"#).unwrap();
@@ -3994,9 +4318,11 @@ mod tests {
             RestApiResponse<Vec<models::TopTraderLongShortRatioAccountsResponseInner>>,
         > {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"symbol":"BTCUSDT","longShortRatio":"1.8105","longAccount":"0.6442","shortAccount":"0.3558","timestamp":"1583139600000"},{"symbol":"BTCUSDT","longShortRatio":"0.5576","longAccount":"0.3580","shortAccount":"0.6420","timestamp":"1583139900000"}]"#).unwrap();
@@ -4022,9 +4348,11 @@ mod tests {
             RestApiResponse<Vec<models::TopTraderLongShortRatioPositionsResponseInner>>,
         > {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"symbol":"BTCUSDT","longShortRatio":"1.4342","longAccount":"0.5891","shortAccount":"0.4108","timestamp":"1583139600000"},{"symbol":"BTCUSDT","longShortRatio":"1.4337","longAccount":"0.3583","shortAccount":"0.6417","timestamp":"1583139900000"}]"#).unwrap();
@@ -4042,6 +4370,95 @@ mod tests {
 
             Ok(dummy.into())
         }
+
+        async fn trading_schedule(
+            &self,
+        ) -> anyhow::Result<RestApiResponse<models::TradingScheduleResponse>> {
+            if self.force_error {
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
+            }
+
+            let resp_json: Value = serde_json::from_str(r#"{"updateTime":1761286643918,"marketSchedules":{"EQUITY":{"sessions":[{"startTime":1761177600000,"endTime":1761206400000,"type":"OVERNIGHT"},{"startTime":1761206400000,"endTime":1761226200000,"type":"PRE_MARKET"}]},"COMMODITY":{"sessions":[{"startTime":1761724800000,"endTime":1761744600000,"type":"NO_TRADING"},{"startTime":1761744600000,"endTime":1761768000000,"type":"REGULAR"}]}}}"#).unwrap();
+            let dummy_response: models::TradingScheduleResponse =
+                serde_json::from_value(resp_json.clone())
+                    .expect("should parse into models::TradingScheduleResponse");
+
+            let dummy = DummyRestApiResponse {
+                inner: Box::new(move || Box::pin(async move { Ok(dummy_response) })),
+                status: 200,
+                headers: HashMap::new(),
+                rate_limits: None,
+            };
+
+            Ok(dummy.into())
+        }
+    }
+
+    #[test]
+    fn adl_risk_required_params_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockMarketDataApiClient { force_error: false };
+
+            let params = AdlRiskParams::builder().build().unwrap();
+
+            let resp_json: Value = serde_json::from_str(
+                r#"{"symbol":"BTCUSDT","adlRisk":"low","updateTime":1597370495002}"#,
+            )
+            .unwrap();
+            let expected_response: models::AdlRiskResponse =
+                serde_json::from_value(resp_json.clone())
+                    .expect("should parse into models::AdlRiskResponse");
+
+            let resp = client.adl_risk(params).await.expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn adl_risk_optional_params_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockMarketDataApiClient { force_error: false };
+
+            let params = AdlRiskParams::builder()
+                .symbol("symbol_example".to_string())
+                .build()
+                .unwrap();
+
+            let resp_json: Value = serde_json::from_str(
+                r#"{"symbol":"BTCUSDT","adlRisk":"low","updateTime":1597370495002}"#,
+            )
+            .unwrap();
+            let expected_response: models::AdlRiskResponse =
+                serde_json::from_value(resp_json.clone())
+                    .expect("should parse into models::AdlRiskResponse");
+
+            let resp = client.adl_risk(params).await.expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn adl_risk_response_error() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockMarketDataApiClient { force_error: true };
+
+            let params = AdlRiskParams::builder().build().unwrap();
+
+            match client.adl_risk(params).await {
+                Ok(_) => panic!("Expected an error"),
+                Err(err) => {
+                    assert_eq!(err.to_string(), "Connector client error: ResponseError");
+                }
+            }
+        });
     }
 
     #[test]
@@ -4324,7 +4741,7 @@ mod tests {
             let client = MockMarketDataApiClient { force_error: false };
 
 
-            let resp_json: Value = serde_json::from_str(r#"{"exchangeFilters":[],"rateLimits":[{"interval":"MINUTE","intervalNum":1,"limit":2400,"rateLimitType":"REQUEST_WEIGHT"},{"interval":"MINUTE","intervalNum":1,"limit":1200,"rateLimitType":"ORDERS"}],"serverTime":1565613908500,"assets":[{"asset":"BTC","marginAvailable":true,"autoAssetExchange":"-0.10"},{"asset":"USDT","marginAvailable":true,"autoAssetExchange":"0"},{"asset":"BNB","marginAvailable":false,"autoAssetExchange":null}],"symbols":[{"symbol":"BLZUSDT","pair":"BLZUSDT","contractType":"PERPETUAL","deliveryDate":4133404800000,"onboardDate":1598252400000,"status":"TRADING","maintMarginPercent":"2.5000","requiredMarginPercent":"5.0000","baseAsset":"BLZ","quoteAsset":"USDT","marginAsset":"USDT","pricePrecision":5,"quantityPrecision":0,"baseAssetPrecision":8,"quotePrecision":8,"underlyingType":"COIN","underlyingSubType":["STORAGE"],"settlePlan":0,"triggerProtect":"0.15","filters":[{"filterType":"PRICE_FILTER","maxPrice":"300","minPrice":"0.0001","tickSize":"0.0001"},{"filterType":"LOT_SIZE","maxQty":"10000000","minQty":"1","stepSize":"1"},{"filterType":"MARKET_LOT_SIZE","maxQty":"590119","minQty":"1","stepSize":"1"},{"filterType":"MAX_NUM_ORDERS","limit":200},{"filterType":"MAX_NUM_ALGO_ORDERS","limit":10},{"filterType":"MIN_NOTIONAL","notional":"5.0"},{"filterType":"PERCENT_PRICE","multiplierUp":"1.1500","multiplierDown":"0.8500","multiplierDecimal":"4"}],"OrderType":["LIMIT","MARKET","STOP","STOP_MARKET","TAKE_PROFIT","TAKE_PROFIT_MARKET","TRAILING_STOP_MARKET"],"timeInForce":["GTC","IOC","FOK","GTX"],"liquidationFee":"0.010000","marketTakeBound":"0.30"}],"timezone":"UTC"}"#).unwrap();
+            let resp_json: Value = serde_json::from_str(r#"{"exchangeFilters":[],"rateLimits":[{"interval":"MINUTE","intervalNum":1,"limit":2400,"rateLimitType":"REQUEST_WEIGHT"},{"interval":"MINUTE","intervalNum":1,"limit":1200,"rateLimitType":"ORDERS"}],"serverTime":1565613908500,"assets":[{"asset":"BTC","marginAvailable":true,"autoAssetExchange":"-0.10"},{"asset":"USDT","marginAvailable":true,"autoAssetExchange":"0"},{"asset":"BNB","marginAvailable":false,"autoAssetExchange":null}],"symbols":[{"symbol":"BLZUSDT","pair":"BLZUSDT","contractType":"PERPETUAL","deliveryDate":4133404800000,"onboardDate":1598252400000,"status":"TRADING","maintMarginPercent":"2.5000","requiredMarginPercent":"5.0000","baseAsset":"BLZ","quoteAsset":"USDT","marginAsset":"USDT","pricePrecision":5,"quantityPrecision":0,"baseAssetPrecision":8,"quotePrecision":8,"underlyingType":"COIN","underlyingSubType":["STORAGE"],"settlePlan":0,"triggerProtect":"0.15","filters":[{"filterType":"PRICE_FILTER","maxPrice":"300","minPrice":"0.0001","tickSize":"0.0001"},{"filterType":"LOT_SIZE","maxQty":"10000000","minQty":"1","stepSize":"1"},{"filterType":"MARKET_LOT_SIZE","maxQty":"590119","minQty":"1","stepSize":"1"},{"filterType":"MAX_NUM_ORDERS","limit":200},{"filterType":"MIN_NOTIONAL","notional":"5.0"},{"filterType":"PERCENT_PRICE","multiplierUp":"1.1500","multiplierDown":"0.8500","multiplierDecimal":"4"}],"orderTypes":["LIMIT","MARKET","STOP","STOP_MARKET","TAKE_PROFIT","TAKE_PROFIT_MARKET","TRAILING_STOP_MARKET"],"timeInForce":["GTC","IOC","FOK","GTX"],"liquidationFee":"0.010000","marketTakeBound":"0.30"}],"timezone":"UTC"}"#).unwrap();
             let expected_response : models::ExchangeInformationResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::ExchangeInformationResponse");
 
             let resp = client.exchange_information().await.expect("Expected a response");
@@ -4340,7 +4757,7 @@ mod tests {
             let client = MockMarketDataApiClient { force_error: false };
 
 
-            let resp_json: Value = serde_json::from_str(r#"{"exchangeFilters":[],"rateLimits":[{"interval":"MINUTE","intervalNum":1,"limit":2400,"rateLimitType":"REQUEST_WEIGHT"},{"interval":"MINUTE","intervalNum":1,"limit":1200,"rateLimitType":"ORDERS"}],"serverTime":1565613908500,"assets":[{"asset":"BTC","marginAvailable":true,"autoAssetExchange":"-0.10"},{"asset":"USDT","marginAvailable":true,"autoAssetExchange":"0"},{"asset":"BNB","marginAvailable":false,"autoAssetExchange":null}],"symbols":[{"symbol":"BLZUSDT","pair":"BLZUSDT","contractType":"PERPETUAL","deliveryDate":4133404800000,"onboardDate":1598252400000,"status":"TRADING","maintMarginPercent":"2.5000","requiredMarginPercent":"5.0000","baseAsset":"BLZ","quoteAsset":"USDT","marginAsset":"USDT","pricePrecision":5,"quantityPrecision":0,"baseAssetPrecision":8,"quotePrecision":8,"underlyingType":"COIN","underlyingSubType":["STORAGE"],"settlePlan":0,"triggerProtect":"0.15","filters":[{"filterType":"PRICE_FILTER","maxPrice":"300","minPrice":"0.0001","tickSize":"0.0001"},{"filterType":"LOT_SIZE","maxQty":"10000000","minQty":"1","stepSize":"1"},{"filterType":"MARKET_LOT_SIZE","maxQty":"590119","minQty":"1","stepSize":"1"},{"filterType":"MAX_NUM_ORDERS","limit":200},{"filterType":"MAX_NUM_ALGO_ORDERS","limit":10},{"filterType":"MIN_NOTIONAL","notional":"5.0"},{"filterType":"PERCENT_PRICE","multiplierUp":"1.1500","multiplierDown":"0.8500","multiplierDecimal":"4"}],"OrderType":["LIMIT","MARKET","STOP","STOP_MARKET","TAKE_PROFIT","TAKE_PROFIT_MARKET","TRAILING_STOP_MARKET"],"timeInForce":["GTC","IOC","FOK","GTX"],"liquidationFee":"0.010000","marketTakeBound":"0.30"}],"timezone":"UTC"}"#).unwrap();
+            let resp_json: Value = serde_json::from_str(r#"{"exchangeFilters":[],"rateLimits":[{"interval":"MINUTE","intervalNum":1,"limit":2400,"rateLimitType":"REQUEST_WEIGHT"},{"interval":"MINUTE","intervalNum":1,"limit":1200,"rateLimitType":"ORDERS"}],"serverTime":1565613908500,"assets":[{"asset":"BTC","marginAvailable":true,"autoAssetExchange":"-0.10"},{"asset":"USDT","marginAvailable":true,"autoAssetExchange":"0"},{"asset":"BNB","marginAvailable":false,"autoAssetExchange":null}],"symbols":[{"symbol":"BLZUSDT","pair":"BLZUSDT","contractType":"PERPETUAL","deliveryDate":4133404800000,"onboardDate":1598252400000,"status":"TRADING","maintMarginPercent":"2.5000","requiredMarginPercent":"5.0000","baseAsset":"BLZ","quoteAsset":"USDT","marginAsset":"USDT","pricePrecision":5,"quantityPrecision":0,"baseAssetPrecision":8,"quotePrecision":8,"underlyingType":"COIN","underlyingSubType":["STORAGE"],"settlePlan":0,"triggerProtect":"0.15","filters":[{"filterType":"PRICE_FILTER","maxPrice":"300","minPrice":"0.0001","tickSize":"0.0001"},{"filterType":"LOT_SIZE","maxQty":"10000000","minQty":"1","stepSize":"1"},{"filterType":"MARKET_LOT_SIZE","maxQty":"590119","minQty":"1","stepSize":"1"},{"filterType":"MAX_NUM_ORDERS","limit":200},{"filterType":"MIN_NOTIONAL","notional":"5.0"},{"filterType":"PERCENT_PRICE","multiplierUp":"1.1500","multiplierDown":"0.8500","multiplierDecimal":"4"}],"orderTypes":["LIMIT","MARKET","STOP","STOP_MARKET","TAKE_PROFIT","TAKE_PROFIT_MARKET","TRAILING_STOP_MARKET"],"timeInForce":["GTC","IOC","FOK","GTX"],"liquidationFee":"0.010000","marketTakeBound":"0.30"}],"timezone":"UTC"}"#).unwrap();
             let expected_response : models::ExchangeInformationResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::ExchangeInformationResponse");
 
             let resp = client.exchange_information().await.expect("Expected a response");
@@ -4787,7 +5204,7 @@ mod tests {
 
             let params = OldTradesLookupParams::builder("symbol_example".to_string(),).build().unwrap();
 
-            let resp_json: Value = serde_json::from_str(r#"[{"id":28457,"price":"4.00000100","qty":"12.00000000","quoteQty":"8000.00","time":1499865549590,"isBuyerMaker":true}]"#).unwrap();
+            let resp_json: Value = serde_json::from_str(r#"[{"id":28457,"price":"4.00000100","qty":"12.00000000","quoteQty":"8000.00","time":1499865549590,"isBuyerMaker":true,"isRPITrade":true}]"#).unwrap();
             let expected_response : Vec<models::OldTradesLookupResponseInner> = serde_json::from_value(resp_json.clone()).expect("should parse into Vec<models::OldTradesLookupResponseInner>");
 
             let resp = client.old_trades_lookup(params).await.expect("Expected a response");
@@ -4804,7 +5221,7 @@ mod tests {
 
             let params = OldTradesLookupParams::builder("symbol_example".to_string(),).limit(100).from_id(1).build().unwrap();
 
-            let resp_json: Value = serde_json::from_str(r#"[{"id":28457,"price":"4.00000100","qty":"12.00000000","quoteQty":"8000.00","time":1499865549590,"isBuyerMaker":true}]"#).unwrap();
+            let resp_json: Value = serde_json::from_str(r#"[{"id":28457,"price":"4.00000100","qty":"12.00000000","quoteQty":"8000.00","time":1499865549590,"isBuyerMaker":true,"isRPITrade":true}]"#).unwrap();
             let expected_response : Vec<models::OldTradesLookupResponseInner> = serde_json::from_value(resp_json.clone()).expect("should parse into Vec<models::OldTradesLookupResponseInner>");
 
             let resp = client.old_trades_lookup(params).await.expect("Expected a response");
@@ -5230,7 +5647,7 @@ mod tests {
 
             let params = RecentTradesListParams::builder("symbol_example".to_string(),).build().unwrap();
 
-            let resp_json: Value = serde_json::from_str(r#"[{"id":28457,"price":"4.00000100","qty":"12.00000000","quoteQty":"48.00","time":1499865549590,"isBuyerMaker":true}]"#).unwrap();
+            let resp_json: Value = serde_json::from_str(r#"[{"id":28457,"price":"4.00000100","qty":"12.00000000","quoteQty":"48.00","time":1499865549590,"isBuyerMaker":true,"isRPITrade":true}]"#).unwrap();
             let expected_response : Vec<models::RecentTradesListResponseInner> = serde_json::from_value(resp_json.clone()).expect("should parse into Vec<models::RecentTradesListResponseInner>");
 
             let resp = client.recent_trades_list(params).await.expect("Expected a response");
@@ -5247,7 +5664,7 @@ mod tests {
 
             let params = RecentTradesListParams::builder("symbol_example".to_string(),).limit(100).build().unwrap();
 
-            let resp_json: Value = serde_json::from_str(r#"[{"id":28457,"price":"4.00000100","qty":"12.00000000","quoteQty":"48.00","time":1499865549590,"isBuyerMaker":true}]"#).unwrap();
+            let resp_json: Value = serde_json::from_str(r#"[{"id":28457,"price":"4.00000100","qty":"12.00000000","quoteQty":"48.00","time":1499865549590,"isBuyerMaker":true,"isRPITrade":true}]"#).unwrap();
             let expected_response : Vec<models::RecentTradesListResponseInner> = serde_json::from_value(resp_json.clone()).expect("should parse into Vec<models::RecentTradesListResponseInner>");
 
             let resp = client.recent_trades_list(params).await.expect("Expected a response");
@@ -5267,6 +5684,58 @@ mod tests {
                 .unwrap();
 
             match client.recent_trades_list(params).await {
+                Ok(_) => panic!("Expected an error"),
+                Err(err) => {
+                    assert_eq!(err.to_string(), "Connector client error: ResponseError");
+                }
+            }
+        });
+    }
+
+    #[test]
+    fn rpi_order_book_required_params_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockMarketDataApiClient { force_error: false };
+
+            let params = RpiOrderBookParams::builder("symbol_example".to_string(),).build().unwrap();
+
+            let resp_json: Value = serde_json::from_str(r#"{"lastUpdateId":1027024,"E":1589436922972,"T":1589436922959,"bids":[["4.00000000","431.00000000"]],"asks":[["4.00000200","12.00000000"]]}"#).unwrap();
+            let expected_response : models::RpiOrderBookResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::RpiOrderBookResponse");
+
+            let resp = client.rpi_order_book(params).await.expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn rpi_order_book_optional_params_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockMarketDataApiClient { force_error: false };
+
+            let params = RpiOrderBookParams::builder("symbol_example".to_string(),).limit(100).build().unwrap();
+
+            let resp_json: Value = serde_json::from_str(r#"{"lastUpdateId":1027024,"E":1589436922972,"T":1589436922959,"bids":[["4.00000000","431.00000000"]],"asks":[["4.00000200","12.00000000"]]}"#).unwrap();
+            let expected_response : models::RpiOrderBookResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::RpiOrderBookResponse");
+
+            let resp = client.rpi_order_book(params).await.expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn rpi_order_book_response_error() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockMarketDataApiClient { force_error: true };
+
+            let params = RpiOrderBookParams::builder("symbol_example".to_string())
+                .build()
+                .unwrap();
+
+            match client.rpi_order_book(params).await {
                 Ok(_) => panic!("Expected an error"),
                 Err(err) => {
                     assert_eq!(err.to_string(), "Connector client error: ResponseError");
@@ -5720,6 +6189,52 @@ mod tests {
             .unwrap();
 
             match client.top_trader_long_short_ratio_positions(params).await {
+                Ok(_) => panic!("Expected an error"),
+                Err(err) => {
+                    assert_eq!(err.to_string(), "Connector client error: ResponseError");
+                }
+            }
+        });
+    }
+
+    #[test]
+    fn trading_schedule_required_params_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockMarketDataApiClient { force_error: false };
+
+
+            let resp_json: Value = serde_json::from_str(r#"{"updateTime":1761286643918,"marketSchedules":{"EQUITY":{"sessions":[{"startTime":1761177600000,"endTime":1761206400000,"type":"OVERNIGHT"},{"startTime":1761206400000,"endTime":1761226200000,"type":"PRE_MARKET"}]},"COMMODITY":{"sessions":[{"startTime":1761724800000,"endTime":1761744600000,"type":"NO_TRADING"},{"startTime":1761744600000,"endTime":1761768000000,"type":"REGULAR"}]}}}"#).unwrap();
+            let expected_response : models::TradingScheduleResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::TradingScheduleResponse");
+
+            let resp = client.trading_schedule().await.expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn trading_schedule_optional_params_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockMarketDataApiClient { force_error: false };
+
+
+            let resp_json: Value = serde_json::from_str(r#"{"updateTime":1761286643918,"marketSchedules":{"EQUITY":{"sessions":[{"startTime":1761177600000,"endTime":1761206400000,"type":"OVERNIGHT"},{"startTime":1761206400000,"endTime":1761226200000,"type":"PRE_MARKET"}]},"COMMODITY":{"sessions":[{"startTime":1761724800000,"endTime":1761744600000,"type":"NO_TRADING"},{"startTime":1761744600000,"endTime":1761768000000,"type":"REGULAR"}]}}}"#).unwrap();
+            let expected_response : models::TradingScheduleResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::TradingScheduleResponse");
+
+            let resp = client.trading_schedule().await.expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn trading_schedule_response_error() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockMarketDataApiClient { force_error: true };
+
+            match client.trading_schedule().await {
                 Ok(_) => panic!("Expected an error"),
                 Err(err) => {
                     assert_eq!(err.to_string(), "Connector client error: ResponseError");

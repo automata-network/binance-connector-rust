@@ -376,6 +376,8 @@ impl WebsocketApi {
     ///
     /// You can use `depth` request together with `<symbol>@depth` streams to maintain a local order book.
     ///
+    /// Retail Price Improvement(RPI) orders are not visible and excluded in the response message.
+    ///
     /// Weight: Adjusted based on the limit:
     /// | Limit         | Weight |
     /// | ------------- | ------ |
@@ -411,6 +413,7 @@ impl WebsocketApi {
     ///
     /// Best price/qty on the order book for a symbol or symbols.
     ///
+    /// Retail Price Improvement(RPI) orders are not visible and excluded in the response message.
     /// * If the symbol is not sent, bookTickers for all symbols will be returned in an array.
     /// * The field `X-MBX-USED-WEIGHT-1M` in response header is not accurate from this endpoint, please ignore.
     ///
@@ -476,6 +479,37 @@ impl WebsocketApi {
             .await
     }
 
+    /// Cancel Algo Order (TRADE)
+    ///
+    /// Cancel an active algo order.
+    ///
+    /// * Either `algoId` or `clientAlgoId` must be sent.
+    ///
+    /// Weight: 1
+    ///
+    /// # Arguments
+    ///
+    /// - `params`: [`CancelAlgoOrderParams`]
+    ///   The parameters for this operation.
+    ///
+    /// # Returns
+    ///
+    /// [`WebsocketApiResponse<Box<models::CancelAlgoOrderResponseResult>>`] on success.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`anyhow::Error`] if the WebSocket request fails, if parameters are invalid, or if parsing the response fails.
+    ///
+    ///
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/usds-margined-futures/trade/websocket-api/Cancel-Algo-Order).
+    ///
+    pub async fn cancel_algo_order(
+        &self,
+        params: CancelAlgoOrderParams,
+    ) -> anyhow::Result<WebsocketApiResponse<Box<models::CancelAlgoOrderResponseResult>>> {
+        self.trade_api_client.cancel_algo_order(params).await
+    }
+
     /// Cancel Order (TRADE)
     ///
     /// Cancel an active order.
@@ -521,7 +555,7 @@ impl WebsocketApi {
     ///
     /// Weight: 1 on 10s order rate limit(X-MBX-ORDER-COUNT-10S);
     /// 1 on 1min order rate limit(X-MBX-ORDER-COUNT-1M);
-    /// 1 on IP rate limit(x-mbx-used-weight-1m)
+    /// 0 on IP rate limit(x-mbx-used-weight-1m)
     ///
     /// # Arguments
     ///
@@ -544,6 +578,65 @@ impl WebsocketApi {
         params: ModifyOrderParams,
     ) -> anyhow::Result<WebsocketApiResponse<Box<models::ModifyOrderResponseResult>>> {
         self.trade_api_client.modify_order(params).await
+    }
+
+    /// New Algo Order(TRADE)
+    ///
+    /// Send in a new algo order.
+    ///
+    /// * Condition orders will be triggered when:
+    ///
+    /// * If parameter`priceProtect`is sent as true:
+    /// * when price reaches the `triggerPrice` ，the difference rate between "`MARK_PRICE`" and "`CONTRACT_PRICE`" cannot be larger than the "triggerProtect" of the symbol
+    /// * "triggerProtect" of a symbol can be got from `GET /fapi/v1/exchangeInfo`
+    ///
+    /// * `STOP`, `STOP_MARKET`:
+    /// * BUY: latest price ("`MARK_PRICE`" or "`CONTRACT_PRICE`") >= `triggerPrice`
+    /// * SELL: latest price ("`MARK_PRICE`" or "`CONTRACT_PRICE`") <= `triggerPrice`
+    /// * `TAKE_PROFIT`, `TAKE_PROFIT_MARKET`:
+    /// * BUY: latest price ("`MARK_PRICE`" or "`CONTRACT_PRICE`") <= `triggerPrice`
+    /// * SELL: latest price ("`MARK_PRICE`" or "`CONTRACT_PRICE`") >= `triggerPrice`
+    /// * `TRAILING_STOP_MARKET`:
+    /// * BUY: the lowest price after order placed <= `activatePrice`, and the latest price >= the lowest price * (1 + `callbackRate`)
+    /// * SELL: the highest price after order placed >= `activatePrice`, and the latest price <= the highest price * (1 - `callbackRate`)
+    ///
+    /// * For `TRAILING_STOP_MARKET`, if you got such error code.
+    /// ``{"code": -2021, "msg": "Order would immediately trigger."}``
+    /// means that the parameters you send do not meet the following requirements:
+    /// * BUY: `activatePrice` should be smaller than latest price.
+    /// * SELL: `activatePrice` should be larger than latest price.
+    ///
+    /// * `STOP_MARKET`, `TAKE_PROFIT_MARKET` with `closePosition`=`true`:
+    /// * Follow the same rules for condition orders.
+    /// * If triggered，**close all** current long position( if `SELL`) or current short position( if `BUY`).
+    /// * Cannot be used with `quantity` paremeter
+    /// * Cannot be used with `reduceOnly` parameter
+    /// * In Hedge Mode,cannot be used with `BUY` orders in `LONG` position side. and cannot be used with `SELL` orders in `SHORT` position side
+    /// * `selfTradePreventionMode` is only effective when `timeInForce` set to `IOC` or `GTC` or `GTD`.
+    ///
+    /// Weight: 0
+    ///
+    /// # Arguments
+    ///
+    /// - `params`: [`NewAlgoOrderParams`]
+    ///   The parameters for this operation.
+    ///
+    /// # Returns
+    ///
+    /// [`WebsocketApiResponse<Box<models::NewAlgoOrderResponseResult>>`] on success.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`anyhow::Error`] if the WebSocket request fails, if parameters are invalid, or if parsing the response fails.
+    ///
+    ///
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/usds-margined-futures/trade/websocket-api/New-Algo-Order).
+    ///
+    pub async fn new_algo_order(
+        &self,
+        params: NewAlgoOrderParams,
+    ) -> anyhow::Result<WebsocketApiResponse<Box<models::NewAlgoOrderResponseResult>>> {
+        self.trade_api_client.new_algo_order(params).await
     }
 
     /// New Order(TRADE)

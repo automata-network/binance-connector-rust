@@ -228,6 +228,7 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("positionId".to_string(), json!(position_id));
 
@@ -244,6 +245,7 @@ impl TradeApi for TradeApiClient {
             "/sapi/v1/dci/product/auto_compound/edit-status",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -261,6 +263,7 @@ impl TradeApi for TradeApiClient {
         let CheckDualInvestmentAccountsParams { recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = recv_window {
             query_params.insert("recvWindow".to_string(), json!(rw));
@@ -271,6 +274,7 @@ impl TradeApi for TradeApiClient {
             "/sapi/v1/dci/product/accounts",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -293,6 +297,7 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = status {
             query_params.insert("status".to_string(), json!(rw));
@@ -315,6 +320,7 @@ impl TradeApi for TradeApiClient {
             "/sapi/v1/dci/product/positions",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -338,6 +344,7 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("id".to_string(), json!(id));
 
@@ -356,6 +363,7 @@ impl TradeApi for TradeApiClient {
             "/sapi/v1/dci/product/subscribe",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -404,9 +412,11 @@ mod tests {
             _params: ChangeAutoCompoundStatusParams,
         ) -> anyhow::Result<RestApiResponse<models::ChangeAutoCompoundStatusResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value =
@@ -431,9 +441,11 @@ mod tests {
             _params: CheckDualInvestmentAccountsParams,
         ) -> anyhow::Result<RestApiResponse<models::CheckDualInvestmentAccountsResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(
@@ -459,9 +471,11 @@ mod tests {
             _params: GetDualInvestmentPositionsParams,
         ) -> anyhow::Result<RestApiResponse<models::GetDualInvestmentPositionsResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"total":1,"list":[{"id":"10160533","investCoin":"USDT","exercisedCoin":"BNB","subscriptionAmount":"0.5","strikePrice":"330","duration":4,"settleDate":1708416000000,"purchaseStatus":"PURCHASE_SUCCESS","apr":"0.0365","orderId":7973677530,"purchaseEndTime":1708329600000,"optionType":"PUT","autoCompoundPlan":"STANDARD"}]}"#).unwrap();
@@ -485,9 +499,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::SubscribeDualInvestmentProductsResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"positionId":10208824,"investCoin":"BNB","exercisedCoin":"USDT","subscriptionAmount":"0.002","duration":4,"autoCompoundPlan":"STANDARD","strikePrice":"380","settleDate":1709020800000,"purchaseStatus":"PURCHASE_SUCCESS","apr":"0.7397","orderId":8259117597,"purchaseTime":1708677583874,"optionType":"CALL"}"#).unwrap();

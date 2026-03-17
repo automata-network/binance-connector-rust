@@ -40,6 +40,10 @@ pub trait GeneralApi: Send + Sync {
         &self,
         params: ExchangeInfoParams,
     ) -> anyhow::Result<RestApiResponse<models::ExchangeInfoResponse>>;
+    async fn execution_rules(
+        &self,
+        params: ExecutionRulesParams,
+    ) -> anyhow::Result<RestApiResponse<models::ExecutionRulesResponse>>;
     async fn ping(&self) -> anyhow::Result<RestApiResponse<Value>>;
     async fn time(&self) -> anyhow::Result<RestApiResponse<models::TimeResponse>>;
 }
@@ -98,6 +102,49 @@ impl std::str::FromStr for ExchangeInfoSymbolStatusEnum {
     }
 }
 
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum ExecutionRulesSymbolStatusEnum {
+    #[serde(rename = "TRADING")]
+    Trading,
+    #[serde(rename = "END_OF_DAY")]
+    EndOfDay,
+    #[serde(rename = "HALT")]
+    Halt,
+    #[serde(rename = "BREAK")]
+    Break,
+    #[serde(rename = "NON_REPRESENTABLE")]
+    NonRepresentable,
+}
+
+impl ExecutionRulesSymbolStatusEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Trading => "TRADING",
+            Self::EndOfDay => "END_OF_DAY",
+            Self::Halt => "HALT",
+            Self::Break => "BREAK",
+            Self::NonRepresentable => "NON_REPRESENTABLE",
+        }
+    }
+}
+
+impl std::str::FromStr for ExecutionRulesSymbolStatusEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "TRADING" => Ok(Self::Trading),
+            "END_OF_DAY" => Ok(Self::EndOfDay),
+            "HALT" => Ok(Self::Halt),
+            "BREAK" => Ok(Self::Break),
+            "NON_REPRESENTABLE" => Ok(Self::NonRepresentable),
+            other => Err(format!("invalid ExecutionRulesSymbolStatusEnum: {}", other).into()),
+        }
+    }
+}
+
 /// Request parameters for the [`exchange_info`] operation.
 ///
 /// This struct holds all of the inputs you can pass when calling
@@ -141,6 +188,39 @@ impl ExchangeInfoParams {
         ExchangeInfoParamsBuilder::default()
     }
 }
+/// Request parameters for the [`execution_rules`] operation.
+///
+/// This struct holds all of the inputs you can pass when calling
+/// [`execution_rules`](#method.execution_rules).
+#[derive(Clone, Debug, Builder, Default)]
+#[builder(pattern = "owned", build_fn(error = "ParamBuildError"))]
+pub struct ExecutionRulesParams {
+    /// Symbol to query
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub symbol: Option<String>,
+    /// List of symbols to query
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub symbols: Option<Vec<String>>,
+    ///
+    /// The `symbol_status` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub symbol_status: Option<ExecutionRulesSymbolStatusEnum>,
+}
+
+impl ExecutionRulesParams {
+    /// Create a builder for [`execution_rules`].
+    ///
+    #[must_use]
+    pub fn builder() -> ExecutionRulesParamsBuilder {
+        ExecutionRulesParamsBuilder::default()
+    }
+}
 
 #[async_trait]
 impl GeneralApi for GeneralApiClient {
@@ -157,6 +237,7 @@ impl GeneralApi for GeneralApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = symbol {
             query_params.insert("symbol".to_string(), json!(rw));
@@ -183,6 +264,48 @@ impl GeneralApi for GeneralApiClient {
             "/api/v1/exchangeInfo",
             reqwest::Method::GET,
             query_params,
+            body_params,
+            if HAS_TIME_UNIT {
+                self.configuration.time_unit
+            } else {
+                None
+            },
+            false,
+        )
+        .await
+    }
+
+    async fn execution_rules(
+        &self,
+        params: ExecutionRulesParams,
+    ) -> anyhow::Result<RestApiResponse<models::ExecutionRulesResponse>> {
+        let ExecutionRulesParams {
+            symbol,
+            symbols,
+            symbol_status,
+        } = params;
+
+        let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
+
+        if let Some(rw) = symbol {
+            query_params.insert("symbol".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = symbols {
+            query_params.insert("symbols".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = symbol_status {
+            query_params.insert("symbolStatus".to_string(), json!(rw));
+        }
+
+        send_request::<models::ExecutionRulesResponse>(
+            &self.configuration,
+            "/api/v3/executionRules",
+            reqwest::Method::GET,
+            query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -195,12 +318,14 @@ impl GeneralApi for GeneralApiClient {
 
     async fn ping(&self) -> anyhow::Result<RestApiResponse<Value>> {
         let query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         send_request::<Value>(
             &self.configuration,
             "/api/v1/ping",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -213,12 +338,14 @@ impl GeneralApi for GeneralApiClient {
 
     async fn time(&self) -> anyhow::Result<RestApiResponse<models::TimeResponse>> {
         let query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         send_request::<models::TimeResponse>(
             &self.configuration,
             "/api/v1/time",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -267,12 +394,14 @@ mod tests {
             _params: ExchangeInfoParams,
         ) -> anyhow::Result<RestApiResponse<models::ExchangeInfoResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
-            let resp_json: Value = serde_json::from_str(r#"{"timezone":"UTC","serverTime":1565246363776,"rateLimits":[{"rateLimitType":"REQUEST_WEIGHT","interval":"MINUTE","intervalNum":1,"limit":6000},{"rateLimitType":"ORDERS","interval":"DAY","intervalNum":1,"limit":160000},{"rateLimitType":"RAW_REQUESTS","interval":"MINUTE","intervalNum":5,"limit":61000}],"exchangeFilters":[{"filterType":"PRICE_FILTER","minPrice":"0.00000100","maxPrice":"100000.00000000","tickSize":"0.00000100"},{"filterType":"PERCENT_PRICE","multiplierUp":"1.3000","multiplierDown":"0.7000","avgPriceMins":5},{"filterType":"PERCENT_PRICE_BY_SIDE","bidMultiplierUp":"1.2","bidMultiplierDown":"0.2","askMultiplierUp":"5","askMultiplierDown":"0.8","avgPriceMins":1},{"filterType":"LOT_SIZE","minQty":"0.00100000","maxQty":"100000.00000000","stepSize":"0.00100000"},{"filterType":"MIN_NOTIONAL","minNotional":"0.00100000","applyToMarket":true,"avgPriceMins":5},{"filterType":"NOTIONAL","minNotional":"10.00000000","applyMinToMarket":false,"maxNotional":"10000.00000000","applyMaxToMarket":false,"avgPriceMins":5},{"filterType":"ICEBERG_PARTS","limit":10},{"filterType":"MARKET_LOT_SIZE","minQty":"0.00100000","maxQty":"100000.00000000","stepSize":"0.00100000"},{"filterType":"MAX_NUM_ORDERS","maxNumOrders":25},{"filterType":"MAX_NUM_ALGO_ORDERS","maxNumAlgoOrders":5},{"filterType":"MAX_NUM_ICEBERG_ORDERS","maxNumIcebergOrders":5},{"filterType":"MAX_POSITION","maxPosition":"10.00000000"},{"filterType":"TRAILING_DELTA","minTrailingAboveDelta":10,"maxTrailingAboveDelta":2000,"minTrailingBelowDelta":10,"maxTrailingBelowDelta":2000},{"filterType":"MAX_NUM_ORDER_AMENDS","maxNumOrderAmends":10},{"filterType":"MAX_NUM_ORDER_LISTS","maxNumOrderLists":20},{"filterType":"EXCHANGE_MAX_NUM_ORDERS","maxNumOrders":1000},{"filterType":"EXCHANGE_MAX_NUM_ALGO_ORDERS","maxNumAlgoOrders":200},{"filterType":"EXCHANGE_MAX_NUM_ICEBERG_ORDERS","maxNumIcebergOrders":10000},{"filterType":"EXCHANGE_MAX_NUM_ORDER_LISTS","maxNumOrderLists":20}],"symbols":[{"symbol":"ETHBTC","status":"TRADING","baseAsset":"ETH","baseAssetPrecision":8,"quoteAsset":"BTC","quotePrecision":8,"quoteAssetPrecision":8,"baseCommissionPrecision":8,"quoteCommissionPrecision":8,"orderTypes":["LIMIT LIMIT_MAKER MARKET STOP_LOSS STOP_LOSS_LIMIT TAKE_PROFIT TAKE_PROFIT_LIMIT"],"icebergAllowed":true,"ocoAllowed":true,"otoAllowed":true,"quoteOrderQtyMarketAllowed":true,"allowTrailingStop":false,"cancelReplaceAllowed":false,"amendAllowed":false,"pegInstructionsAllowed":true,"isSpotTradingAllowed":true,"isMarginTradingAllowed":true,"filters":[{"filterType":"PRICE_FILTER","minPrice":"0.00000100","maxPrice":"100000.00000000","tickSize":"0.00000100"},{"filterType":"PERCENT_PRICE","multiplierUp":"1.3000","multiplierDown":"0.7000","avgPriceMins":5},{"filterType":"PERCENT_PRICE_BY_SIDE","bidMultiplierUp":"1.2","bidMultiplierDown":"0.2","askMultiplierUp":"5","askMultiplierDown":"0.8","avgPriceMins":1},{"filterType":"LOT_SIZE","minQty":"0.00100000","maxQty":"100000.00000000","stepSize":"0.00100000"},{"filterType":"MIN_NOTIONAL","minNotional":"0.00100000","applyToMarket":true,"avgPriceMins":5},{"filterType":"NOTIONAL","minNotional":"10.00000000","applyMinToMarket":false,"maxNotional":"10000.00000000","applyMaxToMarket":false,"avgPriceMins":5},{"filterType":"ICEBERG_PARTS","limit":10},{"filterType":"MARKET_LOT_SIZE","minQty":"0.00100000","maxQty":"100000.00000000","stepSize":"0.00100000"},{"filterType":"MAX_NUM_ORDERS","maxNumOrders":25},{"filterType":"MAX_NUM_ALGO_ORDERS","maxNumAlgoOrders":5},{"filterType":"MAX_NUM_ICEBERG_ORDERS","maxNumIcebergOrders":5},{"filterType":"MAX_POSITION","maxPosition":"10.00000000"},{"filterType":"TRAILING_DELTA","minTrailingAboveDelta":10,"maxTrailingAboveDelta":2000,"minTrailingBelowDelta":10,"maxTrailingBelowDelta":2000},{"filterType":"MAX_NUM_ORDER_AMENDS","maxNumOrderAmends":10},{"filterType":"MAX_NUM_ORDER_LISTS","maxNumOrderLists":20},{"filterType":"EXCHANGE_MAX_NUM_ORDERS","maxNumOrders":1000},{"filterType":"EXCHANGE_MAX_NUM_ALGO_ORDERS","maxNumAlgoOrders":200},{"filterType":"EXCHANGE_MAX_NUM_ICEBERG_ORDERS","maxNumIcebergOrders":10000},{"filterType":"EXCHANGE_MAX_NUM_ORDER_LISTS","maxNumOrderLists":20}],"permissions":[],"permissionSets":[["SPOT","MARGIN"]],"defaultSelfTradePreventionMode":"NONE","allowedSelfTradePreventionModes":["NONE"]}]}"#).unwrap();
+            let resp_json: Value = serde_json::from_str(r#"{"timezone":"UTC","serverTime":1565246363776,"rateLimits":[{"rateLimitType":"REQUEST_WEIGHT","interval":"MINUTE","intervalNum":1,"limit":6000},{"rateLimitType":"ORDERS","interval":"DAY","intervalNum":1,"limit":160000},{"rateLimitType":"RAW_REQUESTS","interval":"MINUTE","intervalNum":5,"limit":61000}],"exchangeFilters":[],"symbols":[{"symbol":"ETHBTC","status":"TRADING","baseAsset":"ETH","baseAssetPrecision":8,"quoteAsset":"BTC","quotePrecision":8,"quoteAssetPrecision":8,"baseCommissionPrecision":8,"quoteCommissionPrecision":8,"orderTypes":["LIMIT LIMIT_MAKER MARKET STOP_LOSS STOP_LOSS_LIMIT TAKE_PROFIT TAKE_PROFIT_LIMIT"],"icebergAllowed":true,"ocoAllowed":true,"otoAllowed":true,"opoAllowed":true,"quoteOrderQtyMarketAllowed":true,"allowTrailingStop":false,"cancelReplaceAllowed":false,"amendAllowed":false,"pegInstructionsAllowed":true,"isSpotTradingAllowed":true,"isMarginTradingAllowed":true,"filters":[],"permissions":[],"permissionSets":[["SPOT","MARGIN"]],"defaultSelfTradePreventionMode":"NONE","allowedSelfTradePreventionModes":["NONE"]}]}"#).unwrap();
             let dummy_response: models::ExchangeInfoResponse =
                 serde_json::from_value(resp_json.clone())
                     .expect("should parse into models::ExchangeInfoResponse");
@@ -287,11 +416,40 @@ mod tests {
             Ok(dummy.into())
         }
 
+        async fn execution_rules(
+            &self,
+            _params: ExecutionRulesParams,
+        ) -> anyhow::Result<RestApiResponse<models::ExecutionRulesResponse>> {
+            if self.force_error {
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
+            }
+
+            let resp_json: Value = serde_json::from_str(r#"{"symbolRules":[{"symbol":"BAZUSD","rules":[{"ruleType":"PRICE_RANGE","bidLimitMultUp":"1.0001","bidLimitMultDown":"0.9999","askLimitMultUp":"1.0001","askLimitMultDown":"0.9999"}]}]}"#).unwrap();
+            let dummy_response: models::ExecutionRulesResponse =
+                serde_json::from_value(resp_json.clone())
+                    .expect("should parse into models::ExecutionRulesResponse");
+
+            let dummy = DummyRestApiResponse {
+                inner: Box::new(move || Box::pin(async move { Ok(dummy_response) })),
+                status: 200,
+                headers: HashMap::new(),
+                rate_limits: None,
+            };
+
+            Ok(dummy.into())
+        }
+
         async fn ping(&self) -> anyhow::Result<RestApiResponse<Value>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let dummy_response = Value::Null;
@@ -308,9 +466,11 @@ mod tests {
 
         async fn time(&self) -> anyhow::Result<RestApiResponse<models::TimeResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"serverTime":1499827319559}"#).unwrap();
@@ -335,7 +495,7 @@ mod tests {
 
             let params = ExchangeInfoParams::builder().build().unwrap();
 
-            let resp_json: Value = serde_json::from_str(r#"{"timezone":"UTC","serverTime":1565246363776,"rateLimits":[{"rateLimitType":"REQUEST_WEIGHT","interval":"MINUTE","intervalNum":1,"limit":6000},{"rateLimitType":"ORDERS","interval":"DAY","intervalNum":1,"limit":160000},{"rateLimitType":"RAW_REQUESTS","interval":"MINUTE","intervalNum":5,"limit":61000}],"exchangeFilters":[{"filterType":"PRICE_FILTER","minPrice":"0.00000100","maxPrice":"100000.00000000","tickSize":"0.00000100"},{"filterType":"PERCENT_PRICE","multiplierUp":"1.3000","multiplierDown":"0.7000","avgPriceMins":5},{"filterType":"PERCENT_PRICE_BY_SIDE","bidMultiplierUp":"1.2","bidMultiplierDown":"0.2","askMultiplierUp":"5","askMultiplierDown":"0.8","avgPriceMins":1},{"filterType":"LOT_SIZE","minQty":"0.00100000","maxQty":"100000.00000000","stepSize":"0.00100000"},{"filterType":"MIN_NOTIONAL","minNotional":"0.00100000","applyToMarket":true,"avgPriceMins":5},{"filterType":"NOTIONAL","minNotional":"10.00000000","applyMinToMarket":false,"maxNotional":"10000.00000000","applyMaxToMarket":false,"avgPriceMins":5},{"filterType":"ICEBERG_PARTS","limit":10},{"filterType":"MARKET_LOT_SIZE","minQty":"0.00100000","maxQty":"100000.00000000","stepSize":"0.00100000"},{"filterType":"MAX_NUM_ORDERS","maxNumOrders":25},{"filterType":"MAX_NUM_ALGO_ORDERS","maxNumAlgoOrders":5},{"filterType":"MAX_NUM_ICEBERG_ORDERS","maxNumIcebergOrders":5},{"filterType":"MAX_POSITION","maxPosition":"10.00000000"},{"filterType":"TRAILING_DELTA","minTrailingAboveDelta":10,"maxTrailingAboveDelta":2000,"minTrailingBelowDelta":10,"maxTrailingBelowDelta":2000},{"filterType":"MAX_NUM_ORDER_AMENDS","maxNumOrderAmends":10},{"filterType":"MAX_NUM_ORDER_LISTS","maxNumOrderLists":20},{"filterType":"EXCHANGE_MAX_NUM_ORDERS","maxNumOrders":1000},{"filterType":"EXCHANGE_MAX_NUM_ALGO_ORDERS","maxNumAlgoOrders":200},{"filterType":"EXCHANGE_MAX_NUM_ICEBERG_ORDERS","maxNumIcebergOrders":10000},{"filterType":"EXCHANGE_MAX_NUM_ORDER_LISTS","maxNumOrderLists":20}],"symbols":[{"symbol":"ETHBTC","status":"TRADING","baseAsset":"ETH","baseAssetPrecision":8,"quoteAsset":"BTC","quotePrecision":8,"quoteAssetPrecision":8,"baseCommissionPrecision":8,"quoteCommissionPrecision":8,"orderTypes":["LIMIT LIMIT_MAKER MARKET STOP_LOSS STOP_LOSS_LIMIT TAKE_PROFIT TAKE_PROFIT_LIMIT"],"icebergAllowed":true,"ocoAllowed":true,"otoAllowed":true,"quoteOrderQtyMarketAllowed":true,"allowTrailingStop":false,"cancelReplaceAllowed":false,"amendAllowed":false,"pegInstructionsAllowed":true,"isSpotTradingAllowed":true,"isMarginTradingAllowed":true,"filters":[{"filterType":"PRICE_FILTER","minPrice":"0.00000100","maxPrice":"100000.00000000","tickSize":"0.00000100"},{"filterType":"PERCENT_PRICE","multiplierUp":"1.3000","multiplierDown":"0.7000","avgPriceMins":5},{"filterType":"PERCENT_PRICE_BY_SIDE","bidMultiplierUp":"1.2","bidMultiplierDown":"0.2","askMultiplierUp":"5","askMultiplierDown":"0.8","avgPriceMins":1},{"filterType":"LOT_SIZE","minQty":"0.00100000","maxQty":"100000.00000000","stepSize":"0.00100000"},{"filterType":"MIN_NOTIONAL","minNotional":"0.00100000","applyToMarket":true,"avgPriceMins":5},{"filterType":"NOTIONAL","minNotional":"10.00000000","applyMinToMarket":false,"maxNotional":"10000.00000000","applyMaxToMarket":false,"avgPriceMins":5},{"filterType":"ICEBERG_PARTS","limit":10},{"filterType":"MARKET_LOT_SIZE","minQty":"0.00100000","maxQty":"100000.00000000","stepSize":"0.00100000"},{"filterType":"MAX_NUM_ORDERS","maxNumOrders":25},{"filterType":"MAX_NUM_ALGO_ORDERS","maxNumAlgoOrders":5},{"filterType":"MAX_NUM_ICEBERG_ORDERS","maxNumIcebergOrders":5},{"filterType":"MAX_POSITION","maxPosition":"10.00000000"},{"filterType":"TRAILING_DELTA","minTrailingAboveDelta":10,"maxTrailingAboveDelta":2000,"minTrailingBelowDelta":10,"maxTrailingBelowDelta":2000},{"filterType":"MAX_NUM_ORDER_AMENDS","maxNumOrderAmends":10},{"filterType":"MAX_NUM_ORDER_LISTS","maxNumOrderLists":20},{"filterType":"EXCHANGE_MAX_NUM_ORDERS","maxNumOrders":1000},{"filterType":"EXCHANGE_MAX_NUM_ALGO_ORDERS","maxNumAlgoOrders":200},{"filterType":"EXCHANGE_MAX_NUM_ICEBERG_ORDERS","maxNumIcebergOrders":10000},{"filterType":"EXCHANGE_MAX_NUM_ORDER_LISTS","maxNumOrderLists":20}],"permissions":[],"permissionSets":[["SPOT","MARGIN"]],"defaultSelfTradePreventionMode":"NONE","allowedSelfTradePreventionModes":["NONE"]}]}"#).unwrap();
+            let resp_json: Value = serde_json::from_str(r#"{"timezone":"UTC","serverTime":1565246363776,"rateLimits":[{"rateLimitType":"REQUEST_WEIGHT","interval":"MINUTE","intervalNum":1,"limit":6000},{"rateLimitType":"ORDERS","interval":"DAY","intervalNum":1,"limit":160000},{"rateLimitType":"RAW_REQUESTS","interval":"MINUTE","intervalNum":5,"limit":61000}],"exchangeFilters":[],"symbols":[{"symbol":"ETHBTC","status":"TRADING","baseAsset":"ETH","baseAssetPrecision":8,"quoteAsset":"BTC","quotePrecision":8,"quoteAssetPrecision":8,"baseCommissionPrecision":8,"quoteCommissionPrecision":8,"orderTypes":["LIMIT LIMIT_MAKER MARKET STOP_LOSS STOP_LOSS_LIMIT TAKE_PROFIT TAKE_PROFIT_LIMIT"],"icebergAllowed":true,"ocoAllowed":true,"otoAllowed":true,"opoAllowed":true,"quoteOrderQtyMarketAllowed":true,"allowTrailingStop":false,"cancelReplaceAllowed":false,"amendAllowed":false,"pegInstructionsAllowed":true,"isSpotTradingAllowed":true,"isMarginTradingAllowed":true,"filters":[],"permissions":[],"permissionSets":[["SPOT","MARGIN"]],"defaultSelfTradePreventionMode":"NONE","allowedSelfTradePreventionModes":["NONE"]}]}"#).unwrap();
             let expected_response : models::ExchangeInfoResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::ExchangeInfoResponse");
 
             let resp = client.exchange_info(params).await.expect("Expected a response");
@@ -352,7 +512,7 @@ mod tests {
 
             let params = ExchangeInfoParams::builder().symbol("BNBUSDT".to_string()).symbols(["null".to_string(),].to_vec()).permissions(["null".to_string(),].to_vec()).show_permission_sets(true).symbol_status(ExchangeInfoSymbolStatusEnum::Trading).build().unwrap();
 
-            let resp_json: Value = serde_json::from_str(r#"{"timezone":"UTC","serverTime":1565246363776,"rateLimits":[{"rateLimitType":"REQUEST_WEIGHT","interval":"MINUTE","intervalNum":1,"limit":6000},{"rateLimitType":"ORDERS","interval":"DAY","intervalNum":1,"limit":160000},{"rateLimitType":"RAW_REQUESTS","interval":"MINUTE","intervalNum":5,"limit":61000}],"exchangeFilters":[{"filterType":"PRICE_FILTER","minPrice":"0.00000100","maxPrice":"100000.00000000","tickSize":"0.00000100"},{"filterType":"PERCENT_PRICE","multiplierUp":"1.3000","multiplierDown":"0.7000","avgPriceMins":5},{"filterType":"PERCENT_PRICE_BY_SIDE","bidMultiplierUp":"1.2","bidMultiplierDown":"0.2","askMultiplierUp":"5","askMultiplierDown":"0.8","avgPriceMins":1},{"filterType":"LOT_SIZE","minQty":"0.00100000","maxQty":"100000.00000000","stepSize":"0.00100000"},{"filterType":"MIN_NOTIONAL","minNotional":"0.00100000","applyToMarket":true,"avgPriceMins":5},{"filterType":"NOTIONAL","minNotional":"10.00000000","applyMinToMarket":false,"maxNotional":"10000.00000000","applyMaxToMarket":false,"avgPriceMins":5},{"filterType":"ICEBERG_PARTS","limit":10},{"filterType":"MARKET_LOT_SIZE","minQty":"0.00100000","maxQty":"100000.00000000","stepSize":"0.00100000"},{"filterType":"MAX_NUM_ORDERS","maxNumOrders":25},{"filterType":"MAX_NUM_ALGO_ORDERS","maxNumAlgoOrders":5},{"filterType":"MAX_NUM_ICEBERG_ORDERS","maxNumIcebergOrders":5},{"filterType":"MAX_POSITION","maxPosition":"10.00000000"},{"filterType":"TRAILING_DELTA","minTrailingAboveDelta":10,"maxTrailingAboveDelta":2000,"minTrailingBelowDelta":10,"maxTrailingBelowDelta":2000},{"filterType":"MAX_NUM_ORDER_AMENDS","maxNumOrderAmends":10},{"filterType":"MAX_NUM_ORDER_LISTS","maxNumOrderLists":20},{"filterType":"EXCHANGE_MAX_NUM_ORDERS","maxNumOrders":1000},{"filterType":"EXCHANGE_MAX_NUM_ALGO_ORDERS","maxNumAlgoOrders":200},{"filterType":"EXCHANGE_MAX_NUM_ICEBERG_ORDERS","maxNumIcebergOrders":10000},{"filterType":"EXCHANGE_MAX_NUM_ORDER_LISTS","maxNumOrderLists":20}],"symbols":[{"symbol":"ETHBTC","status":"TRADING","baseAsset":"ETH","baseAssetPrecision":8,"quoteAsset":"BTC","quotePrecision":8,"quoteAssetPrecision":8,"baseCommissionPrecision":8,"quoteCommissionPrecision":8,"orderTypes":["LIMIT LIMIT_MAKER MARKET STOP_LOSS STOP_LOSS_LIMIT TAKE_PROFIT TAKE_PROFIT_LIMIT"],"icebergAllowed":true,"ocoAllowed":true,"otoAllowed":true,"quoteOrderQtyMarketAllowed":true,"allowTrailingStop":false,"cancelReplaceAllowed":false,"amendAllowed":false,"pegInstructionsAllowed":true,"isSpotTradingAllowed":true,"isMarginTradingAllowed":true,"filters":[{"filterType":"PRICE_FILTER","minPrice":"0.00000100","maxPrice":"100000.00000000","tickSize":"0.00000100"},{"filterType":"PERCENT_PRICE","multiplierUp":"1.3000","multiplierDown":"0.7000","avgPriceMins":5},{"filterType":"PERCENT_PRICE_BY_SIDE","bidMultiplierUp":"1.2","bidMultiplierDown":"0.2","askMultiplierUp":"5","askMultiplierDown":"0.8","avgPriceMins":1},{"filterType":"LOT_SIZE","minQty":"0.00100000","maxQty":"100000.00000000","stepSize":"0.00100000"},{"filterType":"MIN_NOTIONAL","minNotional":"0.00100000","applyToMarket":true,"avgPriceMins":5},{"filterType":"NOTIONAL","minNotional":"10.00000000","applyMinToMarket":false,"maxNotional":"10000.00000000","applyMaxToMarket":false,"avgPriceMins":5},{"filterType":"ICEBERG_PARTS","limit":10},{"filterType":"MARKET_LOT_SIZE","minQty":"0.00100000","maxQty":"100000.00000000","stepSize":"0.00100000"},{"filterType":"MAX_NUM_ORDERS","maxNumOrders":25},{"filterType":"MAX_NUM_ALGO_ORDERS","maxNumAlgoOrders":5},{"filterType":"MAX_NUM_ICEBERG_ORDERS","maxNumIcebergOrders":5},{"filterType":"MAX_POSITION","maxPosition":"10.00000000"},{"filterType":"TRAILING_DELTA","minTrailingAboveDelta":10,"maxTrailingAboveDelta":2000,"minTrailingBelowDelta":10,"maxTrailingBelowDelta":2000},{"filterType":"MAX_NUM_ORDER_AMENDS","maxNumOrderAmends":10},{"filterType":"MAX_NUM_ORDER_LISTS","maxNumOrderLists":20},{"filterType":"EXCHANGE_MAX_NUM_ORDERS","maxNumOrders":1000},{"filterType":"EXCHANGE_MAX_NUM_ALGO_ORDERS","maxNumAlgoOrders":200},{"filterType":"EXCHANGE_MAX_NUM_ICEBERG_ORDERS","maxNumIcebergOrders":10000},{"filterType":"EXCHANGE_MAX_NUM_ORDER_LISTS","maxNumOrderLists":20}],"permissions":[],"permissionSets":[["SPOT","MARGIN"]],"defaultSelfTradePreventionMode":"NONE","allowedSelfTradePreventionModes":["NONE"]}]}"#).unwrap();
+            let resp_json: Value = serde_json::from_str(r#"{"timezone":"UTC","serverTime":1565246363776,"rateLimits":[{"rateLimitType":"REQUEST_WEIGHT","interval":"MINUTE","intervalNum":1,"limit":6000},{"rateLimitType":"ORDERS","interval":"DAY","intervalNum":1,"limit":160000},{"rateLimitType":"RAW_REQUESTS","interval":"MINUTE","intervalNum":5,"limit":61000}],"exchangeFilters":[],"symbols":[{"symbol":"ETHBTC","status":"TRADING","baseAsset":"ETH","baseAssetPrecision":8,"quoteAsset":"BTC","quotePrecision":8,"quoteAssetPrecision":8,"baseCommissionPrecision":8,"quoteCommissionPrecision":8,"orderTypes":["LIMIT LIMIT_MAKER MARKET STOP_LOSS STOP_LOSS_LIMIT TAKE_PROFIT TAKE_PROFIT_LIMIT"],"icebergAllowed":true,"ocoAllowed":true,"otoAllowed":true,"opoAllowed":true,"quoteOrderQtyMarketAllowed":true,"allowTrailingStop":false,"cancelReplaceAllowed":false,"amendAllowed":false,"pegInstructionsAllowed":true,"isSpotTradingAllowed":true,"isMarginTradingAllowed":true,"filters":[],"permissions":[],"permissionSets":[["SPOT","MARGIN"]],"defaultSelfTradePreventionMode":"NONE","allowedSelfTradePreventionModes":["NONE"]}]}"#).unwrap();
             let expected_response : models::ExchangeInfoResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::ExchangeInfoResponse");
 
             let resp = client.exchange_info(params).await.expect("Expected a response");
@@ -370,6 +530,56 @@ mod tests {
             let params = ExchangeInfoParams::builder().build().unwrap();
 
             match client.exchange_info(params).await {
+                Ok(_) => panic!("Expected an error"),
+                Err(err) => {
+                    assert_eq!(err.to_string(), "Connector client error: ResponseError");
+                }
+            }
+        });
+    }
+
+    #[test]
+    fn execution_rules_required_params_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockGeneralApiClient { force_error: false };
+
+            let params = ExecutionRulesParams::builder().build().unwrap();
+
+            let resp_json: Value = serde_json::from_str(r#"{"symbolRules":[{"symbol":"BAZUSD","rules":[{"ruleType":"PRICE_RANGE","bidLimitMultUp":"1.0001","bidLimitMultDown":"0.9999","askLimitMultUp":"1.0001","askLimitMultDown":"0.9999"}]}]}"#).unwrap();
+            let expected_response : models::ExecutionRulesResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::ExecutionRulesResponse");
+
+            let resp = client.execution_rules(params).await.expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn execution_rules_optional_params_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockGeneralApiClient { force_error: false };
+
+            let params = ExecutionRulesParams::builder().symbol("BNBUSDT".to_string()).symbols(["null".to_string(),].to_vec()).symbol_status(ExecutionRulesSymbolStatusEnum::Trading).build().unwrap();
+
+            let resp_json: Value = serde_json::from_str(r#"{"symbolRules":[{"symbol":"BAZUSD","rules":[{"ruleType":"PRICE_RANGE","bidLimitMultUp":"1.0001","bidLimitMultDown":"0.9999","askLimitMultUp":"1.0001","askLimitMultDown":"0.9999"}]}]}"#).unwrap();
+            let expected_response : models::ExecutionRulesResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::ExecutionRulesResponse");
+
+            let resp = client.execution_rules(params).await.expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn execution_rules_response_error() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockGeneralApiClient { force_error: true };
+
+            let params = ExecutionRulesParams::builder().build().unwrap();
+
+            match client.execution_rules(params).await {
                 Ok(_) => panic!("Expected an error"),
                 Err(err) => {
                     assert_eq!(err.to_string(), "Connector client error: ResponseError");

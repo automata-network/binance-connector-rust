@@ -1,6 +1,9 @@
 // Algo constants
 pub const ALGO_REST_API_PROD_URL: &str = "https://api.binance.com";
 
+// Alpha constants
+pub const ALPHA_REST_API_PROD_URL: &str = "https://www.binance.com";
+
 // C2C constants
 pub const C2C_REST_API_PROD_URL: &str = "https://api.binance.com";
 
@@ -29,18 +32,22 @@ pub const DERIVATIVES_TRADING_COIN_FUTURES_WS_STREAMS_TESTNET_URL: &str =
 pub const DERIVATIVES_TRADING_USDS_FUTURES_REST_API_PROD_URL: &str = "https://fapi.asterdex.com";
 pub const DERIVATIVES_TRADING_USDS_FUTURES_REST_API_TESTNET_URL: &str =
     "https://testnet.binancefuture.com";
-pub const DERIVATIVES_TRADING_USDS_FUTURES_WS_API_PROD_URL: &str =
-    "wss://fstream.asterdex.com";
+pub const DERIVATIVES_TRADING_USDS_FUTURES_REST_API_DEMO_URL: &str =
+    "https://demo-fapi.binance.com";
+pub const DERIVATIVES_TRADING_USDS_FUTURES_WS_API_PROD_URL: &str = "wss://fstream.asterdex.com";
 pub const DERIVATIVES_TRADING_USDS_FUTURES_WS_API_TESTNET_URL: &str =
     "wss://testnet.binancefuture.com/ws-fapi/v1";
 pub const DERIVATIVES_TRADING_USDS_FUTURES_WS_STREAMS_PROD_URL: &str = "wss://fstream.asterdex.com";
 pub const DERIVATIVES_TRADING_USDS_FUTURES_WS_STREAMS_TESTNET_URL: &str =
-    "wss://stream.binancefuture.com";
+    "wss://fstream.binancefuture.com";
 
 // Derivatives Trading (Options) constants
 pub const DERIVATIVES_TRADING_OPTIONS_REST_API_PROD_URL: &str = "https://eapi.binance.com";
-pub const DERIVATIVES_TRADING_OPTIONS_WS_STREAMS_PROD_URL: &str =
-    "wss://nbstream.binance.com/eoptions";
+pub const DERIVATIVES_TRADING_OPTIONS_REST_API_TESTNET_URL: &str =
+    "https://testnet.binancefuture.com";
+pub const DERIVATIVES_TRADING_OPTIONS_WS_STREAMS_PROD_URL: &str = "wss://fstream.binance.com";
+pub const DERIVATIVES_TRADING_OPTIONS_WS_STREAMS_TESTNET_URL: &str =
+    "wss://fstream.binancefuture.com";
 
 // Derivatives Trading (Portfolio Margin) constants
 pub const DERIVATIVES_TRADING_PORTFOLIO_MARGIN_REST_API_PROD_URL: &str = "https://papi.binance.com";
@@ -95,6 +102,7 @@ pub const SPOT_WS_API_PROD_URL: &str = "wss://sstream.asterdex.com";
 pub const SPOT_WS_API_TESTNET_URL: &str = "wss://ws-api.testnet.binance.vision/ws-api/v3";
 pub const SPOT_WS_STREAMS_PROD_URL: &str = "wss://sstream.asterdex.com";
 pub const SPOT_WS_STREAMS_TESTNET_URL: &str = "wss://stream.testnet.binance.vision";
+pub const SPOT_WS_STREAMS_DEMO_URL: &str = "wss://demo-stream.binance.com:9443";
 pub const SPOT_REST_API_MARKET_URL: &str = "https://data-api.binance.vision";
 pub const SPOT_WS_STREAMS_MARKET_URL: &str = "wss://data-stream.binance.vision";
 

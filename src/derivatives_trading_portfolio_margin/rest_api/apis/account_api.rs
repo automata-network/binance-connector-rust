@@ -1687,6 +1687,7 @@ impl AccountApi for AccountApiClient {
         let AccountBalanceParams { asset, recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = asset {
             query_params.insert("asset".to_string(), json!(rw));
@@ -1701,6 +1702,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/balance",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1718,6 +1720,7 @@ impl AccountApi for AccountApiClient {
         let AccountInformationParams { recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = recv_window {
             query_params.insert("recvWindow".to_string(), json!(rw));
@@ -1728,6 +1731,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/account",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1749,6 +1753,7 @@ impl AccountApi for AccountApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("amount".to_string(), json!(amount));
 
@@ -1763,6 +1768,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/bnb-transfer",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1783,6 +1789,7 @@ impl AccountApi for AccountApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("autoRepay".to_string(), json!(auto_repay));
 
@@ -1795,6 +1802,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/repay-futures-switch",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1816,6 +1824,7 @@ impl AccountApi for AccountApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
 
@@ -1830,6 +1839,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/cm/leverage",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1850,6 +1860,7 @@ impl AccountApi for AccountApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("dualSidePosition".to_string(), json!(dual_side_position));
 
@@ -1862,6 +1873,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/cm/positionSide/dual",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1883,6 +1895,7 @@ impl AccountApi for AccountApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
 
@@ -1897,6 +1910,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/um/leverage",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1917,6 +1931,7 @@ impl AccountApi for AccountApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("dualSidePosition".to_string(), json!(dual_side_position));
 
@@ -1929,6 +1944,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/um/positionSide/dual",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1950,6 +1966,7 @@ impl AccountApi for AccountApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = symbol {
             query_params.insert("symbol".to_string(), json!(rw));
@@ -1964,6 +1981,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/cm/leverageBracket",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1981,6 +1999,7 @@ impl AccountApi for AccountApiClient {
         let FundAutoCollectionParams { recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = recv_window {
             query_params.insert("recvWindow".to_string(), json!(rw));
@@ -1991,6 +2010,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/auto-collection",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2008,6 +2028,7 @@ impl AccountApi for AccountApiClient {
         let FundCollectionByAssetParams { asset, recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("asset".to_string(), json!(asset));
 
@@ -2020,6 +2041,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/asset-collection",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2037,6 +2059,7 @@ impl AccountApi for AccountApiClient {
         let GetAutoRepayFuturesStatusParams { recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = recv_window {
             query_params.insert("recvWindow".to_string(), json!(rw));
@@ -2047,6 +2070,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/repay-futures-switch",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2064,6 +2088,7 @@ impl AccountApi for AccountApiClient {
         let GetCmAccountDetailParams { recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = recv_window {
             query_params.insert("recvWindow".to_string(), json!(rw));
@@ -2074,6 +2099,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/cm/account",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2091,6 +2117,7 @@ impl AccountApi for AccountApiClient {
         let GetCmCurrentPositionModeParams { recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = recv_window {
             query_params.insert("recvWindow".to_string(), json!(rw));
@@ -2101,6 +2128,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/cm/positionSide/dual",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2126,6 +2154,7 @@ impl AccountApi for AccountApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = symbol {
             query_params.insert("symbol".to_string(), json!(rw));
@@ -2160,6 +2189,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/cm/income",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2182,6 +2212,7 @@ impl AccountApi for AccountApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("startTime".to_string(), json!(start_time));
 
@@ -2196,6 +2227,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/um/order/asyn",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2218,6 +2250,7 @@ impl AccountApi for AccountApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("startTime".to_string(), json!(start_time));
 
@@ -2232,6 +2265,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/um/trade/asyn",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2254,6 +2288,7 @@ impl AccountApi for AccountApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("startTime".to_string(), json!(start_time));
 
@@ -2268,6 +2303,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/um/income/asyn",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2293,6 +2329,7 @@ impl AccountApi for AccountApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = asset {
             query_params.insert("asset".to_string(), json!(rw));
@@ -2327,6 +2364,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/margin/marginInterestHistory",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2344,6 +2382,7 @@ impl AccountApi for AccountApiClient {
         let GetUmAccountDetailParams { recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = recv_window {
             query_params.insert("recvWindow".to_string(), json!(rw));
@@ -2354,6 +2393,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/um/account",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2371,6 +2411,7 @@ impl AccountApi for AccountApiClient {
         let GetUmAccountDetailV2Params { recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = recv_window {
             query_params.insert("recvWindow".to_string(), json!(rw));
@@ -2381,6 +2422,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v2/um/account",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2398,6 +2440,7 @@ impl AccountApi for AccountApiClient {
         let GetUmCurrentPositionModeParams { recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = recv_window {
             query_params.insert("recvWindow".to_string(), json!(rw));
@@ -2408,6 +2451,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/um/positionSide/dual",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2428,6 +2472,7 @@ impl AccountApi for AccountApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("downloadId".to_string(), json!(download_id));
 
@@ -2440,6 +2485,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/um/order/asyn/id",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2460,6 +2506,7 @@ impl AccountApi for AccountApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("downloadId".to_string(), json!(download_id));
 
@@ -2472,6 +2519,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/um/trade/asyn/id",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2493,6 +2541,7 @@ impl AccountApi for AccountApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("downloadId".to_string(), json!(download_id));
 
@@ -2505,6 +2554,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/um/income/asyn/id",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2530,6 +2580,7 @@ impl AccountApi for AccountApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = symbol {
             query_params.insert("symbol".to_string(), json!(rw));
@@ -2564,6 +2615,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/um/income",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2584,6 +2636,7 @@ impl AccountApi for AccountApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
 
@@ -2596,6 +2649,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/cm/commissionRate",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2616,6 +2670,7 @@ impl AccountApi for AccountApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
 
@@ -2628,6 +2683,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/um/commissionRate",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2645,6 +2701,7 @@ impl AccountApi for AccountApiClient {
         let MarginMaxBorrowParams { asset, recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("asset".to_string(), json!(asset));
 
@@ -2657,6 +2714,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/margin/maxBorrowable",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2679,6 +2737,7 @@ impl AccountApi for AccountApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = symbol {
             query_params.insert("symbol".to_string(), json!(rw));
@@ -2693,6 +2752,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/um/apiTradingStatus",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2714,6 +2774,7 @@ impl AccountApi for AccountApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = margin_asset {
             query_params.insert("marginAsset".to_string(), json!(rw));
@@ -2732,6 +2793,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/cm/positionRisk",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2758,6 +2820,7 @@ impl AccountApi for AccountApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("asset".to_string(), json!(asset));
 
@@ -2794,6 +2857,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/margin/marginLoan",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2811,6 +2875,7 @@ impl AccountApi for AccountApiClient {
         let QueryMarginMaxWithdrawParams { asset, recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("asset".to_string(), json!(asset));
 
@@ -2823,6 +2888,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/margin/maxWithdraw",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2849,6 +2915,7 @@ impl AccountApi for AccountApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("asset".to_string(), json!(asset));
 
@@ -2885,6 +2952,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/margin/repayLoan",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2912,6 +2980,7 @@ impl AccountApi for AccountApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = asset {
             query_params.insert("asset".to_string(), json!(rw));
@@ -2938,6 +3007,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/portfolio/interest-history",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT { self.configuration.time_unit } else { None },
             true
         ).await
@@ -2953,6 +3023,7 @@ impl AccountApi for AccountApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = symbol {
             query_params.insert("symbol".to_string(), json!(rw));
@@ -2967,6 +3038,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/um/positionRisk",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2989,6 +3061,7 @@ impl AccountApi for AccountApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("startTime".to_string(), json!(start_time));
 
@@ -3003,6 +3076,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/portfolio/negative-balance-exchange-record",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -3020,6 +3094,7 @@ impl AccountApi for AccountApiClient {
         let QueryUserRateLimitParams { recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = recv_window {
             query_params.insert("recvWindow".to_string(), json!(rw));
@@ -3030,6 +3105,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/rateLimit/order",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -3047,6 +3123,7 @@ impl AccountApi for AccountApiClient {
         let RepayFuturesNegativeBalanceParams { recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = recv_window {
             query_params.insert("recvWindow".to_string(), json!(rw));
@@ -3057,6 +3134,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/repay-futures-negative-balance",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -3074,6 +3152,7 @@ impl AccountApi for AccountApiClient {
         let UmFuturesAccountConfigurationParams { recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = recv_window {
             query_params.insert("recvWindow".to_string(), json!(rw));
@@ -3084,6 +3163,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/um/accountConfig",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -3105,6 +3185,7 @@ impl AccountApi for AccountApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = symbol {
             query_params.insert("symbol".to_string(), json!(rw));
@@ -3119,6 +3200,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/um/symbolConfig",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -3140,6 +3222,7 @@ impl AccountApi for AccountApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = symbol {
             query_params.insert("symbol".to_string(), json!(rw));
@@ -3154,6 +3237,7 @@ impl AccountApi for AccountApiClient {
             "/papi/v1/um/leverageBracket",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -3202,9 +3286,11 @@ mod tests {
             _params: AccountBalanceParams,
         ) -> anyhow::Result<RestApiResponse<models::AccountBalanceResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"asset":"USDT","totalWalletBalance":"122607.35137903","crossMarginAsset":"92.27530794","crossMarginBorrowed":"10.00000000","crossMarginFree":"100.00000000","crossMarginInterest":"0.72469206","crossMarginLocked":"3.00000000","umWalletBalance":"0.00000000","umUnrealizedPNL":"23.72469206","cmWalletBalance":"23.72469206","cmUnrealizedPNL":"","updateTime":1617939110373,"negativeBalance":"0"}]"#).unwrap();
@@ -3227,9 +3313,11 @@ mod tests {
             _params: AccountInformationParams,
         ) -> anyhow::Result<RestApiResponse<models::AccountInformationResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"uniMMR":"5167.92171923","accountEquity":"122607.35137903","actualEquity":"73.47428058","accountInitialMargin":"23.72469206","accountMaintMargin":"23.72469206","accountStatus":"NORMAL","virtualMaxWithdrawAmount":"1627523.32459208","totalAvailableBalance":"","totalMarginOpenLoss":"","updateTime":1657707212154}"#).unwrap();
@@ -3252,9 +3340,11 @@ mod tests {
             _params: BnbTransferParams,
         ) -> anyhow::Result<RestApiResponse<models::BnbTransferResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"tranId":100000001}"#).unwrap();
@@ -3277,9 +3367,11 @@ mod tests {
             _params: ChangeAutoRepayFuturesStatusParams,
         ) -> anyhow::Result<RestApiResponse<models::ChangeAutoRepayFuturesStatusResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"msg":"success"}"#).unwrap();
@@ -3302,9 +3394,11 @@ mod tests {
             _params: ChangeCmInitialLeverageParams,
         ) -> anyhow::Result<RestApiResponse<models::ChangeCmInitialLeverageResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value =
@@ -3329,9 +3423,11 @@ mod tests {
             _params: ChangeCmPositionModeParams,
         ) -> anyhow::Result<RestApiResponse<models::ChangeCmPositionModeResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"code":200,"msg":"success"}"#).unwrap();
@@ -3354,9 +3450,11 @@ mod tests {
             _params: ChangeUmInitialLeverageParams,
         ) -> anyhow::Result<RestApiResponse<models::ChangeUmInitialLeverageResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(
@@ -3382,9 +3480,11 @@ mod tests {
             _params: ChangeUmPositionModeParams,
         ) -> anyhow::Result<RestApiResponse<models::ChangeUmPositionModeResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"code":200,"msg":"success"}"#).unwrap();
@@ -3408,9 +3508,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<Vec<models::CmNotionalAndLeverageBracketsResponseInner>>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"symbol":"BTCUSD_PERP","brackets":[{"bracket":1,"initialLeverage":125,"qtyCap":50,"qtyFloor":0,"maintMarginRatio":0.004,"cum":0}]}]"#).unwrap();
@@ -3434,9 +3536,11 @@ mod tests {
             _params: FundAutoCollectionParams,
         ) -> anyhow::Result<RestApiResponse<models::FundAutoCollectionResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"msg":"success"}"#).unwrap();
@@ -3459,9 +3563,11 @@ mod tests {
             _params: FundCollectionByAssetParams,
         ) -> anyhow::Result<RestApiResponse<models::FundCollectionByAssetResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"msg":"success"}"#).unwrap();
@@ -3484,9 +3590,11 @@ mod tests {
             _params: GetAutoRepayFuturesStatusParams,
         ) -> anyhow::Result<RestApiResponse<models::GetAutoRepayFuturesStatusResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"autoRepay":true}"#).unwrap();
@@ -3509,9 +3617,11 @@ mod tests {
             _params: GetCmAccountDetailParams,
         ) -> anyhow::Result<RestApiResponse<models::GetCmAccountDetailResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"assets":[{"asset":"BTC","crossWalletBalance":"0.00241969","crossUnPnl":"0.00000000","maintMargin":"0.00000000","initialMargin":"0.00000000","positionInitialMargin":"0.00000000","openOrderInitialMargin":"0.00000000","updateTime":1625474304765}],"positions":[{"symbol":"BTCUSD_201225","positionAmt":"0","initialMargin":"0","maintMargin":"0","unrealizedProfit":"0.00000000","positionInitialMargin":"0","openOrderInitialMargin":"0","leverage":"125","positionSide":"BOTH","entryPrice":"0.0","maxQty":"50","updateTime":0}]}"#).unwrap();
@@ -3534,9 +3644,11 @@ mod tests {
             _params: GetCmCurrentPositionModeParams,
         ) -> anyhow::Result<RestApiResponse<models::GetCmCurrentPositionModeResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"dualSidePosition":true}"#).unwrap();
@@ -3559,9 +3671,11 @@ mod tests {
             _params: GetCmIncomeHistoryParams,
         ) -> anyhow::Result<RestApiResponse<Vec<models::GetCmIncomeHistoryResponseInner>>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"symbol":"","incomeType":"TRANSFER","income":"-0.37500000","asset":"BTC","info":"WITHDRAW","time":1570608000000,"tranId":"9689322392","tradeId":""},{"symbol":"BTCUSD_200925","incomeType":"COMMISSION","income":"-0.01000000","asset":"BTC","info":"","time":1570636800000,"tranId":"9689322392","tradeId":"2059192"}]"#).unwrap();
@@ -3585,9 +3699,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::GetDownloadIdForUmFuturesOrderHistoryResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(
@@ -3615,9 +3731,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::GetDownloadIdForUmFuturesTradeHistoryResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(
@@ -3646,9 +3764,11 @@ mod tests {
             RestApiResponse<models::GetDownloadIdForUmFuturesTransactionHistoryResponse>,
         > {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(
@@ -3676,9 +3796,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::GetMarginBorrowLoanInterestHistoryResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"rows":[{"txId":1352286576452864800,"interestAccuredTime":1672160400000,"asset":"USDT","rawAsset":"USDT","principal":"45.3313","interest":"0.00024995","interestRate":"0.00013233","type":"ON_BORROW"}],"total":1}"#).unwrap();
@@ -3701,9 +3823,11 @@ mod tests {
             _params: GetUmAccountDetailParams,
         ) -> anyhow::Result<RestApiResponse<models::GetUmAccountDetailResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"assets":[{"asset":"USDT","crossWalletBalance":"23.72469206","crossUnPnl":"0.00000000","maintMargin":"0.00000000","initialMargin":"0.00000000","positionInitialMargin":"0.00000000","openOrderInitialMargin":"0.00000000","updateTime":1625474304765}],"positions":[{"symbol":"BTCUSDT","initialMargin":"0","maintMargin":"0","unrealizedProfit":"0.00000000","positionInitialMargin":"0","openOrderInitialMargin":"0","leverage":"100","entryPrice":"0.00000","maxNotional":"250000","bidNotional":"0","askNotional":"0","positionSide":"BOTH","positionAmt":"0","updateTime":0}]}"#).unwrap();
@@ -3726,9 +3850,11 @@ mod tests {
             _params: GetUmAccountDetailV2Params,
         ) -> anyhow::Result<RestApiResponse<models::GetUmAccountDetailV2Response>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"assets":[{"asset":"USDT","crossWalletBalance":"23.72469206","crossUnPnl":"0.00000000","maintMargin":"0.00000000","initialMargin":"0.00000000","positionInitialMargin":"0.00000000","openOrderInitialMargin":"0.00000000","updateTime":1625474304765}],"positions":[{"symbol":"BTCUSDT","initialMargin":"0","maintMargin":"0","unrealizedProfit":"0.00000000","positionSide":"BOTH","positionAmt":"0","updateTime":0,"notional":"86.98650000"}]}"#).unwrap();
@@ -3751,9 +3877,11 @@ mod tests {
             _params: GetUmCurrentPositionModeParams,
         ) -> anyhow::Result<RestApiResponse<models::GetUmCurrentPositionModeResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"dualSidePosition":true}"#).unwrap();
@@ -3777,9 +3905,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::GetUmFuturesOrderDownloadLinkByIdResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"downloadId":"545923594199212032","status":"processing","url":"","s3Link":null,"notified":false,"expirationTimestamp":-1,"isExpired":null}"#).unwrap();
@@ -3803,9 +3933,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::GetUmFuturesTradeDownloadLinkByIdResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"downloadId":"545923594199212032","status":"processing","url":"","s3Link":null,"notified":false,"expirationTimestamp":-1,"isExpired":null}"#).unwrap();
@@ -3829,9 +3961,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::GetUmFuturesTransactionDownloadLinkByIdResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"downloadId":"545923594199212032","status":"processing","url":"","s3Link":null,"notified":false,"expirationTimestamp":-1,"isExpired":null}"#).unwrap();
@@ -3855,9 +3989,11 @@ mod tests {
             _params: GetUmIncomeHistoryParams,
         ) -> anyhow::Result<RestApiResponse<Vec<models::GetUmIncomeHistoryResponseInner>>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"symbol":"","incomeType":"TRANSFER","income":"-0.37500000","asset":"USDT","info":"TRANSFER","time":1570608000000,"tranId":"9689322392","tradeId":""},{"symbol":"BTCUSDT","incomeType":"COMMISSION","income":"-0.01000000","asset":"USDT","info":"COMMISSION","time":1570636800000,"tranId":"9689322392","tradeId":"2059192"}]"#).unwrap();
@@ -3880,9 +4016,11 @@ mod tests {
             _params: GetUserCommissionRateForCmParams,
         ) -> anyhow::Result<RestApiResponse<models::GetUserCommissionRateForCmResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"symbol":"BTCUSD_PERP","makerCommissionRate":"0.00015","takerCommissionRate":"0.00040"}"#).unwrap();
@@ -3905,9 +4043,11 @@ mod tests {
             _params: GetUserCommissionRateForUmParams,
         ) -> anyhow::Result<RestApiResponse<models::GetUserCommissionRateForUmResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"symbol":"BTCUSDT","makerCommissionRate":"0.0002","takerCommissionRate":"0.0004"}"#).unwrap();
@@ -3930,9 +4070,11 @@ mod tests {
             _params: MarginMaxBorrowParams,
         ) -> anyhow::Result<RestApiResponse<models::MarginMaxBorrowResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value =
@@ -3958,9 +4100,11 @@ mod tests {
             RestApiResponse<models::PortfolioMarginUmTradingQuantitativeRulesIndicatorsResponse>,
         > {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"indicators":{"BTCUSDT":[{"isLocked":true,"plannedRecoverTime":1545741270000,"indicator":"UFR","value":0.05,"triggerValue":0.995},{"isLocked":true,"plannedRecoverTime":1545741270000,"indicator":"IFER","value":0.99,"triggerValue":0.99},{"isLocked":true,"plannedRecoverTime":1545741270000,"indicator":"GCR","value":0.99,"triggerValue":0.99},{"isLocked":true,"plannedRecoverTime":1545741270000,"indicator":"DR","value":0.99,"triggerValue":0.99}],"ACCOUNT":[{"indicator":"TMV","value":10,"triggerValue":1,"plannedRecoverTime":1644919865000,"isLocked":true}]},"updateTime":1644913304748}"#).unwrap();
@@ -3982,9 +4126,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<Vec<models::QueryCmPositionInformationResponseInner>>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"symbol":"BTCUSD_201225","positionAmt":"1","entryPrice":"11707.70000003","markPrice":"11788.66626667","unRealizedProfit":"0.00005866","liquidationPrice":"6170.20509059","leverage":"125","positionSide":"LONG","updateTime":1627026881327,"maxQty":"50","notionalValue":"0.00084827"},{"symbol":"BTCUSD_201225","positionAmt":"1","entryPrice":"11707.70000003","markPrice":"11788.66626667","unRealizedProfit":"0.00005866","liquidationPrice":"6170.20509059","leverage":"125","positionSide":"LONG","updateTime":1627026881327,"maxQty":"50","notionalValue":"0.00084827"},{"symbol":"BTCUSD_201225","positionAmt":"1","entryPrice":"11707.70000003","markPrice":"11788.66626667","unRealizedProfit":"0.00005866","liquidationPrice":"6170.20509059","leverage":"125","positionSide":"LONG","updateTime":1627026881327,"maxQty":"50","notionalValue":"0.00084827"}]"#).unwrap();
@@ -4008,9 +4154,11 @@ mod tests {
             _params: QueryMarginLoanRecordParams,
         ) -> anyhow::Result<RestApiResponse<models::QueryMarginLoanRecordResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"rows":[{"txId":12807067523,"asset":"BNB","principal":"0.84624403","timestamp":1555056425000,"status":"CONFIRMED"}],"total":1}"#).unwrap();
@@ -4033,9 +4181,11 @@ mod tests {
             _params: QueryMarginMaxWithdrawParams,
         ) -> anyhow::Result<RestApiResponse<models::QueryMarginMaxWithdrawResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"amount":"60"}"#).unwrap();
@@ -4058,9 +4208,11 @@ mod tests {
             _params: QueryMarginRepayRecordParams,
         ) -> anyhow::Result<RestApiResponse<models::QueryMarginRepayRecordResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"rows":[{"amount":"14.00000000","asset":"BNB","interest":"0.01866667","principal":"13.98133333","status":"CONFIRMED","timestamp":1563438204000,"txId":2970933056}],"total":1}"#).unwrap();
@@ -4087,9 +4239,11 @@ mod tests {
             >,
         > {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"asset":"USDT","interest":"24.4440","interestAccuredTime":1670227200000,"interestRate":"0.0001164","principal":"210000"}]"#).unwrap();
@@ -4111,9 +4265,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<Vec<models::QueryUmPositionInformationResponseInner>>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"entryPrice":"0.00000","leverage":"10","markPrice":"6679.50671178","maxNotionalValue":"20000000","positionAmt":"0.000","notional":"0","symbol":"BTCUSDT","unRealizedProfit":"0.00000000","liquidationPrice":"6170.20509059","positionSide":"BOTH","updateTime":1625474304765},{"symbol":"BTCUSDT","positionAmt":"0.001","entryPrice":"22185.2","markPrice":"21123.05052574","unRealizedProfit":"-1.06214947","liquidationPrice":"6170.20509059","leverage":"4","maxNotionalValue":"100000000","positionSide":"LONG","notional":"21.12305052","updateTime":1655217461579},{"symbol":"BTCUSDT","positionAmt":"0.000","entryPrice":"0.0","markPrice":"21123.05052574","unRealizedProfit":"0.00000000","liquidationPrice":"6170.20509059","leverage":"4","maxNotionalValue":"100000000","positionSide":"SHORT","notional":"0","updateTime":0}]"#).unwrap();
@@ -4139,9 +4295,11 @@ mod tests {
             RestApiResponse<models::QueryUserNegativeBalanceAutoExchangeRecordResponse>,
         > {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"total":2,"rows":[{"startTime":1736263046841,"endTime":1736263248179,"details":[{"asset":"ETH","negativeBalance":18,"negativeMaxThreshold":5}]},{"startTime":1736184913252,"endTime":1736184965474,"details":[{"asset":"BNB","negativeBalance":1.10264488,"negativeMaxThreshold":0}]}]}"#).unwrap();
@@ -4165,9 +4323,11 @@ mod tests {
             _params: QueryUserRateLimitParams,
         ) -> anyhow::Result<RestApiResponse<Vec<models::QueryUserRateLimitResponseInner>>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(
@@ -4193,9 +4353,11 @@ mod tests {
             _params: RepayFuturesNegativeBalanceParams,
         ) -> anyhow::Result<RestApiResponse<models::RepayFuturesNegativeBalanceResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"msg":"success"}"#).unwrap();
@@ -4219,9 +4381,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::UmFuturesAccountConfigurationResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"feeTier":0,"canTrade":true,"canDeposit":true,"canWithdraw":true,"dualSidePosition":true,"updateTime":1724416653850,"multiAssetsMargin":false,"tradeGroupId":-1}"#).unwrap();
@@ -4245,9 +4409,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<Vec<models::UmFuturesSymbolConfigurationResponseInner>>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"symbol":"BTCUSDT","marginType":"CROSSED","isAutoAddMargin":"false","leverage":21,"maxNotionalValue":"1000000"}]"#).unwrap();
@@ -4272,9 +4438,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<Vec<models::UmNotionalAndLeverageBracketsResponseInner>>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"symbol":"ETHUSDT","notionalCoef":"4.0","brackets":[{"bracket":1,"initialLeverage":75,"notionalCap":10000,"notionalFloor":0,"maintMarginRatio":0.0065,"cum":0}]}]"#).unwrap();

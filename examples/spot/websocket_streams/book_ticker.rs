@@ -1,13 +1,16 @@
-// Class name: web_socket_streams_api
 use anyhow::{Context, Result};
 use tokio::time::{Duration, sleep};
 use tracing::info;
 
 use binance_sdk::config::ConfigurationWebsocketStreams;
+use binance_sdk::logger;
 use binance_sdk::spot::{SpotWsStreams, websocket_streams::BookTickerParams};
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    // Initialise logging
+    logger::init();
+
     // Build WebSocket Streams config
     let ws_streams_conf = ConfigurationWebsocketStreams::builder().build()?;
 

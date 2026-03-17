@@ -191,6 +191,7 @@ impl SoftStakingApi for SoftStakingApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = asset {
             query_params.insert("asset".to_string(), json!(rw));
@@ -213,6 +214,7 @@ impl SoftStakingApi for SoftStakingApiClient {
             "/sapi/v1/soft-staking/list",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -237,6 +239,7 @@ impl SoftStakingApi for SoftStakingApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = asset {
             query_params.insert("asset".to_string(), json!(rw));
@@ -267,6 +270,7 @@ impl SoftStakingApi for SoftStakingApiClient {
             "/sapi/v1/soft-staking/history/rewardsRecord",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -287,6 +291,7 @@ impl SoftStakingApi for SoftStakingApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("softStaking".to_string(), json!(soft_staking));
 
@@ -299,6 +304,7 @@ impl SoftStakingApi for SoftStakingApiClient {
             "/sapi/v1/soft-staking/set",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -347,9 +353,11 @@ mod tests {
             _params: GetSoftStakingProductListParams,
         ) -> anyhow::Result<RestApiResponse<models::GetSoftStakingProductListResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"status":true,"totalRewardsUsdt":"3.09827182","rows":[{"asset":"BNB","minAmount":"0.5","maxCap":"1000","apr":"0.0015","stakedAmount":"2.14","totalProfit":"0.00171234"},{"asset":"SUI","minAmount":"100","maxCap":"50000","apr":"0.01","stakedAmount":"100","totalProfit":"0.1"}],"total":2}"#).unwrap();
@@ -372,9 +380,11 @@ mod tests {
             _params: GetSoftStakingRewardsHistoryParams,
         ) -> anyhow::Result<RestApiResponse<models::GetSoftStakingRewardsHistoryResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"rows":[{"asset":"BNB","rewards":"0.00000557","rewardAsset":"BNB","avgAmount":"2.14","time":1754007978000},{"asset":"SUI","rewards":"0.00274257","rewardAsset":"SUI","avgAmount":"100","time":1754007978000}],"total":2}"#).unwrap();
@@ -397,9 +407,11 @@ mod tests {
             _params: SetSoftStakingParams,
         ) -> anyhow::Result<RestApiResponse<models::SetSoftStakingResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"success":true}"#).unwrap();

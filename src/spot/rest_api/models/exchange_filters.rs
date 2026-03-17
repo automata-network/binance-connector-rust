@@ -20,119 +20,21 @@
 use crate::spot::rest_api::models;
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
-pub struct ExchangeFilters {
-    #[serde(rename = "filterType", skip_serializing_if = "Option::is_none")]
-    pub filter_type: Option<String>,
-    #[serde(rename = "minPrice", skip_serializing_if = "Option::is_none")]
-    pub min_price: Option<String>,
-    #[serde(rename = "maxPrice", skip_serializing_if = "Option::is_none")]
-    pub max_price: Option<String>,
-    #[serde(rename = "tickSize", skip_serializing_if = "Option::is_none")]
-    pub tick_size: Option<String>,
-    #[serde(rename = "multiplierUp", skip_serializing_if = "Option::is_none")]
-    pub multiplier_up: Option<String>,
-    #[serde(rename = "multiplierDown", skip_serializing_if = "Option::is_none")]
-    pub multiplier_down: Option<String>,
-    #[serde(rename = "avgPriceMins", skip_serializing_if = "Option::is_none")]
-    pub avg_price_mins: Option<i64>,
-    #[serde(rename = "bidMultiplierUp", skip_serializing_if = "Option::is_none")]
-    pub bid_multiplier_up: Option<String>,
-    #[serde(rename = "bidMultiplierDown", skip_serializing_if = "Option::is_none")]
-    pub bid_multiplier_down: Option<String>,
-    #[serde(rename = "askMultiplierUp", skip_serializing_if = "Option::is_none")]
-    pub ask_multiplier_up: Option<String>,
-    #[serde(rename = "askMultiplierDown", skip_serializing_if = "Option::is_none")]
-    pub ask_multiplier_down: Option<String>,
-    #[serde(rename = "minQty", skip_serializing_if = "Option::is_none")]
-    pub min_qty: Option<String>,
-    #[serde(rename = "maxQty", skip_serializing_if = "Option::is_none")]
-    pub max_qty: Option<String>,
-    #[serde(rename = "stepSize", skip_serializing_if = "Option::is_none")]
-    pub step_size: Option<String>,
-    #[serde(rename = "minNotional", skip_serializing_if = "Option::is_none")]
-    pub min_notional: Option<String>,
-    #[serde(rename = "applyToMarket", skip_serializing_if = "Option::is_none")]
-    pub apply_to_market: Option<bool>,
-    #[serde(rename = "applyMinToMarket", skip_serializing_if = "Option::is_none")]
-    pub apply_min_to_market: Option<bool>,
-    #[serde(rename = "maxNotional", skip_serializing_if = "Option::is_none")]
-    pub max_notional: Option<String>,
-    #[serde(rename = "applyMaxToMarket", skip_serializing_if = "Option::is_none")]
-    pub apply_max_to_market: Option<bool>,
-    #[serde(rename = "limit", skip_serializing_if = "Option::is_none")]
-    pub limit: Option<i64>,
-    #[serde(rename = "maxNumOrders", skip_serializing_if = "Option::is_none")]
-    pub max_num_orders: Option<i64>,
-    #[serde(rename = "maxNumAlgoOrders", skip_serializing_if = "Option::is_none")]
-    pub max_num_algo_orders: Option<i64>,
-    #[serde(
-        rename = "maxNumIcebergOrders",
-        skip_serializing_if = "Option::is_none"
-    )]
-    pub max_num_iceberg_orders: Option<i64>,
-    #[serde(rename = "maxPosition", skip_serializing_if = "Option::is_none")]
-    pub max_position: Option<String>,
-    #[serde(
-        rename = "minTrailingAboveDelta",
-        skip_serializing_if = "Option::is_none"
-    )]
-    pub min_trailing_above_delta: Option<i64>,
-    #[serde(
-        rename = "maxTrailingAboveDelta",
-        skip_serializing_if = "Option::is_none"
-    )]
-    pub max_trailing_above_delta: Option<i64>,
-    #[serde(
-        rename = "minTrailingBelowDelta",
-        skip_serializing_if = "Option::is_none"
-    )]
-    pub min_trailing_below_delta: Option<i64>,
-    #[serde(
-        rename = "maxTrailingBelowDelta",
-        skip_serializing_if = "Option::is_none"
-    )]
-    pub max_trailing_below_delta: Option<i64>,
-    #[serde(rename = "maxNumOrderAmends", skip_serializing_if = "Option::is_none")]
-    pub max_num_order_amends: Option<i64>,
-    #[serde(rename = "maxNumOrderLists", skip_serializing_if = "Option::is_none")]
-    pub max_num_order_lists: Option<i64>,
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "filterType")]
+pub enum ExchangeFilters {
+    #[serde(rename = "EXCHANGE_MAX_NUM_ORDERS")]
+    ExchangeMaxNumOrders(Box<models::ExchangeMaxNumOrdersFilter>),
+    #[serde(rename = "EXCHANGE_MAX_NUM_ALGO_ORDERS")]
+    ExchangeMaxNumAlgoOrders(Box<models::ExchangeMaxNumAlgoOrdersFilter>),
+    #[serde(rename = "EXCHANGE_MAX_NUM_ICEBERG_ORDERS")]
+    ExchangeMaxNumIcebergOrders(Box<models::ExchangeMaxNumIcebergOrdersFilter>),
+    #[serde(rename = "EXCHANGE_MAX_NUM_ORDER_LISTS")]
+    ExchangeMaxNumOrderLists(Box<models::ExchangeMaxNumOrderListsFilter>),
 }
 
-impl ExchangeFilters {
-    #[must_use]
-    pub fn new() -> ExchangeFilters {
-        ExchangeFilters {
-            filter_type: None,
-            min_price: None,
-            max_price: None,
-            tick_size: None,
-            multiplier_up: None,
-            multiplier_down: None,
-            avg_price_mins: None,
-            bid_multiplier_up: None,
-            bid_multiplier_down: None,
-            ask_multiplier_up: None,
-            ask_multiplier_down: None,
-            min_qty: None,
-            max_qty: None,
-            step_size: None,
-            min_notional: None,
-            apply_to_market: None,
-            apply_min_to_market: None,
-            max_notional: None,
-            apply_max_to_market: None,
-            limit: None,
-            max_num_orders: None,
-            max_num_algo_orders: None,
-            max_num_iceberg_orders: None,
-            max_position: None,
-            min_trailing_above_delta: None,
-            max_trailing_above_delta: None,
-            min_trailing_below_delta: None,
-            max_trailing_below_delta: None,
-            max_num_order_amends: None,
-            max_num_order_lists: None,
-        }
+impl Default for ExchangeFilters {
+    fn default() -> Self {
+        Self::ExchangeMaxNumOrders(Default::default())
     }
 }

@@ -120,7 +120,7 @@ pub struct GetInterestHistoryParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub isolated_symbol: Option<String>,
-    /// 只支持查询最近90天的数据
+    /// Only supports querying data from the past 90 days.
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -253,7 +253,7 @@ pub struct QueryBorrowRepayRecordsInMarginAccountParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub tx_id: Option<i64>,
-    /// 只支持查询最近90天的数据
+    /// Only supports querying data from the past 90 days.
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -311,7 +311,7 @@ pub struct QueryMarginInterestRateHistoryParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub vip_level: Option<i64>,
-    /// 只支持查询最近90天的数据
+    /// Only supports querying data from the past 90 days.
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -392,6 +392,7 @@ impl BorrowRepayApi for BorrowRepayApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("assets".to_string(), json!(assets));
 
@@ -402,6 +403,7 @@ impl BorrowRepayApi for BorrowRepayApiClient {
             "/sapi/v1/margin/next-hourly-interest-rate",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -427,6 +429,7 @@ impl BorrowRepayApi for BorrowRepayApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = asset {
             query_params.insert("asset".to_string(), json!(rw));
@@ -461,6 +464,7 @@ impl BorrowRepayApi for BorrowRepayApiClient {
             "/sapi/v1/margin/interestHistory",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -485,6 +489,7 @@ impl BorrowRepayApi for BorrowRepayApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("asset".to_string(), json!(asset));
 
@@ -505,6 +510,7 @@ impl BorrowRepayApi for BorrowRepayApiClient {
             "/sapi/v1/margin/borrow-repay",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -533,8 +539,7 @@ impl BorrowRepayApi for BorrowRepayApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
-
-        query_params.insert("type".to_string(), json!(r#type));
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = asset {
             query_params.insert("asset".to_string(), json!(rw));
@@ -564,6 +569,8 @@ impl BorrowRepayApi for BorrowRepayApiClient {
             query_params.insert("size".to_string(), json!(rw));
         }
 
+        query_params.insert("type".to_string(), json!(r#type));
+
         if let Some(rw) = recv_window {
             query_params.insert("recvWindow".to_string(), json!(rw));
         }
@@ -573,6 +580,7 @@ impl BorrowRepayApi for BorrowRepayApiClient {
             "/sapi/v1/margin/borrow-repay",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -597,6 +605,7 @@ impl BorrowRepayApi for BorrowRepayApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("asset".to_string(), json!(asset));
 
@@ -621,6 +630,7 @@ impl BorrowRepayApi for BorrowRepayApiClient {
             "/sapi/v1/margin/interestRateHistory",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -642,6 +652,7 @@ impl BorrowRepayApi for BorrowRepayApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("asset".to_string(), json!(asset));
 
@@ -658,6 +669,7 @@ impl BorrowRepayApi for BorrowRepayApiClient {
             "/sapi/v1/margin/maxBorrowable",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -707,9 +719,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<Vec<models::GetFutureHourlyInterestRateResponseInner>>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"asset":"BTC","nextHourlyInterestRate":"0.00000571"},{"asset":"ETH","nextHourlyInterestRate":"0.00000578"}]"#).unwrap();
@@ -733,9 +747,11 @@ mod tests {
             _params: GetInterestHistoryParams,
         ) -> anyhow::Result<RestApiResponse<models::GetInterestHistoryResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"rows":[{"txId":1352286576452864800,"interestAccuredTime":1672160400000,"asset":"USDT","rawAsset":"USDT","principal":"45.3313","interest":"0.00024995","interestRate":"0.00013233","type":"ON_BORROW","isolatedSymbol":"BNBUSDT"}],"total":1}"#).unwrap();
@@ -758,9 +774,11 @@ mod tests {
             _params: MarginAccountBorrowRepayParams,
         ) -> anyhow::Result<RestApiResponse<models::MarginAccountBorrowRepayResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"tranId":100000001}"#).unwrap();
@@ -784,9 +802,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::QueryBorrowRepayRecordsInMarginAccountResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"rows":[{"type":"AUTO","isolatedSymbol":"BNBUSDT","amount":"14.00000000","asset":"BNB","interest":"0.01866667","principal":"13.98133333","status":"CONFIRMED","timestamp":1563438204000,"txId":2970933056}],"total":1}"#).unwrap();
@@ -811,9 +831,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<Vec<models::QueryMarginInterestRateHistoryResponseInner>>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"asset":"BTC","dailyInterestRate":"0.00025000","timestamp":1611544731000,"vipLevel":1},{"asset":"BTC","dailyInterestRate":"0.00035000","timestamp":1610248118000,"vipLevel":1}]"#).unwrap();
@@ -837,9 +859,11 @@ mod tests {
             _params: QueryMaxBorrowParams,
         ) -> anyhow::Result<RestApiResponse<models::QueryMaxBorrowResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value =

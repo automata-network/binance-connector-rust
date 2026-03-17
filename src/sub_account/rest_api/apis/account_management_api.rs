@@ -365,6 +365,7 @@ impl AccountManagementApi for AccountManagementApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("subAccountString".to_string(), json!(sub_account_string));
 
@@ -377,6 +378,7 @@ impl AccountManagementApi for AccountManagementApiClient {
             "/sapi/v1/sub-account/virtualSubAccount",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -394,6 +396,7 @@ impl AccountManagementApi for AccountManagementApiClient {
         let EnableFuturesForSubAccountParams { email, recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("email".to_string(), json!(email));
 
@@ -406,6 +409,7 @@ impl AccountManagementApi for AccountManagementApiClient {
             "/sapi/v1/sub-account/futures/enable",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -423,6 +427,7 @@ impl AccountManagementApi for AccountManagementApiClient {
         let EnableOptionsForSubAccountParams { email, recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("email".to_string(), json!(email));
 
@@ -435,6 +440,7 @@ impl AccountManagementApi for AccountManagementApiClient {
             "/sapi/v1/sub-account/eoptions/enable",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -456,6 +462,7 @@ impl AccountManagementApi for AccountManagementApiClient {
         let GetFuturesPositionRiskOfSubAccountParams { email, recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("email".to_string(), json!(email));
 
@@ -470,6 +477,7 @@ impl AccountManagementApi for AccountManagementApiClient {
             "/sapi/v1/sub-account/futures/positionRisk",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -491,6 +499,7 @@ impl AccountManagementApi for AccountManagementApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("email".to_string(), json!(email));
 
@@ -505,6 +514,7 @@ impl AccountManagementApi for AccountManagementApiClient {
             "/sapi/v2/sub-account/futures/positionRisk",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -524,6 +534,7 @@ impl AccountManagementApi for AccountManagementApiClient {
         let GetSubAccountsStatusOnMarginOrFuturesParams { email, recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = email {
             query_params.insert("email".to_string(), json!(rw));
@@ -538,6 +549,7 @@ impl AccountManagementApi for AccountManagementApiClient {
             "/sapi/v1/sub-account/status",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -561,6 +573,7 @@ impl AccountManagementApi for AccountManagementApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = email {
             query_params.insert("email".to_string(), json!(rw));
@@ -587,6 +600,7 @@ impl AccountManagementApi for AccountManagementApiClient {
             "/sapi/v1/sub-account/list",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -604,6 +618,7 @@ impl AccountManagementApi for AccountManagementApiClient {
         let QuerySubAccountTransactionStatisticsParams { email, recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = email {
             query_params.insert("email".to_string(), json!(rw));
@@ -618,6 +633,7 @@ impl AccountManagementApi for AccountManagementApiClient {
             "/sapi/v1/sub-account/transaction-statistics",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -666,9 +682,11 @@ mod tests {
             _params: CreateAVirtualSubAccountParams,
         ) -> anyhow::Result<RestApiResponse<models::CreateAVirtualSubAccountResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value =
@@ -692,9 +710,11 @@ mod tests {
             _params: EnableFuturesForSubAccountParams,
         ) -> anyhow::Result<RestApiResponse<models::EnableFuturesForSubAccountResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value =
@@ -719,9 +739,11 @@ mod tests {
             _params: EnableOptionsForSubAccountParams,
         ) -> anyhow::Result<RestApiResponse<models::EnableOptionsForSubAccountResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value =
@@ -750,9 +772,11 @@ mod tests {
             >,
         > {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"entryPrice":"9975.12000","leverage":"50","maxNotional":"1000000","liquidationPrice":"7963.54","markPrice":"9973.50770517","positionAmount":"0.010","symbol":"BTCUSDT","unrealizedProfit":"-0.01612295"}]"#).unwrap();
@@ -774,9 +798,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::GetFuturesPositionRiskOfSubAccountV2Response>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"futurePositionRiskVos":[{"entryPrice":"9975.12000","leverage":"50","maxNotional":"1000000","liquidationPrice":"7963.54","markPrice":"9973.50770517","positionAmount":"0.010","symbol":"BTCUSDT","unrealizedProfit":"-0.01612295"}],"deliveryPositionRiskVos":[{"entryPrice":"9975.12000","markPrice":"9973.50770517","leverage":"20","isolated":"false","isolatedWallet":"9973.50770517","isolatedMargin":"0.00000000","isAutoAddMargin":"false","positionSide":"BOTH","positionAmount":"1.230","symbol":"BTCUSD_201225","unrealizedProfit":"-0.01612295"}]}"#).unwrap();
@@ -802,9 +828,11 @@ mod tests {
             RestApiResponse<Vec<models::GetSubAccountsStatusOnMarginOrFuturesResponseInner>>,
         > {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"email":"123@test.com","isSubUserEnabled":true,"isUserActive":true,"insertTime":1570791523523,"isMarginEnabled":true,"isFutureEnabled":true,"mobile":1570791523523}]"#).unwrap();
@@ -825,9 +853,11 @@ mod tests {
             _params: QuerySubAccountListParams,
         ) -> anyhow::Result<RestApiResponse<models::QuerySubAccountListResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"subAccounts":[{"subUserId":123456,"email":"testsub@gmail.com","remark":"remark","isFreeze":false,"createTime":1544433328000,"isManagedSubAccount":false,"isAssetManagementSubAccount":false},{"subUserId":1234567,"email":"virtual@oxebmvfonoemail.com","remark":"remarks","isFreeze":false,"createTime":1544433328000,"isManagedSubAccount":false,"isAssetManagementSubAccount":false}]}"#).unwrap();
@@ -851,9 +881,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::QuerySubAccountTransactionStatisticsResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"recent30BtcTotal":"0","recent30BtcFuturesTotal":"0","recent30BtcMarginTotal":"0","recent30BusdTotal":"0","recent30BusdFuturesTotal":"0","recent30BusdMarginTotal":"0","tradeInfoVos":[{"userId":1000138138384,"btc":0,"btcFutures":0,"btcMargin":0,"busd":0,"busdFutures":0,"busdMargin":0,"date":1676851200000},{"userId":1000138138384,"btc":0,"btcFutures":0,"btcMargin":0,"busd":0,"busdFutures":0,"busdMargin":0,"date":1677110400000},{"userId":1000138138384,"btc":0,"btcFutures":0,"btcMargin":0,"busd":0,"busdFutures":0,"busdMargin":0,"date":1677369600000}]}"#).unwrap();

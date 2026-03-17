@@ -43,6 +43,14 @@ pub trait TradeApi: Send + Sync {
         &self,
         params: AutoCancelAllOpenOrdersParams,
     ) -> anyhow::Result<RestApiResponse<models::AutoCancelAllOpenOrdersResponse>>;
+    async fn cancel_algo_order(
+        &self,
+        params: CancelAlgoOrderParams,
+    ) -> anyhow::Result<RestApiResponse<models::CancelAlgoOrderResponse>>;
+    async fn cancel_all_algo_open_orders(
+        &self,
+        params: CancelAllAlgoOpenOrdersParams,
+    ) -> anyhow::Result<RestApiResponse<models::CancelAllAlgoOpenOrdersResponse>>;
     async fn cancel_all_open_orders(
         &self,
         params: CancelAllOpenOrdersParams,
@@ -71,10 +79,18 @@ pub trait TradeApi: Send + Sync {
         &self,
         params: ChangePositionModeParams,
     ) -> anyhow::Result<RestApiResponse<models::ChangePositionModeResponse>>;
+    async fn current_all_algo_open_orders(
+        &self,
+        params: CurrentAllAlgoOpenOrdersParams,
+    ) -> anyhow::Result<RestApiResponse<Vec<models::CurrentAllAlgoOpenOrdersResponseInner>>>;
     async fn current_all_open_orders(
         &self,
         params: CurrentAllOpenOrdersParams,
     ) -> anyhow::Result<RestApiResponse<Vec<models::AllOrdersResponseInner>>>;
+    async fn futures_tradfi_perps_contract(
+        &self,
+        params: FuturesTradfiPerpsContractParams,
+    ) -> anyhow::Result<RestApiResponse<models::FuturesTradfiPerpsContractResponse>>;
     async fn get_order_modify_history(
         &self,
         params: GetOrderModifyHistoryParams,
@@ -95,6 +111,10 @@ pub trait TradeApi: Send + Sync {
         &self,
         params: ModifyOrderParams,
     ) -> anyhow::Result<RestApiResponse<models::ModifyOrderResponse>>;
+    async fn new_algo_order(
+        &self,
+        params: NewAlgoOrderParams,
+    ) -> anyhow::Result<RestApiResponse<models::NewAlgoOrderResponse>>;
     async fn new_order(
         &self,
         params: NewOrderParams,
@@ -119,6 +139,14 @@ pub trait TradeApi: Send + Sync {
         &self,
         params: PositionInformationV3Params,
     ) -> anyhow::Result<RestApiResponse<Vec<models::PositionInformationV3ResponseInner>>>;
+    async fn query_algo_order(
+        &self,
+        params: QueryAlgoOrderParams,
+    ) -> anyhow::Result<RestApiResponse<models::QueryAlgoOrderResponse>>;
+    async fn query_all_algo_orders(
+        &self,
+        params: QueryAllAlgoOrdersParams,
+    ) -> anyhow::Result<RestApiResponse<Vec<models::QueryAllAlgoOrdersResponseInner>>>;
     async fn query_current_open_order(
         &self,
         params: QueryCurrentOpenOrderParams,
@@ -310,6 +338,277 @@ impl std::str::FromStr for ModifyOrderPriceMatchEnum {
 
 #[allow(non_camel_case_types)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum NewAlgoOrderSideEnum {
+    #[serde(rename = "BUY")]
+    Buy,
+    #[serde(rename = "SELL")]
+    Sell,
+}
+
+impl NewAlgoOrderSideEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Buy => "BUY",
+            Self::Sell => "SELL",
+        }
+    }
+}
+
+impl std::str::FromStr for NewAlgoOrderSideEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "BUY" => Ok(Self::Buy),
+            "SELL" => Ok(Self::Sell),
+            other => Err(format!("invalid NewAlgoOrderSideEnum: {}", other).into()),
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum NewAlgoOrderPositionSideEnum {
+    #[serde(rename = "BOTH")]
+    Both,
+    #[serde(rename = "LONG")]
+    Long,
+    #[serde(rename = "SHORT")]
+    Short,
+}
+
+impl NewAlgoOrderPositionSideEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Both => "BOTH",
+            Self::Long => "LONG",
+            Self::Short => "SHORT",
+        }
+    }
+}
+
+impl std::str::FromStr for NewAlgoOrderPositionSideEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "BOTH" => Ok(Self::Both),
+            "LONG" => Ok(Self::Long),
+            "SHORT" => Ok(Self::Short),
+            other => Err(format!("invalid NewAlgoOrderPositionSideEnum: {}", other).into()),
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum NewAlgoOrderTimeInForceEnum {
+    #[serde(rename = "GTC")]
+    Gtc,
+    #[serde(rename = "IOC")]
+    Ioc,
+    #[serde(rename = "FOK")]
+    Fok,
+    #[serde(rename = "GTX")]
+    Gtx,
+    #[serde(rename = "GTD")]
+    Gtd,
+    #[serde(rename = "RPI")]
+    Rpi,
+}
+
+impl NewAlgoOrderTimeInForceEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Gtc => "GTC",
+            Self::Ioc => "IOC",
+            Self::Fok => "FOK",
+            Self::Gtx => "GTX",
+            Self::Gtd => "GTD",
+            Self::Rpi => "RPI",
+        }
+    }
+}
+
+impl std::str::FromStr for NewAlgoOrderTimeInForceEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "GTC" => Ok(Self::Gtc),
+            "IOC" => Ok(Self::Ioc),
+            "FOK" => Ok(Self::Fok),
+            "GTX" => Ok(Self::Gtx),
+            "GTD" => Ok(Self::Gtd),
+            "RPI" => Ok(Self::Rpi),
+            other => Err(format!("invalid NewAlgoOrderTimeInForceEnum: {}", other).into()),
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum NewAlgoOrderWorkingTypeEnum {
+    #[serde(rename = "MARK_PRICE")]
+    MarkPrice,
+    #[serde(rename = "CONTRACT_PRICE")]
+    ContractPrice,
+}
+
+impl NewAlgoOrderWorkingTypeEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::MarkPrice => "MARK_PRICE",
+            Self::ContractPrice => "CONTRACT_PRICE",
+        }
+    }
+}
+
+impl std::str::FromStr for NewAlgoOrderWorkingTypeEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "MARK_PRICE" => Ok(Self::MarkPrice),
+            "CONTRACT_PRICE" => Ok(Self::ContractPrice),
+            other => Err(format!("invalid NewAlgoOrderWorkingTypeEnum: {}", other).into()),
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum NewAlgoOrderPriceMatchEnum {
+    #[serde(rename = "NONE")]
+    None,
+    #[serde(rename = "OPPONENT")]
+    Opponent,
+    #[serde(rename = "OPPONENT_5")]
+    Opponent5,
+    #[serde(rename = "OPPONENT_10")]
+    Opponent10,
+    #[serde(rename = "OPPONENT_20")]
+    Opponent20,
+    #[serde(rename = "QUEUE")]
+    Queue,
+    #[serde(rename = "QUEUE_5")]
+    Queue5,
+    #[serde(rename = "QUEUE_10")]
+    Queue10,
+    #[serde(rename = "QUEUE_20")]
+    Queue20,
+}
+
+impl NewAlgoOrderPriceMatchEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::None => "NONE",
+            Self::Opponent => "OPPONENT",
+            Self::Opponent5 => "OPPONENT_5",
+            Self::Opponent10 => "OPPONENT_10",
+            Self::Opponent20 => "OPPONENT_20",
+            Self::Queue => "QUEUE",
+            Self::Queue5 => "QUEUE_5",
+            Self::Queue10 => "QUEUE_10",
+            Self::Queue20 => "QUEUE_20",
+        }
+    }
+}
+
+impl std::str::FromStr for NewAlgoOrderPriceMatchEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "NONE" => Ok(Self::None),
+            "OPPONENT" => Ok(Self::Opponent),
+            "OPPONENT_5" => Ok(Self::Opponent5),
+            "OPPONENT_10" => Ok(Self::Opponent10),
+            "OPPONENT_20" => Ok(Self::Opponent20),
+            "QUEUE" => Ok(Self::Queue),
+            "QUEUE_5" => Ok(Self::Queue5),
+            "QUEUE_10" => Ok(Self::Queue10),
+            "QUEUE_20" => Ok(Self::Queue20),
+            other => Err(format!("invalid NewAlgoOrderPriceMatchEnum: {}", other).into()),
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum NewAlgoOrderNewOrderRespTypeEnum {
+    #[serde(rename = "ACK")]
+    Ack,
+    #[serde(rename = "RESULT")]
+    Result,
+}
+
+impl NewAlgoOrderNewOrderRespTypeEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Ack => "ACK",
+            Self::Result => "RESULT",
+        }
+    }
+}
+
+impl std::str::FromStr for NewAlgoOrderNewOrderRespTypeEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "ACK" => Ok(Self::Ack),
+            "RESULT" => Ok(Self::Result),
+            other => Err(format!("invalid NewAlgoOrderNewOrderRespTypeEnum: {}", other).into()),
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum NewAlgoOrderSelfTradePreventionModeEnum {
+    #[serde(rename = "EXPIRE_TAKER")]
+    ExpireTaker,
+    #[serde(rename = "EXPIRE_BOTH")]
+    ExpireBoth,
+    #[serde(rename = "EXPIRE_MAKER")]
+    ExpireMaker,
+}
+
+impl NewAlgoOrderSelfTradePreventionModeEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::ExpireTaker => "EXPIRE_TAKER",
+            Self::ExpireBoth => "EXPIRE_BOTH",
+            Self::ExpireMaker => "EXPIRE_MAKER",
+        }
+    }
+}
+
+impl std::str::FromStr for NewAlgoOrderSelfTradePreventionModeEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "EXPIRE_TAKER" => Ok(Self::ExpireTaker),
+            "EXPIRE_BOTH" => Ok(Self::ExpireBoth),
+            "EXPIRE_MAKER" => Ok(Self::ExpireMaker),
+            other => {
+                Err(format!("invalid NewAlgoOrderSelfTradePreventionModeEnum: {}", other).into())
+            }
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum NewOrderSideEnum {
     #[serde(rename = "BUY")]
     Buy,
@@ -387,6 +686,8 @@ pub enum NewOrderTimeInForceEnum {
     Gtx,
     #[serde(rename = "GTD")]
     Gtd,
+    #[serde(rename = "RPI")]
+    Rpi,
 }
 
 impl NewOrderTimeInForceEnum {
@@ -398,6 +699,7 @@ impl NewOrderTimeInForceEnum {
             Self::Fok => "FOK",
             Self::Gtx => "GTX",
             Self::Gtd => "GTD",
+            Self::Rpi => "RPI",
         }
     }
 }
@@ -412,38 +714,8 @@ impl std::str::FromStr for NewOrderTimeInForceEnum {
             "FOK" => Ok(Self::Fok),
             "GTX" => Ok(Self::Gtx),
             "GTD" => Ok(Self::Gtd),
+            "RPI" => Ok(Self::Rpi),
             other => Err(format!("invalid NewOrderTimeInForceEnum: {}", other).into()),
-        }
-    }
-}
-
-#[allow(non_camel_case_types)]
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum NewOrderWorkingTypeEnum {
-    #[serde(rename = "MARK_PRICE")]
-    MarkPrice,
-    #[serde(rename = "CONTRACT_PRICE")]
-    ContractPrice,
-}
-
-impl NewOrderWorkingTypeEnum {
-    #[must_use]
-    pub fn as_str(&self) -> &'static str {
-        match self {
-            Self::MarkPrice => "MARK_PRICE",
-            Self::ContractPrice => "CONTRACT_PRICE",
-        }
-    }
-}
-
-impl std::str::FromStr for NewOrderWorkingTypeEnum {
-    type Err = Box<dyn std::error::Error + Send + Sync>;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "MARK_PRICE" => Ok(Self::MarkPrice),
-            "CONTRACT_PRICE" => Ok(Self::ContractPrice),
-            other => Err(format!("invalid NewOrderWorkingTypeEnum: {}", other).into()),
         }
     }
 }
@@ -652,6 +924,8 @@ pub enum TestOrderTimeInForceEnum {
     Gtx,
     #[serde(rename = "GTD")]
     Gtd,
+    #[serde(rename = "RPI")]
+    Rpi,
 }
 
 impl TestOrderTimeInForceEnum {
@@ -663,6 +937,7 @@ impl TestOrderTimeInForceEnum {
             Self::Fok => "FOK",
             Self::Gtx => "GTX",
             Self::Gtd => "GTD",
+            Self::Rpi => "RPI",
         }
     }
 }
@@ -677,6 +952,7 @@ impl std::str::FromStr for TestOrderTimeInForceEnum {
             "FOK" => Ok(Self::Fok),
             "GTX" => Ok(Self::Gtx),
             "GTD" => Ok(Self::Gtd),
+            "RPI" => Ok(Self::Rpi),
             other => Err(format!("invalid TestOrderTimeInForceEnum: {}", other).into()),
         }
     }
@@ -1027,6 +1303,74 @@ impl AutoCancelAllOpenOrdersParams {
             .countdown_time(countdown_time)
     }
 }
+/// Request parameters for the [`cancel_algo_order`] operation.
+///
+/// This struct holds all of the inputs you can pass when calling
+/// [`cancel_algo_order`](#method.cancel_algo_order).
+#[derive(Clone, Debug, Builder, Default)]
+#[builder(pattern = "owned", build_fn(error = "ParamBuildError"))]
+pub struct CancelAlgoOrderParams {
+    ///
+    /// The `algo_id` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub algo_id: Option<i64>,
+    ///
+    /// The `client_algo_id` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub client_algo_id: Option<String>,
+    ///
+    /// The `recv_window` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub recv_window: Option<i64>,
+}
+
+impl CancelAlgoOrderParams {
+    /// Create a builder for [`cancel_algo_order`].
+    ///
+    #[must_use]
+    pub fn builder() -> CancelAlgoOrderParamsBuilder {
+        CancelAlgoOrderParamsBuilder::default()
+    }
+}
+/// Request parameters for the [`cancel_all_algo_open_orders`] operation.
+///
+/// This struct holds all of the inputs you can pass when calling
+/// [`cancel_all_algo_open_orders`](#method.cancel_all_algo_open_orders).
+#[derive(Clone, Debug, Builder)]
+#[builder(pattern = "owned", build_fn(error = "ParamBuildError"))]
+pub struct CancelAllAlgoOpenOrdersParams {
+    ///
+    /// The `symbol` parameter.
+    ///
+    /// This field is **required.
+    #[builder(setter(into))]
+    pub symbol: String,
+    ///
+    /// The `recv_window` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub recv_window: Option<i64>,
+}
+
+impl CancelAllAlgoOpenOrdersParams {
+    /// Create a builder for [`cancel_all_algo_open_orders`].
+    ///
+    /// Required parameters:
+    ///
+    /// * `symbol` — String
+    ///
+    #[must_use]
+    pub fn builder(symbol: String) -> CancelAllAlgoOpenOrdersParamsBuilder {
+        CancelAllAlgoOpenOrdersParamsBuilder::default().symbol(symbol)
+    }
+}
 /// Request parameters for the [`cancel_all_open_orders`] operation.
 ///
 /// This struct holds all of the inputs you can pass when calling
@@ -1297,6 +1641,47 @@ impl ChangePositionModeParams {
         ChangePositionModeParamsBuilder::default().dual_side_position(dual_side_position)
     }
 }
+/// Request parameters for the [`current_all_algo_open_orders`] operation.
+///
+/// This struct holds all of the inputs you can pass when calling
+/// [`current_all_algo_open_orders`](#method.current_all_algo_open_orders).
+#[derive(Clone, Debug, Builder, Default)]
+#[builder(pattern = "owned", build_fn(error = "ParamBuildError"))]
+pub struct CurrentAllAlgoOpenOrdersParams {
+    ///
+    /// The `algo_type` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub algo_type: Option<String>,
+    ///
+    /// The `symbol` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub symbol: Option<String>,
+    ///
+    /// The `algo_id` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub algo_id: Option<i64>,
+    ///
+    /// The `recv_window` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub recv_window: Option<i64>,
+}
+
+impl CurrentAllAlgoOpenOrdersParams {
+    /// Create a builder for [`current_all_algo_open_orders`].
+    ///
+    #[must_use]
+    pub fn builder() -> CurrentAllAlgoOpenOrdersParamsBuilder {
+        CurrentAllAlgoOpenOrdersParamsBuilder::default()
+    }
+}
 /// Request parameters for the [`current_all_open_orders`] operation.
 ///
 /// This struct holds all of the inputs you can pass when calling
@@ -1324,6 +1709,29 @@ impl CurrentAllOpenOrdersParams {
     #[must_use]
     pub fn builder() -> CurrentAllOpenOrdersParamsBuilder {
         CurrentAllOpenOrdersParamsBuilder::default()
+    }
+}
+/// Request parameters for the [`futures_tradfi_perps_contract`] operation.
+///
+/// This struct holds all of the inputs you can pass when calling
+/// [`futures_tradfi_perps_contract`](#method.futures_tradfi_perps_contract).
+#[derive(Clone, Debug, Builder, Default)]
+#[builder(pattern = "owned", build_fn(error = "ParamBuildError"))]
+pub struct FuturesTradfiPerpsContractParams {
+    ///
+    /// The `recv_window` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub recv_window: Option<i64>,
+}
+
+impl FuturesTradfiPerpsContractParams {
+    /// Create a builder for [`futures_tradfi_perps_contract`].
+    ///
+    #[must_use]
+    pub fn builder() -> FuturesTradfiPerpsContractParamsBuilder {
+        FuturesTradfiPerpsContractParamsBuilder::default()
     }
 }
 /// Request parameters for the [`get_order_modify_history`] operation.
@@ -1614,6 +2022,152 @@ impl ModifyOrderParams {
             .price(price)
     }
 }
+/// Request parameters for the [`new_algo_order`] operation.
+///
+/// This struct holds all of the inputs you can pass when calling
+/// [`new_algo_order`](#method.new_algo_order).
+#[derive(Clone, Debug, Builder)]
+#[builder(pattern = "owned", build_fn(error = "ParamBuildError"))]
+pub struct NewAlgoOrderParams {
+    /// Only support `CONDITIONAL`
+    ///
+    /// This field is **required.
+    #[builder(setter(into))]
+    pub algo_type: String,
+    ///
+    /// The `symbol` parameter.
+    ///
+    /// This field is **required.
+    #[builder(setter(into))]
+    pub symbol: String,
+    /// `SELL`, `BUY`
+    ///
+    /// This field is **required.
+    #[builder(setter(into))]
+    pub side: NewAlgoOrderSideEnum,
+    ///
+    /// The `r#type` parameter.
+    ///
+    /// This field is **required.
+    #[builder(setter(into))]
+    pub r#type: String,
+    /// Default `BOTH` for One-way Mode ; `LONG` or `SHORT` for Hedge Mode. It must be sent with Hedge Mode.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub position_side: Option<NewAlgoOrderPositionSideEnum>,
+    ///
+    /// The `time_in_force` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub time_in_force: Option<NewAlgoOrderTimeInForceEnum>,
+    ///
+    /// The `quantity` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub quantity: Option<rust_decimal::Decimal>,
+    ///
+    /// The `price` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub price: Option<rust_decimal::Decimal>,
+    ///
+    /// The `trigger_price` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub trigger_price: Option<rust_decimal::Decimal>,
+    /// stopPrice triggered by: "`MARK_PRICE`", "`CONTRACT_PRICE`". Default "`CONTRACT_PRICE`"
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub working_type: Option<NewAlgoOrderWorkingTypeEnum>,
+    /// only avaliable for `LIMIT`/`STOP`/`TAKE_PROFIT` order; can be set to `OPPONENT`/ `OPPONENT_5`/ `OPPONENT_10`/ `OPPONENT_20`: /`QUEUE`/ `QUEUE_5`/ `QUEUE_10`/ `QUEUE_20`; Can't be passed together with `price`
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub price_match: Option<NewAlgoOrderPriceMatchEnum>,
+    /// `true`, `false`；Close-All，used with `STOP_MARKET` or `TAKE_PROFIT_MARKET`.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub close_position: Option<String>,
+    /// "TRUE" or "FALSE", default "FALSE". Used with `STOP/STOP_MARKET` or `TAKE_PROFIT/TAKE_PROFIT_MARKET` orders.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub price_protect: Option<String>,
+    /// "true" or "false". default "false". Cannot be sent in Hedge Mode
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub reduce_only: Option<String>,
+    /// Used with `TRAILING_STOP_MARKET` orders, default as the latest price(supporting different `workingType`)
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub activate_price: Option<rust_decimal::Decimal>,
+    /// Used with `TRAILING_STOP_MARKET` orders, min 0.1, max 5 where 1 for 1%
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub callback_rate: Option<rust_decimal::Decimal>,
+    ///
+    /// The `client_algo_id` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub client_algo_id: Option<String>,
+    /// "ACK", "RESULT", default "ACK"
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub new_order_resp_type: Option<NewAlgoOrderNewOrderRespTypeEnum>,
+    /// `EXPIRE_TAKER`:expire taker order when STP triggers/ `EXPIRE_MAKER`:expire taker order when STP triggers/ `EXPIRE_BOTH`:expire both orders when STP triggers; default `NONE`
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub self_trade_prevention_mode: Option<NewAlgoOrderSelfTradePreventionModeEnum>,
+    /// order cancel time for timeInForce `GTD`, mandatory when `timeInforce` set to `GTD`; order the timestamp only retains second-level precision, ms part will be ignored; The goodTillDate timestamp must be greater than the current time plus 600 seconds and smaller than 253402300799000
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub good_till_date: Option<i64>,
+    ///
+    /// The `recv_window` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub recv_window: Option<i64>,
+}
+
+impl NewAlgoOrderParams {
+    /// Create a builder for [`new_algo_order`].
+    ///
+    /// Required parameters:
+    ///
+    /// * `algo_type` — Only support `CONDITIONAL`
+    /// * `symbol` — String
+    /// * `side` — `SELL`, `BUY`
+    /// * `r#type` — String
+    ///
+    #[must_use]
+    pub fn builder(
+        algo_type: String,
+        symbol: String,
+        side: NewAlgoOrderSideEnum,
+        r#type: String,
+    ) -> NewAlgoOrderParamsBuilder {
+        NewAlgoOrderParamsBuilder::default()
+            .algo_type(algo_type)
+            .symbol(symbol)
+            .side(side)
+            .r#type(r#type)
+    }
+}
 /// Request parameters for the [`new_order`] operation.
 ///
 /// This struct holds all of the inputs you can pass when calling
@@ -1649,12 +2203,13 @@ pub struct NewOrderParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub time_in_force: Option<NewOrderTimeInForceEnum>,
-    /// Cannot be sent with `closePosition`=`true`(Close-All)
+    ///
+    /// The `quantity` parameter.
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub quantity: Option<rust_decimal::Decimal>,
-    /// "true" or "false". default "false". Cannot be sent in Hedge Mode; cannot be sent with `closePosition`=`true`
+    /// "true" or "false". default "false". Cannot be sent in Hedge Mode
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -1670,36 +2225,6 @@ pub struct NewOrderParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub new_client_order_id: Option<String>,
-    /// Used with `STOP/STOP_MARKET` or `TAKE_PROFIT/TAKE_PROFIT_MARKET` orders.
-    ///
-    /// This field is **optional.
-    #[builder(setter(into), default)]
-    pub stop_price: Option<rust_decimal::Decimal>,
-    /// `true`, `false`；Close-All，used with `STOP_MARKET` or `TAKE_PROFIT_MARKET`.
-    ///
-    /// This field is **optional.
-    #[builder(setter(into), default)]
-    pub close_position: Option<String>,
-    /// Used with `TRAILING_STOP_MARKET` orders, default as the latest price(supporting different `workingType`)
-    ///
-    /// This field is **optional.
-    #[builder(setter(into), default)]
-    pub activation_price: Option<rust_decimal::Decimal>,
-    /// Used with `TRAILING_STOP_MARKET` orders, min 0.1, max 10 where 1 for 1%
-    ///
-    /// This field is **optional.
-    #[builder(setter(into), default)]
-    pub callback_rate: Option<rust_decimal::Decimal>,
-    /// stopPrice triggered by: "`MARK_PRICE`", "`CONTRACT_PRICE`". Default "`CONTRACT_PRICE`"
-    ///
-    /// This field is **optional.
-    #[builder(setter(into), default)]
-    pub working_type: Option<NewOrderWorkingTypeEnum>,
-    /// "TRUE" or "FALSE", default "FALSE". Used with `STOP/STOP_MARKET` or `TAKE_PROFIT/TAKE_PROFIT_MARKET` orders.
-    ///
-    /// This field is **optional.
-    #[builder(setter(into), default)]
-    pub price_protect: Option<String>,
     /// "ACK", "RESULT", default "ACK"
     ///
     /// This field is **optional.
@@ -1710,7 +2235,7 @@ pub struct NewOrderParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub price_match: Option<NewOrderPriceMatchEnum>,
-    /// `NONE`:No STP / `EXPIRE_TAKER`:expire taker order when STP triggers/ `EXPIRE_MAKER`:expire taker order when STP triggers/ `EXPIRE_BOTH`:expire both orders when STP triggers; default `NONE`
+    /// `EXPIRE_TAKER`:expire taker order when STP triggers/ `EXPIRE_MAKER`:expire taker order when STP triggers/ `EXPIRE_BOTH`:expire both orders when STP triggers; default `NONE`
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -1901,6 +2426,103 @@ impl PositionInformationV3Params {
         PositionInformationV3ParamsBuilder::default()
     }
 }
+/// Request parameters for the [`query_algo_order`] operation.
+///
+/// This struct holds all of the inputs you can pass when calling
+/// [`query_algo_order`](#method.query_algo_order).
+#[derive(Clone, Debug, Builder, Default)]
+#[builder(pattern = "owned", build_fn(error = "ParamBuildError"))]
+pub struct QueryAlgoOrderParams {
+    ///
+    /// The `algo_id` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub algo_id: Option<i64>,
+    ///
+    /// The `client_algo_id` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub client_algo_id: Option<String>,
+    ///
+    /// The `recv_window` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub recv_window: Option<i64>,
+}
+
+impl QueryAlgoOrderParams {
+    /// Create a builder for [`query_algo_order`].
+    ///
+    #[must_use]
+    pub fn builder() -> QueryAlgoOrderParamsBuilder {
+        QueryAlgoOrderParamsBuilder::default()
+    }
+}
+/// Request parameters for the [`query_all_algo_orders`] operation.
+///
+/// This struct holds all of the inputs you can pass when calling
+/// [`query_all_algo_orders`](#method.query_all_algo_orders).
+#[derive(Clone, Debug, Builder)]
+#[builder(pattern = "owned", build_fn(error = "ParamBuildError"))]
+pub struct QueryAllAlgoOrdersParams {
+    ///
+    /// The `symbol` parameter.
+    ///
+    /// This field is **required.
+    #[builder(setter(into))]
+    pub symbol: String,
+    ///
+    /// The `algo_id` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub algo_id: Option<i64>,
+    ///
+    /// The `start_time` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub start_time: Option<i64>,
+    ///
+    /// The `end_time` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub end_time: Option<i64>,
+    ///
+    /// The `page` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub page: Option<i64>,
+    /// Default 100; max 1000
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub limit: Option<i64>,
+    ///
+    /// The `recv_window` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub recv_window: Option<i64>,
+}
+
+impl QueryAllAlgoOrdersParams {
+    /// Create a builder for [`query_all_algo_orders`].
+    ///
+    /// Required parameters:
+    ///
+    /// * `symbol` — String
+    ///
+    #[must_use]
+    pub fn builder(symbol: String) -> QueryAllAlgoOrdersParamsBuilder {
+        QueryAllAlgoOrdersParamsBuilder::default().symbol(symbol)
+    }
+}
 /// Request parameters for the [`query_current_open_order`] operation.
 ///
 /// This struct holds all of the inputs you can pass when calling
@@ -2026,12 +2648,13 @@ pub struct TestOrderParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub time_in_force: Option<TestOrderTimeInForceEnum>,
-    /// Cannot be sent with `closePosition`=`true`(Close-All)
+    ///
+    /// The `quantity` parameter.
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub quantity: Option<rust_decimal::Decimal>,
-    /// "true" or "false". default "false". Cannot be sent in Hedge Mode; cannot be sent with `closePosition`=`true`
+    /// "true" or "false". default "false". Cannot be sent in Hedge Mode
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -2062,7 +2685,7 @@ pub struct TestOrderParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub activation_price: Option<rust_decimal::Decimal>,
-    /// Used with `TRAILING_STOP_MARKET` orders, min 0.1, max 10 where 1 for 1%
+    /// Used with `TRAILING_STOP_MARKET` orders, min 0.1, max 5 where 1 for 1%
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -2087,7 +2710,7 @@ pub struct TestOrderParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub price_match: Option<TestOrderPriceMatchEnum>,
-    /// `NONE`:No STP / `EXPIRE_TAKER`:expire taker order when STP triggers/ `EXPIRE_MAKER`:expire taker order when STP triggers/ `EXPIRE_BOTH`:expire both orders when STP triggers; default `NONE`
+    /// `EXPIRE_TAKER`:expire taker order when STP triggers/ `EXPIRE_MAKER`:expire taker order when STP triggers/ `EXPIRE_BOTH`:expire both orders when STP triggers; default `NONE`
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -2195,6 +2818,7 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
 
@@ -2227,6 +2851,7 @@ impl TradeApi for TradeApiClient {
             "/fapi/v1/userTrades",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2251,6 +2876,7 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
 
@@ -2279,6 +2905,7 @@ impl TradeApi for TradeApiClient {
             "/fapi/v1/allOrders",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2300,6 +2927,7 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
 
@@ -2314,6 +2942,82 @@ impl TradeApi for TradeApiClient {
             "/fapi/v1/countdownCancelAll",
             reqwest::Method::POST,
             query_params,
+            body_params,
+            if HAS_TIME_UNIT {
+                self.configuration.time_unit
+            } else {
+                None
+            },
+            true,
+        )
+        .await
+    }
+
+    async fn cancel_algo_order(
+        &self,
+        params: CancelAlgoOrderParams,
+    ) -> anyhow::Result<RestApiResponse<models::CancelAlgoOrderResponse>> {
+        let CancelAlgoOrderParams {
+            algo_id,
+            client_algo_id,
+            recv_window,
+        } = params;
+
+        let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
+
+        if let Some(rw) = algo_id {
+            query_params.insert("algoId".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = client_algo_id {
+            query_params.insert("clientAlgoId".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = recv_window {
+            query_params.insert("recvWindow".to_string(), json!(rw));
+        }
+
+        send_request::<models::CancelAlgoOrderResponse>(
+            &self.configuration,
+            "/fapi/v1/algoOrder",
+            reqwest::Method::DELETE,
+            query_params,
+            body_params,
+            if HAS_TIME_UNIT {
+                self.configuration.time_unit
+            } else {
+                None
+            },
+            true,
+        )
+        .await
+    }
+
+    async fn cancel_all_algo_open_orders(
+        &self,
+        params: CancelAllAlgoOpenOrdersParams,
+    ) -> anyhow::Result<RestApiResponse<models::CancelAllAlgoOpenOrdersResponse>> {
+        let CancelAllAlgoOpenOrdersParams {
+            symbol,
+            recv_window,
+        } = params;
+
+        let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
+
+        query_params.insert("symbol".to_string(), json!(symbol));
+
+        if let Some(rw) = recv_window {
+            query_params.insert("recvWindow".to_string(), json!(rw));
+        }
+
+        send_request::<models::CancelAllAlgoOpenOrdersResponse>(
+            &self.configuration,
+            "/fapi/v1/algoOpenOrders",
+            reqwest::Method::DELETE,
+            query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2334,6 +3038,7 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
 
@@ -2346,6 +3051,7 @@ impl TradeApi for TradeApiClient {
             "/fapi/v1/allOpenOrders",
             reqwest::Method::DELETE,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2368,6 +3074,7 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
 
@@ -2388,6 +3095,7 @@ impl TradeApi for TradeApiClient {
             "/fapi/v1/batchOrders",
             reqwest::Method::DELETE,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2410,6 +3118,7 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
 
@@ -2430,6 +3139,7 @@ impl TradeApi for TradeApiClient {
             "/fapi/v1/order",
             reqwest::Method::DELETE,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2451,6 +3161,7 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
 
@@ -2465,6 +3176,7 @@ impl TradeApi for TradeApiClient {
             "/fapi/v1/leverage",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2486,6 +3198,7 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
 
@@ -2500,6 +3213,7 @@ impl TradeApi for TradeApiClient {
             "/fapi/v1/marginType",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2520,6 +3234,7 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("multiAssetsMargin".to_string(), json!(multi_assets_margin));
 
@@ -2532,6 +3247,7 @@ impl TradeApi for TradeApiClient {
             "/fapi/v1/multiAssetsMargin",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2552,6 +3268,7 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("dualSidePosition".to_string(), json!(dual_side_position));
 
@@ -2564,6 +3281,53 @@ impl TradeApi for TradeApiClient {
             "/fapi/v1/positionSide/dual",
             reqwest::Method::POST,
             query_params,
+            body_params,
+            if HAS_TIME_UNIT {
+                self.configuration.time_unit
+            } else {
+                None
+            },
+            true,
+        )
+        .await
+    }
+
+    async fn current_all_algo_open_orders(
+        &self,
+        params: CurrentAllAlgoOpenOrdersParams,
+    ) -> anyhow::Result<RestApiResponse<Vec<models::CurrentAllAlgoOpenOrdersResponseInner>>> {
+        let CurrentAllAlgoOpenOrdersParams {
+            algo_type,
+            symbol,
+            algo_id,
+            recv_window,
+        } = params;
+
+        let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
+
+        if let Some(rw) = algo_type {
+            query_params.insert("algoType".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = symbol {
+            query_params.insert("symbol".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = algo_id {
+            query_params.insert("algoId".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = recv_window {
+            query_params.insert("recvWindow".to_string(), json!(rw));
+        }
+
+        send_request::<Vec<models::CurrentAllAlgoOpenOrdersResponseInner>>(
+            &self.configuration,
+            "/fapi/v1/openAlgoOrders",
+            reqwest::Method::GET,
+            query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2584,6 +3348,7 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = symbol {
             query_params.insert("symbol".to_string(), json!(rw));
@@ -2598,6 +3363,36 @@ impl TradeApi for TradeApiClient {
             "/fapi/v1/openOrders",
             reqwest::Method::GET,
             query_params,
+            body_params,
+            if HAS_TIME_UNIT {
+                self.configuration.time_unit
+            } else {
+                None
+            },
+            true,
+        )
+        .await
+    }
+
+    async fn futures_tradfi_perps_contract(
+        &self,
+        params: FuturesTradfiPerpsContractParams,
+    ) -> anyhow::Result<RestApiResponse<models::FuturesTradfiPerpsContractResponse>> {
+        let FuturesTradfiPerpsContractParams { recv_window } = params;
+
+        let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
+
+        if let Some(rw) = recv_window {
+            query_params.insert("recvWindow".to_string(), json!(rw));
+        }
+
+        send_request::<models::FuturesTradfiPerpsContractResponse>(
+            &self.configuration,
+            "/fapi/v1/stock/contract",
+            reqwest::Method::POST,
+            query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2623,6 +3418,7 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
 
@@ -2655,6 +3451,7 @@ impl TradeApi for TradeApiClient {
             "/fapi/v1/orderAmendment",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2680,6 +3477,7 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
 
@@ -2708,6 +3506,7 @@ impl TradeApi for TradeApiClient {
             "/fapi/v1/positionMargin/history",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2731,16 +3530,17 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
-
-        query_params.insert("amount".to_string(), json!(amount));
-
-        query_params.insert("type".to_string(), json!(r#type));
 
         if let Some(rw) = position_side {
             query_params.insert("positionSide".to_string(), json!(rw));
         }
+
+        query_params.insert("amount".to_string(), json!(amount));
+
+        query_params.insert("type".to_string(), json!(r#type));
 
         if let Some(rw) = recv_window {
             query_params.insert("recvWindow".to_string(), json!(rw));
@@ -2751,6 +3551,7 @@ impl TradeApi for TradeApiClient {
             "/fapi/v1/positionMargin",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2771,6 +3572,7 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("batchOrders".to_string(), json!(batch_orders));
 
@@ -2783,6 +3585,7 @@ impl TradeApi for TradeApiClient {
             "/fapi/v1/batchOrders",
             reqwest::Method::PUT,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2809,14 +3612,7 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
-
-        query_params.insert("symbol".to_string(), json!(symbol));
-
-        query_params.insert("side".to_string(), json!(side));
-
-        query_params.insert("quantity".to_string(), json!(quantity));
-
-        query_params.insert("price".to_string(), json!(price));
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = order_id {
             query_params.insert("orderId".to_string(), json!(rw));
@@ -2825,6 +3621,14 @@ impl TradeApi for TradeApiClient {
         if let Some(rw) = orig_client_order_id {
             query_params.insert("origClientOrderId".to_string(), json!(rw));
         }
+
+        query_params.insert("symbol".to_string(), json!(symbol));
+
+        query_params.insert("side".to_string(), json!(side));
+
+        query_params.insert("quantity".to_string(), json!(quantity));
+
+        query_params.insert("price".to_string(), json!(price));
 
         if let Some(rw) = price_match {
             query_params.insert("priceMatch".to_string(), json!(rw));
@@ -2839,6 +3643,130 @@ impl TradeApi for TradeApiClient {
             "/fapi/v1/order",
             reqwest::Method::PUT,
             query_params,
+            body_params,
+            if HAS_TIME_UNIT {
+                self.configuration.time_unit
+            } else {
+                None
+            },
+            true,
+        )
+        .await
+    }
+
+    async fn new_algo_order(
+        &self,
+        params: NewAlgoOrderParams,
+    ) -> anyhow::Result<RestApiResponse<models::NewAlgoOrderResponse>> {
+        let NewAlgoOrderParams {
+            algo_type,
+            symbol,
+            side,
+            r#type,
+            position_side,
+            time_in_force,
+            quantity,
+            price,
+            trigger_price,
+            working_type,
+            price_match,
+            close_position,
+            price_protect,
+            reduce_only,
+            activate_price,
+            callback_rate,
+            client_algo_id,
+            new_order_resp_type,
+            self_trade_prevention_mode,
+            good_till_date,
+            recv_window,
+        } = params;
+
+        let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
+
+        query_params.insert("algoType".to_string(), json!(algo_type));
+
+        query_params.insert("symbol".to_string(), json!(symbol));
+
+        query_params.insert("side".to_string(), json!(side));
+
+        if let Some(rw) = position_side {
+            query_params.insert("positionSide".to_string(), json!(rw));
+        }
+
+        query_params.insert("type".to_string(), json!(r#type));
+
+        if let Some(rw) = time_in_force {
+            query_params.insert("timeInForce".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = quantity {
+            query_params.insert("quantity".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = price {
+            query_params.insert("price".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = trigger_price {
+            query_params.insert("triggerPrice".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = working_type {
+            query_params.insert("workingType".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = price_match {
+            query_params.insert("priceMatch".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = close_position {
+            query_params.insert("closePosition".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = price_protect {
+            query_params.insert("priceProtect".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = reduce_only {
+            query_params.insert("reduceOnly".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = activate_price {
+            query_params.insert("activatePrice".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = callback_rate {
+            query_params.insert("callbackRate".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = client_algo_id {
+            query_params.insert("clientAlgoId".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = new_order_resp_type {
+            query_params.insert("newOrderRespType".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = self_trade_prevention_mode {
+            query_params.insert("selfTradePreventionMode".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = good_till_date {
+            query_params.insert("goodTillDate".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = recv_window {
+            query_params.insert("recvWindow".to_string(), json!(rw));
+        }
+
+        send_request::<models::NewAlgoOrderResponse>(
+            &self.configuration,
+            "/fapi/v1/algoOrder",
+            reqwest::Method::POST,
+            query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2863,12 +3791,6 @@ impl TradeApi for TradeApiClient {
             reduce_only,
             price,
             new_client_order_id,
-            stop_price,
-            close_position,
-            activation_price,
-            callback_rate,
-            working_type,
-            price_protect,
             new_order_resp_type,
             price_match,
             self_trade_prevention_mode,
@@ -2877,16 +3799,17 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
 
         query_params.insert("side".to_string(), json!(side));
 
-        query_params.insert("type".to_string(), json!(r#type));
-
         if let Some(rw) = position_side {
             query_params.insert("positionSide".to_string(), json!(rw));
         }
+
+        query_params.insert("type".to_string(), json!(r#type));
 
         if let Some(rw) = time_in_force {
             query_params.insert("timeInForce".to_string(), json!(rw));
@@ -2906,30 +3829,6 @@ impl TradeApi for TradeApiClient {
 
         if let Some(rw) = new_client_order_id {
             query_params.insert("newClientOrderId".to_string(), json!(rw));
-        }
-
-        if let Some(rw) = stop_price {
-            query_params.insert("stopPrice".to_string(), json!(rw));
-        }
-
-        if let Some(rw) = close_position {
-            query_params.insert("closePosition".to_string(), json!(rw));
-        }
-
-        if let Some(rw) = activation_price {
-            query_params.insert("activationPrice".to_string(), json!(rw));
-        }
-
-        if let Some(rw) = callback_rate {
-            query_params.insert("callbackRate".to_string(), json!(rw));
-        }
-
-        if let Some(rw) = working_type {
-            query_params.insert("workingType".to_string(), json!(rw));
-        }
-
-        if let Some(rw) = price_protect {
-            query_params.insert("priceProtect".to_string(), json!(rw));
         }
 
         if let Some(rw) = new_order_resp_type {
@@ -2957,6 +3856,7 @@ impl TradeApi for TradeApiClient {
             "/fapi/v1/order",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2977,6 +3877,7 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("batchOrders".to_string(), json!(batch_orders));
 
@@ -2989,6 +3890,7 @@ impl TradeApi for TradeApiClient {
             "/fapi/v1/batchOrders",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -3010,6 +3912,7 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = symbol {
             query_params.insert("symbol".to_string(), json!(rw));
@@ -3024,6 +3927,7 @@ impl TradeApi for TradeApiClient {
             "/fapi/v1/adlQuantile",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -3044,6 +3948,7 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = symbol {
             query_params.insert("symbol".to_string(), json!(rw));
@@ -3058,6 +3963,7 @@ impl TradeApi for TradeApiClient {
             "/fapi/v2/positionRisk",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -3078,6 +3984,7 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = symbol {
             query_params.insert("symbol".to_string(), json!(rw));
@@ -3092,6 +3999,107 @@ impl TradeApi for TradeApiClient {
             "/fapi/v3/positionRisk",
             reqwest::Method::GET,
             query_params,
+            body_params,
+            if HAS_TIME_UNIT {
+                self.configuration.time_unit
+            } else {
+                None
+            },
+            true,
+        )
+        .await
+    }
+
+    async fn query_algo_order(
+        &self,
+        params: QueryAlgoOrderParams,
+    ) -> anyhow::Result<RestApiResponse<models::QueryAlgoOrderResponse>> {
+        let QueryAlgoOrderParams {
+            algo_id,
+            client_algo_id,
+            recv_window,
+        } = params;
+
+        let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
+
+        if let Some(rw) = algo_id {
+            query_params.insert("algoId".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = client_algo_id {
+            query_params.insert("clientAlgoId".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = recv_window {
+            query_params.insert("recvWindow".to_string(), json!(rw));
+        }
+
+        send_request::<models::QueryAlgoOrderResponse>(
+            &self.configuration,
+            "/fapi/v1/algoOrder",
+            reqwest::Method::GET,
+            query_params,
+            body_params,
+            if HAS_TIME_UNIT {
+                self.configuration.time_unit
+            } else {
+                None
+            },
+            true,
+        )
+        .await
+    }
+
+    async fn query_all_algo_orders(
+        &self,
+        params: QueryAllAlgoOrdersParams,
+    ) -> anyhow::Result<RestApiResponse<Vec<models::QueryAllAlgoOrdersResponseInner>>> {
+        let QueryAllAlgoOrdersParams {
+            symbol,
+            algo_id,
+            start_time,
+            end_time,
+            page,
+            limit,
+            recv_window,
+        } = params;
+
+        let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
+
+        query_params.insert("symbol".to_string(), json!(symbol));
+
+        if let Some(rw) = algo_id {
+            query_params.insert("algoId".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = start_time {
+            query_params.insert("startTime".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = end_time {
+            query_params.insert("endTime".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = page {
+            query_params.insert("page".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = limit {
+            query_params.insert("limit".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = recv_window {
+            query_params.insert("recvWindow".to_string(), json!(rw));
+        }
+
+        send_request::<Vec<models::QueryAllAlgoOrdersResponseInner>>(
+            &self.configuration,
+            "/fapi/v1/allAlgoOrders",
+            reqwest::Method::GET,
+            query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -3114,6 +4122,7 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
 
@@ -3134,6 +4143,7 @@ impl TradeApi for TradeApiClient {
             "/fapi/v1/openOrder",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -3156,6 +4166,7 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
 
@@ -3176,6 +4187,7 @@ impl TradeApi for TradeApiClient {
             "/fapi/v1/order",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -3214,16 +4226,17 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
 
         query_params.insert("side".to_string(), json!(side));
 
-        query_params.insert("type".to_string(), json!(r#type));
-
         if let Some(rw) = position_side {
             query_params.insert("positionSide".to_string(), json!(rw));
         }
+
+        query_params.insert("type".to_string(), json!(r#type));
 
         if let Some(rw) = time_in_force {
             query_params.insert("timeInForce".to_string(), json!(rw));
@@ -3294,6 +4307,7 @@ impl TradeApi for TradeApiClient {
             "/fapi/v1/order/test",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -3318,6 +4332,7 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = symbol {
             query_params.insert("symbol".to_string(), json!(rw));
@@ -3348,6 +4363,7 @@ impl TradeApi for TradeApiClient {
             "/fapi/v1/forceOrders",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -3427,9 +4443,11 @@ mod tests {
             _params: AccountTradeListParams,
         ) -> anyhow::Result<RestApiResponse<Vec<models::AccountTradeListResponseInner>>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"buyer":false,"commission":"-0.07819010","commissionAsset":"USDT","id":698759,"maker":false,"orderId":25851813,"price":"7819.01","qty":"0.002","quoteQty":"15.63802","realizedPnl":"-0.91539999","side":"SELL","positionSide":"SHORT","symbol":"BTCUSDT","time":1569514978020}]"#).unwrap();
@@ -3452,9 +4470,11 @@ mod tests {
             _params: AllOrdersParams,
         ) -> anyhow::Result<RestApiResponse<Vec<models::AllOrdersResponseInner>>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"avgPrice":"0.00000","clientOrderId":"abc","cumQuote":"0","executedQty":"0","orderId":1917641,"origQty":"0.40","origType":"TRAILING_STOP_MARKET","price":"0","reduceOnly":false,"side":"BUY","positionSide":"SHORT","status":"NEW","stopPrice":"9300","closePosition":false,"symbol":"BTCUSDT","time":1579276756075,"timeInForce":"GTC","type":"TRAILING_STOP_MARKET","activatePrice":"9020","priceRate":"0.3","updateTime":1579276756075,"workingType":"CONTRACT_PRICE","priceProtect":false,"priceMatch":"NONE","selfTradePreventionMode":"NONE","goodTillDate":0}]"#).unwrap();
@@ -3477,9 +4497,11 @@ mod tests {
             _params: AutoCancelAllOpenOrdersParams,
         ) -> anyhow::Result<RestApiResponse<models::AutoCancelAllOpenOrdersResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value =
@@ -3498,14 +4520,73 @@ mod tests {
             Ok(dummy.into())
         }
 
+        async fn cancel_algo_order(
+            &self,
+            _params: CancelAlgoOrderParams,
+        ) -> anyhow::Result<RestApiResponse<models::CancelAlgoOrderResponse>> {
+            if self.force_error {
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
+            }
+
+            let resp_json: Value = serde_json::from_str(r#"{"algoId":2146760,"clientAlgoId":"6B2I9XVcJpCjqPAJ4YoFX7","code":"200","msg":"success"}"#).unwrap();
+            let dummy_response: models::CancelAlgoOrderResponse =
+                serde_json::from_value(resp_json.clone())
+                    .expect("should parse into models::CancelAlgoOrderResponse");
+
+            let dummy = DummyRestApiResponse {
+                inner: Box::new(move || Box::pin(async move { Ok(dummy_response) })),
+                status: 200,
+                headers: HashMap::new(),
+                rate_limits: None,
+            };
+
+            Ok(dummy.into())
+        }
+
+        async fn cancel_all_algo_open_orders(
+            &self,
+            _params: CancelAllAlgoOpenOrdersParams,
+        ) -> anyhow::Result<RestApiResponse<models::CancelAllAlgoOpenOrdersResponse>> {
+            if self.force_error {
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
+            }
+
+            let resp_json: Value = serde_json::from_str(
+                r#"{"code":200,"msg":"The operation of cancel all open order is done."}"#,
+            )
+            .unwrap();
+            let dummy_response: models::CancelAllAlgoOpenOrdersResponse =
+                serde_json::from_value(resp_json.clone())
+                    .expect("should parse into models::CancelAllAlgoOpenOrdersResponse");
+
+            let dummy = DummyRestApiResponse {
+                inner: Box::new(move || Box::pin(async move { Ok(dummy_response) })),
+                status: 200,
+                headers: HashMap::new(),
+                rate_limits: None,
+            };
+
+            Ok(dummy.into())
+        }
+
         async fn cancel_all_open_orders(
             &self,
             _params: CancelAllOpenOrdersParams,
         ) -> anyhow::Result<RestApiResponse<models::CancelAllOpenOrdersResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(
@@ -3532,9 +4613,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<Vec<models::CancelMultipleOrdersResponseInner>>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"clientOrderId":"myOrder1","cumQty":"0","cumQuote":"0","executedQty":"0","orderId":283194212,"origQty":"11","origType":"TRAILING_STOP_MARKET","price":"0","reduceOnly":false,"side":"BUY","positionSide":"SHORT","status":"CANCELED","stopPrice":"9300","closePosition":false,"symbol":"BTCUSDT","timeInForce":"GTC","type":"TRAILING_STOP_MARKET","activatePrice":"9020","priceRate":"0.3","updateTime":1571110484038,"workingType":"CONTRACT_PRICE","priceProtect":false,"priceMatch":"NONE","selfTradePreventionMode":"NONE","goodTillDate":1693207680000},{"code":-2011,"msg":"Unknown order sent."}]"#).unwrap();
@@ -3557,12 +4640,14 @@ mod tests {
             _params: CancelOrderParams,
         ) -> anyhow::Result<RestApiResponse<models::CancelOrderResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
-            let resp_json: Value = serde_json::from_str(r#"{"clientOrderId":"myOrder1","cumQty":"0","cumQuote":"0","executedQty":"0","orderId":283194212,"origQty":"11","origType":"TRAILING_STOP_MARKET","price":"0","reduceOnly":false,"side":"BUY","positionSide":"SHORT","status":"CANCELED","stopPrice":"9300","closePosition":false,"symbol":"BTCUSDT","timeInForce":"GTC","type":"TRAILING_STOP_MARKET","activatePrice":"9020","priceRate":"0.3","updateTime":1571110484038,"workingType":"CONTRACT_PRICE","priceProtect":false,"priceMatch":"NONE","selfTradePreventionMode":"NONE","goodTillDate":1693207680000}"#).unwrap();
+            let resp_json: Value = serde_json::from_str(r#"{"clientOrderId":"myOrder1","cumQty":"0","cumQuote":"0","executedQty":"0","orderId":283194212,"origQty":"11","origType":"TRAILING_STOP_MARKET","price":"0","avgPrice":"0.00","reduceOnly":false,"side":"BUY","positionSide":"SHORT","status":"CANCELED","stopPrice":"9300","closePosition":false,"symbol":"BTCUSDT","timeInForce":"GTC","type":"TRAILING_STOP_MARKET","activatePrice":"9020","priceRate":"0.3","updateTime":1571110484038,"workingType":"CONTRACT_PRICE","priceProtect":false,"priceMatch":"NONE","selfTradePreventionMode":"NONE","goodTillDate":1693207680000}"#).unwrap();
             let dummy_response: models::CancelOrderResponse =
                 serde_json::from_value(resp_json.clone())
                     .expect("should parse into models::CancelOrderResponse");
@@ -3582,9 +4667,11 @@ mod tests {
             _params: ChangeInitialLeverageParams,
         ) -> anyhow::Result<RestApiResponse<models::ChangeInitialLeverageResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(
@@ -3610,9 +4697,11 @@ mod tests {
             _params: ChangeMarginTypeParams,
         ) -> anyhow::Result<RestApiResponse<models::ChangeMarginTypeResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"code":200,"msg":"success"}"#).unwrap();
@@ -3635,9 +4724,11 @@ mod tests {
             _params: ChangeMultiAssetsModeParams,
         ) -> anyhow::Result<RestApiResponse<models::ChangeMultiAssetsModeResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"code":200,"msg":"success"}"#).unwrap();
@@ -3660,9 +4751,11 @@ mod tests {
             _params: ChangePositionModeParams,
         ) -> anyhow::Result<RestApiResponse<models::ChangePositionModeResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"code":200,"msg":"success"}"#).unwrap();
@@ -3680,14 +4773,44 @@ mod tests {
             Ok(dummy.into())
         }
 
+        async fn current_all_algo_open_orders(
+            &self,
+            _params: CurrentAllAlgoOpenOrdersParams,
+        ) -> anyhow::Result<RestApiResponse<Vec<models::CurrentAllAlgoOpenOrdersResponseInner>>>
+        {
+            if self.force_error {
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
+            }
+
+            let resp_json: Value = serde_json::from_str(r#"[{"algoId":2148627,"clientAlgoId":"MRumok0dkhrP4kCm12AHaB","algoType":"CONDITIONAL","orderType":"TAKE_PROFIT","symbol":"BNBUSDT","side":"SELL","positionSide":"BOTH","timeInForce":"GTC","quantity":"0.01","algoStatus":"NEW","actualOrderId":"","actualPrice":"0.00000","triggerPrice":"750.000","price":"750.000","icebergQuantity":null,"tpTriggerPrice":"0.000","tpPrice":"0.000","slTriggerPrice":"0.000","slPrice":"0.000","tpOrderType":"","selfTradePreventionMode":"EXPIRE_MAKER","workingType":"CONTRACT_PRICE","priceMatch":"NONE","closePosition":false,"priceProtect":false,"reduceOnly":false,"createTime":1750514941540,"updateTime":1750514941540,"triggerTime":0,"goodTillDate":0}]"#).unwrap();
+            let dummy_response: Vec<models::CurrentAllAlgoOpenOrdersResponseInner> =
+                serde_json::from_value(resp_json.clone())
+                    .expect("should parse into Vec<models::CurrentAllAlgoOpenOrdersResponseInner>");
+
+            let dummy = DummyRestApiResponse {
+                inner: Box::new(move || Box::pin(async move { Ok(dummy_response) })),
+                status: 200,
+                headers: HashMap::new(),
+                rate_limits: None,
+            };
+
+            Ok(dummy.into())
+        }
+
         async fn current_all_open_orders(
             &self,
             _params: CurrentAllOpenOrdersParams,
         ) -> anyhow::Result<RestApiResponse<Vec<models::AllOrdersResponseInner>>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"avgPrice":"0.00000","clientOrderId":"abc","cumQuote":"0","executedQty":"0","orderId":1917641,"origQty":"0.40","origType":"TRAILING_STOP_MARKET","price":"0","reduceOnly":false,"side":"BUY","positionSide":"SHORT","status":"NEW","stopPrice":"9300","closePosition":false,"symbol":"BTCUSDT","time":1579276756075,"timeInForce":"GTC","type":"TRAILING_STOP_MARKET","activatePrice":"9020","priceRate":"0.3","updateTime":1579276756075,"workingType":"CONTRACT_PRICE","priceProtect":false,"priceMatch":"NONE","selfTradePreventionMode":"NONE","goodTillDate":0}]"#).unwrap();
@@ -3705,15 +4828,44 @@ mod tests {
             Ok(dummy.into())
         }
 
+        async fn futures_tradfi_perps_contract(
+            &self,
+            _params: FuturesTradfiPerpsContractParams,
+        ) -> anyhow::Result<RestApiResponse<models::FuturesTradfiPerpsContractResponse>> {
+            if self.force_error {
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
+            }
+
+            let resp_json: Value = serde_json::from_str(r#"{"code":200,"msg":"success"}"#).unwrap();
+            let dummy_response: models::FuturesTradfiPerpsContractResponse =
+                serde_json::from_value(resp_json.clone())
+                    .expect("should parse into models::FuturesTradfiPerpsContractResponse");
+
+            let dummy = DummyRestApiResponse {
+                inner: Box::new(move || Box::pin(async move { Ok(dummy_response) })),
+                status: 200,
+                headers: HashMap::new(),
+                rate_limits: None,
+            };
+
+            Ok(dummy.into())
+        }
+
         async fn get_order_modify_history(
             &self,
             _params: GetOrderModifyHistoryParams,
         ) -> anyhow::Result<RestApiResponse<Vec<models::GetOrderModifyHistoryResponseInner>>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"amendmentId":5363,"symbol":"BTCUSDT","pair":"BTCUSDT","orderId":20072994037,"clientOrderId":"LJ9R4QZDihCaS8UAOOLpgW","time":1629184560899,"amendment":{"price":{"before":"30004","after":"30003.2"},"origQty":{"before":"1","after":"1"},"count":3}},{"amendmentId":5361,"symbol":"BTCUSDT","pair":"BTCUSDT","orderId":20072994037,"clientOrderId":"LJ9R4QZDihCaS8UAOOLpgW","time":1629184533946,"amendment":{"price":{"before":"30005","after":"30004"},"origQty":{"before":"1","after":"1"},"count":2}},{"amendmentId":5325,"symbol":"BTCUSDT","pair":"BTCUSDT","orderId":20072994037,"clientOrderId":"LJ9R4QZDihCaS8UAOOLpgW","time":1629182711787,"amendment":{"price":{"before":"30002","after":"30005"},"origQty":{"before":"1","after":"1"},"count":1}}]"#).unwrap();
@@ -3737,9 +4889,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<Vec<models::GetPositionMarginChangeHistoryResponseInner>>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"symbol":"BTCUSDT","type":1,"deltaType":"USER_ADJUST","amount":"23.36332311","asset":"USDT","time":1578047897183,"positionSide":"BOTH"},{"symbol":"BTCUSDT","type":1,"deltaType":"USER_ADJUST","amount":"100","asset":"USDT","time":1578047900425,"positionSide":"LONG"}]"#).unwrap();
@@ -3763,9 +4917,11 @@ mod tests {
             _params: ModifyIsolatedPositionMarginParams,
         ) -> anyhow::Result<RestApiResponse<models::ModifyIsolatedPositionMarginResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"amount":100,"code":200,"msg":"Successfully modify position margin.","type":1}"#).unwrap();
@@ -3789,9 +4945,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<Vec<models::ModifyMultipleOrdersResponseInner>>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"orderId":20072994037,"symbol":"BTCUSDT","pair":"BTCUSDT","status":"NEW","clientOrderId":"LJ9R4QZDihCaS8UAOOLpgW","price":"30005","avgPrice":"0.0","origQty":"1","executedQty":"0","cumQty":"0","cumBase":"0","timeInForce":"GTC","type":"LIMIT","reduceOnly":false,"closePosition":false,"side":"BUY","positionSide":"LONG","stopPrice":"0","workingType":"CONTRACT_PRICE","priceProtect":false,"origType":"LIMIT","priceMatch":"NONE","selfTradePreventionMode":"NONE","goodTillDate":0,"updateTime":1629182711600},{"code":-2022,"msg":"ReduceOnly Order is rejected."}]"#).unwrap();
@@ -3814,9 +4972,11 @@ mod tests {
             _params: ModifyOrderParams,
         ) -> anyhow::Result<RestApiResponse<models::ModifyOrderResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"orderId":20072994037,"symbol":"BTCUSDT","pair":"BTCUSDT","status":"NEW","clientOrderId":"LJ9R4QZDihCaS8UAOOLpgW","price":"30005","avgPrice":"0.0","origQty":"1","executedQty":"0","cumQty":"0","cumBase":"0","timeInForce":"GTC","type":"LIMIT","reduceOnly":false,"closePosition":false,"side":"BUY","positionSide":"LONG","stopPrice":"0","workingType":"CONTRACT_PRICE","priceProtect":false,"origType":"LIMIT","priceMatch":"NONE","selfTradePreventionMode":"NONE","goodTillDate":0,"updateTime":1629182711600}"#).unwrap();
@@ -3834,17 +4994,46 @@ mod tests {
             Ok(dummy.into())
         }
 
+        async fn new_algo_order(
+            &self,
+            _params: NewAlgoOrderParams,
+        ) -> anyhow::Result<RestApiResponse<models::NewAlgoOrderResponse>> {
+            if self.force_error {
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
+            }
+
+            let resp_json: Value = serde_json::from_str(r#"{"algoId":2146760,"clientAlgoId":"6B2I9XVcJpCjqPAJ4YoFX7","algoType":"CONDITIONAL","orderType":"TAKE_PROFIT","symbol":"BNBUSDT","side":"SELL","positionSide":"BOTH","timeInForce":"GTC","quantity":"0.01","algoStatus":"NEW","triggerPrice":"750.000","price":"750.000","icebergQuantity":null,"selfTradePreventionMode":"EXPIRE_MAKER","workingType":"CONTRACT_PRICE","priceMatch":"NONE","closePosition":false,"priceProtect":false,"reduceOnly":false,"activatePrice":"","callbackRate":"","createTime":1750485492076,"updateTime":1750485492076,"triggerTime":0,"goodTillDate":0}"#).unwrap();
+            let dummy_response: models::NewAlgoOrderResponse =
+                serde_json::from_value(resp_json.clone())
+                    .expect("should parse into models::NewAlgoOrderResponse");
+
+            let dummy = DummyRestApiResponse {
+                inner: Box::new(move || Box::pin(async move { Ok(dummy_response) })),
+                status: 200,
+                headers: HashMap::new(),
+                rate_limits: None,
+            };
+
+            Ok(dummy.into())
+        }
+
         async fn new_order(
             &self,
             _params: NewOrderParams,
         ) -> anyhow::Result<RestApiResponse<models::NewOrderResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
-            let resp_json: Value = serde_json::from_str(r#"{"clientOrderId":"testOrder","cumQty":"0","cumQuote":"0","executedQty":"0","orderId":22542179,"avgPrice":"0.00000","origQty":"10","price":"0","reduceOnly":false,"side":"BUY","positionSide":"SHORT","status":"NEW","stopPrice":"9300","closePosition":false,"symbol":"BTCUSDT","timeInForce":"GTD","type":"TRAILING_STOP_MARKET","origType":"TRAILING_STOP_MARKET","activatePrice":"9020","priceRate":"0.3","updateTime":1566818724722,"workingType":"CONTRACT_PRICE","priceProtect":false,"priceMatch":"NONE","selfTradePreventionMode":"NONE","goodTillDate":1693207680000}"#).unwrap();
+            let resp_json: Value = serde_json::from_str(r#"{"clientOrderId":"testOrder","cumQty":"0","cumQuote":"0","executedQty":"0","orderId":22542179,"avgPrice":"0.00000","origQty":"10","price":"0","reduceOnly":false,"side":"BUY","positionSide":"SHORT","status":"NEW","stopPrice":"9300","closePosition":false,"symbol":"BTCUSDT","timeInForce":"GTD","type":"TRAILING_STOP_MARKET","origType":"TRAILING_STOP_MARKET","updateTime":1566818724722,"workingType":"CONTRACT_PRICE","priceProtect":false,"priceMatch":"NONE","selfTradePreventionMode":"NONE","goodTillDate":1693207680000}"#).unwrap();
             let dummy_response: models::NewOrderResponse =
                 serde_json::from_value(resp_json.clone())
                     .expect("should parse into models::NewOrderResponse");
@@ -3865,12 +5054,14 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<Vec<models::PlaceMultipleOrdersResponseInner>>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
-            let resp_json: Value = serde_json::from_str(r#"[{"clientOrderId":"testOrder","cumQty":"0","cumQuote":"0","executedQty":"0","orderId":22542179,"avgPrice":"0.00000","origQty":"10","price":"0","reduceOnly":false,"side":"BUY","positionSide":"SHORT","status":"NEW","stopPrice":"9300","symbol":"BTCUSDT","timeInForce":"GTC","type":"TRAILING_STOP_MARKET","origType":"TRAILING_STOP_MARKET","activatePrice":"9020","priceRate":"0.3","updateTime":1566818724722,"workingType":"CONTRACT_PRICE","priceProtect":false,"priceMatch":"NONE","selfTradePreventionMode":"NONE","goodTillDate":1693207680000},{"code":-2022,"msg":"ReduceOnly Order is rejected."}]"#).unwrap();
+            let resp_json: Value = serde_json::from_str(r#"[{"clientOrderId":"testOrder","cumQty":"0","cumQuote":"0","executedQty":"0","orderId":22542179,"avgPrice":"0.00000","origQty":"10","price":"0","reduceOnly":false,"side":"BUY","positionSide":"SHORT","status":"NEW","stopPrice":"0","closePosition":false,"symbol":"BTCUSDT","timeInForce":"GTC","type":"TRAILING_STOP_MARKET","origType":"TRAILING_STOP_MARKET","updateTime":1566818724722,"workingType":"CONTRACT_PRICE","priceProtect":false,"priceMatch":"NONE","selfTradePreventionMode":"NONE","goodTillDate":1693207680000},{"code":-2022,"msg":"ReduceOnly Order is rejected."}]"#).unwrap();
             let dummy_response: Vec<models::PlaceMultipleOrdersResponseInner> =
                 serde_json::from_value(resp_json.clone())
                     .expect("should parse into Vec<models::PlaceMultipleOrdersResponseInner>");
@@ -3891,9 +5082,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<Vec<models::PositionAdlQuantileEstimationResponseInner>>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"symbol":"ETHUSDT","adlQuantile":{"LONG":3,"SHORT":3,"HEDGE":0}},{"symbol":"BTCUSDT","adlQuantile":{"LONG":1,"SHORT":2,"BOTH":0}}]"#).unwrap();
@@ -3918,9 +5111,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<Vec<models::PositionInformationV2ResponseInner>>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"entryPrice":"0.00000","breakEvenPrice":"0.0","marginType":"isolated","isAutoAddMargin":"false","isolatedMargin":"0.00000000","leverage":"10","liquidationPrice":"0","markPrice":"6679.50671178","maxNotionalValue":"20000000","positionAmt":"0.000","notional":"0","isolatedWallet":"0","symbol":"BTCUSDT","unRealizedProfit":"0.00000000","positionSide":"BOTH","updateTime":0},{"symbol":"BTCUSDT","positionAmt":"0.001","entryPrice":"22185.2","breakEvenPrice":"0.0","markPrice":"21123.05052574","unRealizedProfit":"-1.06214947","liquidationPrice":"19731.45529116","leverage":"4","maxNotionalValue":"100000000","marginType":"cross","isolatedMargin":"0.00000000","isAutoAddMargin":"false","positionSide":"LONG","notional":"21.12305052","isolatedWallet":"0","updateTime":1655217461579},{"symbol":"BTCUSDT","positionAmt":"0.000","entryPrice":"0.0","breakEvenPrice":"0.0","markPrice":"21123.05052574","unRealizedProfit":"0.00000000","liquidationPrice":"0","leverage":"4","maxNotionalValue":"100000000","marginType":"cross","isolatedMargin":"0.00000000","isAutoAddMargin":"false","positionSide":"SHORT","notional":"0","isolatedWallet":"0","updateTime":0}]"#).unwrap();
@@ -3944,9 +5139,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<Vec<models::PositionInformationV3ResponseInner>>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"symbol":"ADAUSDT","positionSide":"BOTH","positionAmt":"30","entryPrice":"0.385","breakEvenPrice":"0.385077","markPrice":"0.41047590","unRealizedProfit":"0.76427700","liquidationPrice":"0","isolatedMargin":"0","notional":"12.31427700","marginAsset":"USDT","isolatedWallet":"0","initialMargin":"0.61571385","maintMargin":"0.08004280","positionInitialMargin":"0.61571385","openOrderInitialMargin":"0","adl":2,"bidNotional":"0","askNotional":"0","updateTime":1720736417660},{"symbol":"ADAUSDT","positionSide":"LONG","positionAmt":"30","entryPrice":"0.385","breakEvenPrice":"0.385077","markPrice":"0.41047590","unRealizedProfit":"0.76427700","liquidationPrice":"0","isolatedMargin":"0","notional":"12.31427700","marginAsset":"USDT","isolatedWallet":"0","initialMargin":"0.61571385","maintMargin":"0.08004280","positionInitialMargin":"0.61571385","openOrderInitialMargin":"0","adl":2,"bidNotional":"0","askNotional":"0","updateTime":1720736417660},{"symbol":"COMPUSDT","positionSide":"SHORT","positionAmt":"-1.000","entryPrice":"70.92841","breakEvenPrice":"70.900038636","markPrice":"49.72023376","unRealizedProfit":"21.20817624","liquidationPrice":"2260.56757210","isolatedMargin":"0","notional":"-49.72023376","marginAsset":"USDT","isolatedWallet":"0","initialMargin":"2.48601168","maintMargin":"0.49720233","positionInitialMargin":"2.48601168","openOrderInitialMargin":"0","adl":2,"bidNotional":"0","askNotional":"0","updateTime":1708943511656}]"#).unwrap();
@@ -3964,14 +5161,70 @@ mod tests {
             Ok(dummy.into())
         }
 
+        async fn query_algo_order(
+            &self,
+            _params: QueryAlgoOrderParams,
+        ) -> anyhow::Result<RestApiResponse<models::QueryAlgoOrderResponse>> {
+            if self.force_error {
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
+            }
+
+            let resp_json: Value = serde_json::from_str(r#"{"algoId":2146760,"clientAlgoId":"6B2I9XVcJpCjqPAJ4YoFX7","algoType":"CONDITIONAL","orderType":"TAKE_PROFIT","symbol":"BNBUSDT","side":"SELL","positionSide":"BOTH","timeInForce":"GTC","quantity":"0.01","algoStatus":"CANCELED","actualOrderId":"","actualPrice":"0.00000","triggerPrice":"750.000","price":"750.000","icebergQuantity":null,"tpTriggerPrice":"0.000","tpPrice":"0.000","slTriggerPrice":"0.000","slPrice":"0.000","tpOrderType":"","selfTradePreventionMode":"EXPIRE_MAKER","workingType":"CONTRACT_PRICE","priceMatch":"NONE","closePosition":false,"priceProtect":false,"reduceOnly":false,"createTime":1750485492076,"updateTime":1750514545091,"triggerTime":0,"goodTillDate":0}"#).unwrap();
+            let dummy_response: models::QueryAlgoOrderResponse =
+                serde_json::from_value(resp_json.clone())
+                    .expect("should parse into models::QueryAlgoOrderResponse");
+
+            let dummy = DummyRestApiResponse {
+                inner: Box::new(move || Box::pin(async move { Ok(dummy_response) })),
+                status: 200,
+                headers: HashMap::new(),
+                rate_limits: None,
+            };
+
+            Ok(dummy.into())
+        }
+
+        async fn query_all_algo_orders(
+            &self,
+            _params: QueryAllAlgoOrdersParams,
+        ) -> anyhow::Result<RestApiResponse<Vec<models::QueryAllAlgoOrdersResponseInner>>> {
+            if self.force_error {
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
+            }
+
+            let resp_json: Value = serde_json::from_str(r#"[{"algoId":2146760,"clientAlgoId":"6B2I9XVcJpCjqPAJ4YoFX7","algoType":"CONDITIONAL","orderType":"TAKE_PROFIT","symbol":"BNBUSDT","side":"SELL","positionSide":"BOTH","timeInForce":"GTC","quantity":"0.01","algoStatus":"CANCELED","actualOrderId":"","actualPrice":"0.00000","triggerPrice":"750.000","price":"750.000","icebergQuantity":null,"tpTriggerPrice":"0.000","tpPrice":"0.000","slTriggerPrice":"0.000","slPrice":"0.000","tpOrderType":"","selfTradePreventionMode":"EXPIRE_MAKER","workingType":"CONTRACT_PRICE","priceMatch":"NONE","closePosition":false,"priceProtect":false,"reduceOnly":false,"createTime":1750485492076,"updateTime":1750514545091,"triggerTime":0,"goodTillDate":0}]"#).unwrap();
+            let dummy_response: Vec<models::QueryAllAlgoOrdersResponseInner> =
+                serde_json::from_value(resp_json.clone())
+                    .expect("should parse into Vec<models::QueryAllAlgoOrdersResponseInner>");
+
+            let dummy = DummyRestApiResponse {
+                inner: Box::new(move || Box::pin(async move { Ok(dummy_response) })),
+                status: 200,
+                headers: HashMap::new(),
+                rate_limits: None,
+            };
+
+            Ok(dummy.into())
+        }
+
         async fn query_current_open_order(
             &self,
             _params: QueryCurrentOpenOrderParams,
         ) -> anyhow::Result<RestApiResponse<models::QueryCurrentOpenOrderResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"avgPrice":"0.00000","clientOrderId":"abc","cumQuote":"0","executedQty":"0","orderId":1917641,"origQty":"0.40","origType":"TRAILING_STOP_MARKET","price":"0","reduceOnly":false,"side":"BUY","positionSide":"SHORT","status":"NEW","stopPrice":"9300","closePosition":false,"symbol":"BTCUSDT","time":1579276756075,"timeInForce":"GTC","type":"TRAILING_STOP_MARKET","activatePrice":"9020","priceRate":"0.3","updateTime":1579276756075,"workingType":"CONTRACT_PRICE","priceProtect":false,"priceMatch":"NONE","selfTradePreventionMode":"NONE","goodTillDate":0}"#).unwrap();
@@ -3994,12 +5247,14 @@ mod tests {
             _params: QueryOrderParams,
         ) -> anyhow::Result<RestApiResponse<models::QueryOrderResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
-            let resp_json: Value = serde_json::from_str(r#"{"avgPrice":"0.00000","clientOrderId":"abc","cumQuote":"0","executedQty":"0","orderId":1917641,"origQty":"0.40","origType":"TRAILING_STOP_MARKET","price":"0","reduceOnly":false,"side":"BUY","positionSide":"SHORT","status":"NEW","stopPrice":"9300","closePosition":false,"symbol":"BTCUSDT","time":1579276756075,"timeInForce":"GTC","type":"TRAILING_STOP_MARKET","activatePrice":"9020","priceRate":"0.3","updateTime":1579276756075,"workingType":"CONTRACT_PRICE","priceProtect":false,"priceMatch":"NONE","selfTradePreventionMode":"NONE","goodTillDate":0}"#).unwrap();
+            let resp_json: Value = serde_json::from_str(r#"{"avgPrice":"0.00000","clientOrderId":"abc","cumQuote":"0","executedQty":"0","orderId":1917641,"origQty":"0.40","origType":"TRAILING_STOP_MARKET","price":"0","reduceOnly":false,"side":"BUY","positionSide":"SHORT","status":"NEW","stopPrice":"9300","closePosition":false,"symbol":"BTCUSDT","time":1579276756075,"timeInForce":"GTC","type":"TRAILING_STOP_MARKET","activatePrice":"9020","priceRate":"0.3","updateTime":1579276756075,"workingType":"CONTRACT_PRICE","priceProtect":false}"#).unwrap();
             let dummy_response: models::QueryOrderResponse =
                 serde_json::from_value(resp_json.clone())
                     .expect("should parse into models::QueryOrderResponse");
@@ -4019,9 +5274,11 @@ mod tests {
             _params: TestOrderParams,
         ) -> anyhow::Result<RestApiResponse<models::TestOrderResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"clientOrderId":"testOrder","cumQty":"0","cumQuote":"0","executedQty":"0","orderId":22542179,"avgPrice":"0.00000","origQty":"10","price":"0","reduceOnly":false,"side":"BUY","positionSide":"SHORT","status":"NEW","stopPrice":"9300","closePosition":false,"symbol":"BTCUSDT","timeInForce":"GTD","type":"TRAILING_STOP_MARKET","origType":"TRAILING_STOP_MARKET","activatePrice":"9020","priceRate":"0.3","updateTime":1566818724722,"workingType":"CONTRACT_PRICE","priceProtect":false,"priceMatch":"NONE","selfTradePreventionMode":"NONE","goodTillDate":1693207680000}"#).unwrap();
@@ -4044,9 +5301,11 @@ mod tests {
             _params: UsersForceOrdersParams,
         ) -> anyhow::Result<RestApiResponse<Vec<models::UsersForceOrdersResponseInner>>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"orderId":6071832819,"symbol":"BTCUSDT","status":"FILLED","clientOrderId":"autoclose-1596107620040000020","price":"10871.09","avgPrice":"10913.21000","origQty":"0.001","executedQty":"0.001","cumQuote":"10.91321","timeInForce":"IOC","type":"LIMIT","reduceOnly":false,"closePosition":false,"side":"SELL","positionSide":"BOTH","stopPrice":"0","workingType":"CONTRACT_PRICE","origType":"LIMIT","time":1596107620044,"updateTime":1596107620087},{"orderId":6072734303,"symbol":"BTCUSDT","status":"FILLED","clientOrderId":"adl_autoclose","price":"11023.14","avgPrice":"10979.82000","origQty":"0.001","executedQty":"0.001","cumQuote":"10.97982","timeInForce":"GTC","type":"LIMIT","reduceOnly":false,"closePosition":false,"side":"BUY","positionSide":"SHORT","stopPrice":"0","workingType":"CONTRACT_PRICE","origType":"LIMIT","time":1596110725059,"updateTime":1596110725071}]"#).unwrap();
@@ -4265,6 +5524,129 @@ mod tests {
     }
 
     #[test]
+    fn cancel_algo_order_required_params_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockTradeApiClient { force_error: false };
+
+            let params = CancelAlgoOrderParams::builder().build().unwrap();
+
+            let resp_json: Value = serde_json::from_str(r#"{"algoId":2146760,"clientAlgoId":"6B2I9XVcJpCjqPAJ4YoFX7","code":"200","msg":"success"}"#).unwrap();
+            let expected_response : models::CancelAlgoOrderResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::CancelAlgoOrderResponse");
+
+            let resp = client.cancel_algo_order(params).await.expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn cancel_algo_order_optional_params_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockTradeApiClient { force_error: false };
+
+            let params = CancelAlgoOrderParams::builder().algo_id(1).client_algo_id("1".to_string()).recv_window(5000).build().unwrap();
+
+            let resp_json: Value = serde_json::from_str(r#"{"algoId":2146760,"clientAlgoId":"6B2I9XVcJpCjqPAJ4YoFX7","code":"200","msg":"success"}"#).unwrap();
+            let expected_response : models::CancelAlgoOrderResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::CancelAlgoOrderResponse");
+
+            let resp = client.cancel_algo_order(params).await.expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn cancel_algo_order_response_error() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockTradeApiClient { force_error: true };
+
+            let params = CancelAlgoOrderParams::builder().build().unwrap();
+
+            match client.cancel_algo_order(params).await {
+                Ok(_) => panic!("Expected an error"),
+                Err(err) => {
+                    assert_eq!(err.to_string(), "Connector client error: ResponseError");
+                }
+            }
+        });
+    }
+
+    #[test]
+    fn cancel_all_algo_open_orders_required_params_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockTradeApiClient { force_error: false };
+
+            let params = CancelAllAlgoOpenOrdersParams::builder("symbol_example".to_string())
+                .build()
+                .unwrap();
+
+            let resp_json: Value = serde_json::from_str(
+                r#"{"code":200,"msg":"The operation of cancel all open order is done."}"#,
+            )
+            .unwrap();
+            let expected_response: models::CancelAllAlgoOpenOrdersResponse =
+                serde_json::from_value(resp_json.clone())
+                    .expect("should parse into models::CancelAllAlgoOpenOrdersResponse");
+
+            let resp = client
+                .cancel_all_algo_open_orders(params)
+                .await
+                .expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn cancel_all_algo_open_orders_optional_params_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockTradeApiClient { force_error: false };
+
+            let params = CancelAllAlgoOpenOrdersParams::builder("symbol_example".to_string())
+                .recv_window(5000)
+                .build()
+                .unwrap();
+
+            let resp_json: Value = serde_json::from_str(
+                r#"{"code":200,"msg":"The operation of cancel all open order is done."}"#,
+            )
+            .unwrap();
+            let expected_response: models::CancelAllAlgoOpenOrdersResponse =
+                serde_json::from_value(resp_json.clone())
+                    .expect("should parse into models::CancelAllAlgoOpenOrdersResponse");
+
+            let resp = client
+                .cancel_all_algo_open_orders(params)
+                .await
+                .expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn cancel_all_algo_open_orders_response_error() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockTradeApiClient { force_error: true };
+
+            let params = CancelAllAlgoOpenOrdersParams::builder("symbol_example".to_string())
+                .build()
+                .unwrap();
+
+            match client.cancel_all_algo_open_orders(params).await {
+                Ok(_) => panic!("Expected an error"),
+                Err(err) => {
+                    assert_eq!(err.to_string(), "Connector client error: ResponseError");
+                }
+            }
+        });
+    }
+
+    #[test]
     fn cancel_all_open_orders_required_params_success() {
         TOKIO_SHARED_RT.block_on(async {
             let client = MockTradeApiClient { force_error: false };
@@ -4396,7 +5778,7 @@ mod tests {
 
             let params = CancelOrderParams::builder("symbol_example".to_string(),).build().unwrap();
 
-            let resp_json: Value = serde_json::from_str(r#"{"clientOrderId":"myOrder1","cumQty":"0","cumQuote":"0","executedQty":"0","orderId":283194212,"origQty":"11","origType":"TRAILING_STOP_MARKET","price":"0","reduceOnly":false,"side":"BUY","positionSide":"SHORT","status":"CANCELED","stopPrice":"9300","closePosition":false,"symbol":"BTCUSDT","timeInForce":"GTC","type":"TRAILING_STOP_MARKET","activatePrice":"9020","priceRate":"0.3","updateTime":1571110484038,"workingType":"CONTRACT_PRICE","priceProtect":false,"priceMatch":"NONE","selfTradePreventionMode":"NONE","goodTillDate":1693207680000}"#).unwrap();
+            let resp_json: Value = serde_json::from_str(r#"{"clientOrderId":"myOrder1","cumQty":"0","cumQuote":"0","executedQty":"0","orderId":283194212,"origQty":"11","origType":"TRAILING_STOP_MARKET","price":"0","avgPrice":"0.00","reduceOnly":false,"side":"BUY","positionSide":"SHORT","status":"CANCELED","stopPrice":"9300","closePosition":false,"symbol":"BTCUSDT","timeInForce":"GTC","type":"TRAILING_STOP_MARKET","activatePrice":"9020","priceRate":"0.3","updateTime":1571110484038,"workingType":"CONTRACT_PRICE","priceProtect":false,"priceMatch":"NONE","selfTradePreventionMode":"NONE","goodTillDate":1693207680000}"#).unwrap();
             let expected_response : models::CancelOrderResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::CancelOrderResponse");
 
             let resp = client.cancel_order(params).await.expect("Expected a response");
@@ -4413,7 +5795,7 @@ mod tests {
 
             let params = CancelOrderParams::builder("symbol_example".to_string(),).order_id(1).orig_client_order_id("1".to_string()).recv_window(5000).build().unwrap();
 
-            let resp_json: Value = serde_json::from_str(r#"{"clientOrderId":"myOrder1","cumQty":"0","cumQuote":"0","executedQty":"0","orderId":283194212,"origQty":"11","origType":"TRAILING_STOP_MARKET","price":"0","reduceOnly":false,"side":"BUY","positionSide":"SHORT","status":"CANCELED","stopPrice":"9300","closePosition":false,"symbol":"BTCUSDT","timeInForce":"GTC","type":"TRAILING_STOP_MARKET","activatePrice":"9020","priceRate":"0.3","updateTime":1571110484038,"workingType":"CONTRACT_PRICE","priceProtect":false,"priceMatch":"NONE","selfTradePreventionMode":"NONE","goodTillDate":1693207680000}"#).unwrap();
+            let resp_json: Value = serde_json::from_str(r#"{"clientOrderId":"myOrder1","cumQty":"0","cumQuote":"0","executedQty":"0","orderId":283194212,"origQty":"11","origType":"TRAILING_STOP_MARKET","price":"0","avgPrice":"0.00","reduceOnly":false,"side":"BUY","positionSide":"SHORT","status":"CANCELED","stopPrice":"9300","closePosition":false,"symbol":"BTCUSDT","timeInForce":"GTC","type":"TRAILING_STOP_MARKET","activatePrice":"9020","priceRate":"0.3","updateTime":1571110484038,"workingType":"CONTRACT_PRICE","priceProtect":false,"priceMatch":"NONE","selfTradePreventionMode":"NONE","goodTillDate":1693207680000}"#).unwrap();
             let expected_response : models::CancelOrderResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::CancelOrderResponse");
 
             let resp = client.cancel_order(params).await.expect("Expected a response");
@@ -4731,6 +6113,56 @@ mod tests {
     }
 
     #[test]
+    fn current_all_algo_open_orders_required_params_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockTradeApiClient { force_error: false };
+
+            let params = CurrentAllAlgoOpenOrdersParams::builder().build().unwrap();
+
+            let resp_json: Value = serde_json::from_str(r#"[{"algoId":2148627,"clientAlgoId":"MRumok0dkhrP4kCm12AHaB","algoType":"CONDITIONAL","orderType":"TAKE_PROFIT","symbol":"BNBUSDT","side":"SELL","positionSide":"BOTH","timeInForce":"GTC","quantity":"0.01","algoStatus":"NEW","actualOrderId":"","actualPrice":"0.00000","triggerPrice":"750.000","price":"750.000","icebergQuantity":null,"tpTriggerPrice":"0.000","tpPrice":"0.000","slTriggerPrice":"0.000","slPrice":"0.000","tpOrderType":"","selfTradePreventionMode":"EXPIRE_MAKER","workingType":"CONTRACT_PRICE","priceMatch":"NONE","closePosition":false,"priceProtect":false,"reduceOnly":false,"createTime":1750514941540,"updateTime":1750514941540,"triggerTime":0,"goodTillDate":0}]"#).unwrap();
+            let expected_response : Vec<models::CurrentAllAlgoOpenOrdersResponseInner> = serde_json::from_value(resp_json.clone()).expect("should parse into Vec<models::CurrentAllAlgoOpenOrdersResponseInner>");
+
+            let resp = client.current_all_algo_open_orders(params).await.expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn current_all_algo_open_orders_optional_params_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockTradeApiClient { force_error: false };
+
+            let params = CurrentAllAlgoOpenOrdersParams::builder().algo_type("algo_type_example".to_string()).symbol("symbol_example".to_string()).algo_id(1).recv_window(5000).build().unwrap();
+
+            let resp_json: Value = serde_json::from_str(r#"[{"algoId":2148627,"clientAlgoId":"MRumok0dkhrP4kCm12AHaB","algoType":"CONDITIONAL","orderType":"TAKE_PROFIT","symbol":"BNBUSDT","side":"SELL","positionSide":"BOTH","timeInForce":"GTC","quantity":"0.01","algoStatus":"NEW","actualOrderId":"","actualPrice":"0.00000","triggerPrice":"750.000","price":"750.000","icebergQuantity":null,"tpTriggerPrice":"0.000","tpPrice":"0.000","slTriggerPrice":"0.000","slPrice":"0.000","tpOrderType":"","selfTradePreventionMode":"EXPIRE_MAKER","workingType":"CONTRACT_PRICE","priceMatch":"NONE","closePosition":false,"priceProtect":false,"reduceOnly":false,"createTime":1750514941540,"updateTime":1750514941540,"triggerTime":0,"goodTillDate":0}]"#).unwrap();
+            let expected_response : Vec<models::CurrentAllAlgoOpenOrdersResponseInner> = serde_json::from_value(resp_json.clone()).expect("should parse into Vec<models::CurrentAllAlgoOpenOrdersResponseInner>");
+
+            let resp = client.current_all_algo_open_orders(params).await.expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn current_all_algo_open_orders_response_error() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockTradeApiClient { force_error: true };
+
+            let params = CurrentAllAlgoOpenOrdersParams::builder().build().unwrap();
+
+            match client.current_all_algo_open_orders(params).await {
+                Ok(_) => panic!("Expected an error"),
+                Err(err) => {
+                    assert_eq!(err.to_string(), "Connector client error: ResponseError");
+                }
+            }
+        });
+    }
+
+    #[test]
     fn current_all_open_orders_required_params_success() {
         TOKIO_SHARED_RT.block_on(async {
             let client = MockTradeApiClient { force_error: false };
@@ -4772,6 +6204,69 @@ mod tests {
             let params = CurrentAllOpenOrdersParams::builder().build().unwrap();
 
             match client.current_all_open_orders(params).await {
+                Ok(_) => panic!("Expected an error"),
+                Err(err) => {
+                    assert_eq!(err.to_string(), "Connector client error: ResponseError");
+                }
+            }
+        });
+    }
+
+    #[test]
+    fn futures_tradfi_perps_contract_required_params_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockTradeApiClient { force_error: false };
+
+            let params = FuturesTradfiPerpsContractParams::builder().build().unwrap();
+
+            let resp_json: Value = serde_json::from_str(r#"{"code":200,"msg":"success"}"#).unwrap();
+            let expected_response: models::FuturesTradfiPerpsContractResponse =
+                serde_json::from_value(resp_json.clone())
+                    .expect("should parse into models::FuturesTradfiPerpsContractResponse");
+
+            let resp = client
+                .futures_tradfi_perps_contract(params)
+                .await
+                .expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn futures_tradfi_perps_contract_optional_params_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockTradeApiClient { force_error: false };
+
+            let params = FuturesTradfiPerpsContractParams::builder()
+                .recv_window(5000)
+                .build()
+                .unwrap();
+
+            let resp_json: Value = serde_json::from_str(r#"{"code":200,"msg":"success"}"#).unwrap();
+            let expected_response: models::FuturesTradfiPerpsContractResponse =
+                serde_json::from_value(resp_json.clone())
+                    .expect("should parse into models::FuturesTradfiPerpsContractResponse");
+
+            let resp = client
+                .futures_tradfi_perps_contract(params)
+                .await
+                .expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn futures_tradfi_perps_contract_response_error() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockTradeApiClient { force_error: true };
+
+            let params = FuturesTradfiPerpsContractParams::builder().build().unwrap();
+
+            match client.futures_tradfi_perps_contract(params).await {
                 Ok(_) => panic!("Expected an error"),
                 Err(err) => {
                     assert_eq!(err.to_string(), "Connector client error: ResponseError");
@@ -5049,13 +6544,70 @@ mod tests {
     }
 
     #[test]
+    fn new_algo_order_required_params_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockTradeApiClient { force_error: false };
+
+            let params = NewAlgoOrderParams::builder("algo_type_example".to_string(),"symbol_example".to_string(),NewAlgoOrderSideEnum::Buy,"r#type_example".to_string(),).build().unwrap();
+
+            let resp_json: Value = serde_json::from_str(r#"{"algoId":2146760,"clientAlgoId":"6B2I9XVcJpCjqPAJ4YoFX7","algoType":"CONDITIONAL","orderType":"TAKE_PROFIT","symbol":"BNBUSDT","side":"SELL","positionSide":"BOTH","timeInForce":"GTC","quantity":"0.01","algoStatus":"NEW","triggerPrice":"750.000","price":"750.000","icebergQuantity":null,"selfTradePreventionMode":"EXPIRE_MAKER","workingType":"CONTRACT_PRICE","priceMatch":"NONE","closePosition":false,"priceProtect":false,"reduceOnly":false,"activatePrice":"","callbackRate":"","createTime":1750485492076,"updateTime":1750485492076,"triggerTime":0,"goodTillDate":0}"#).unwrap();
+            let expected_response : models::NewAlgoOrderResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::NewAlgoOrderResponse");
+
+            let resp = client.new_algo_order(params).await.expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn new_algo_order_optional_params_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockTradeApiClient { force_error: false };
+
+            let params = NewAlgoOrderParams::builder("algo_type_example".to_string(),"symbol_example".to_string(),NewAlgoOrderSideEnum::Buy,"r#type_example".to_string(),).position_side(NewAlgoOrderPositionSideEnum::Both).time_in_force(NewAlgoOrderTimeInForceEnum::Gtc).quantity(dec!(1.0)).price(dec!(1.0)).trigger_price(dec!(1.0)).working_type(NewAlgoOrderWorkingTypeEnum::MarkPrice).price_match(NewAlgoOrderPriceMatchEnum::None).close_position("close_position_example".to_string()).price_protect("false".to_string()).reduce_only("false".to_string()).activate_price(dec!(1.0)).callback_rate(dec!(1.0)).client_algo_id("1".to_string()).new_order_resp_type(NewAlgoOrderNewOrderRespTypeEnum::Ack).self_trade_prevention_mode(NewAlgoOrderSelfTradePreventionModeEnum::ExpireTaker).good_till_date(789).recv_window(5000).build().unwrap();
+
+            let resp_json: Value = serde_json::from_str(r#"{"algoId":2146760,"clientAlgoId":"6B2I9XVcJpCjqPAJ4YoFX7","algoType":"CONDITIONAL","orderType":"TAKE_PROFIT","symbol":"BNBUSDT","side":"SELL","positionSide":"BOTH","timeInForce":"GTC","quantity":"0.01","algoStatus":"NEW","triggerPrice":"750.000","price":"750.000","icebergQuantity":null,"selfTradePreventionMode":"EXPIRE_MAKER","workingType":"CONTRACT_PRICE","priceMatch":"NONE","closePosition":false,"priceProtect":false,"reduceOnly":false,"activatePrice":"","callbackRate":"","createTime":1750485492076,"updateTime":1750485492076,"triggerTime":0,"goodTillDate":0}"#).unwrap();
+            let expected_response : models::NewAlgoOrderResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::NewAlgoOrderResponse");
+
+            let resp = client.new_algo_order(params).await.expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn new_algo_order_response_error() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockTradeApiClient { force_error: true };
+
+            let params = NewAlgoOrderParams::builder(
+                "algo_type_example".to_string(),
+                "symbol_example".to_string(),
+                NewAlgoOrderSideEnum::Buy,
+                "r#type_example".to_string(),
+            )
+            .build()
+            .unwrap();
+
+            match client.new_algo_order(params).await {
+                Ok(_) => panic!("Expected an error"),
+                Err(err) => {
+                    assert_eq!(err.to_string(), "Connector client error: ResponseError");
+                }
+            }
+        });
+    }
+
+    #[test]
     fn new_order_required_params_success() {
         TOKIO_SHARED_RT.block_on(async {
             let client = MockTradeApiClient { force_error: false };
 
             let params = NewOrderParams::builder("symbol_example".to_string(),NewOrderSideEnum::Buy,"r#type_example".to_string(),).build().unwrap();
 
-            let resp_json: Value = serde_json::from_str(r#"{"clientOrderId":"testOrder","cumQty":"0","cumQuote":"0","executedQty":"0","orderId":22542179,"avgPrice":"0.00000","origQty":"10","price":"0","reduceOnly":false,"side":"BUY","positionSide":"SHORT","status":"NEW","stopPrice":"9300","closePosition":false,"symbol":"BTCUSDT","timeInForce":"GTD","type":"TRAILING_STOP_MARKET","origType":"TRAILING_STOP_MARKET","activatePrice":"9020","priceRate":"0.3","updateTime":1566818724722,"workingType":"CONTRACT_PRICE","priceProtect":false,"priceMatch":"NONE","selfTradePreventionMode":"NONE","goodTillDate":1693207680000}"#).unwrap();
+            let resp_json: Value = serde_json::from_str(r#"{"clientOrderId":"testOrder","cumQty":"0","cumQuote":"0","executedQty":"0","orderId":22542179,"avgPrice":"0.00000","origQty":"10","price":"0","reduceOnly":false,"side":"BUY","positionSide":"SHORT","status":"NEW","stopPrice":"9300","closePosition":false,"symbol":"BTCUSDT","timeInForce":"GTD","type":"TRAILING_STOP_MARKET","origType":"TRAILING_STOP_MARKET","updateTime":1566818724722,"workingType":"CONTRACT_PRICE","priceProtect":false,"priceMatch":"NONE","selfTradePreventionMode":"NONE","goodTillDate":1693207680000}"#).unwrap();
             let expected_response : models::NewOrderResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::NewOrderResponse");
 
             let resp = client.new_order(params).await.expect("Expected a response");
@@ -5070,9 +6622,9 @@ mod tests {
         TOKIO_SHARED_RT.block_on(async {
             let client = MockTradeApiClient { force_error: false };
 
-            let params = NewOrderParams::builder("symbol_example".to_string(),NewOrderSideEnum::Buy,"r#type_example".to_string(),).position_side(NewOrderPositionSideEnum::Both).time_in_force(NewOrderTimeInForceEnum::Gtc).quantity(dec!(1.0)).reduce_only("false".to_string()).price(dec!(1.0)).new_client_order_id("1".to_string()).stop_price(dec!(1.0)).close_position("close_position_example".to_string()).activation_price(dec!(1.0)).callback_rate(dec!(1.0)).working_type(NewOrderWorkingTypeEnum::MarkPrice).price_protect("false".to_string()).new_order_resp_type(NewOrderNewOrderRespTypeEnum::Ack).price_match(NewOrderPriceMatchEnum::None).self_trade_prevention_mode(NewOrderSelfTradePreventionModeEnum::ExpireTaker).good_till_date(789).recv_window(5000).build().unwrap();
+            let params = NewOrderParams::builder("symbol_example".to_string(),NewOrderSideEnum::Buy,"r#type_example".to_string(),).position_side(NewOrderPositionSideEnum::Both).time_in_force(NewOrderTimeInForceEnum::Gtc).quantity(dec!(1.0)).reduce_only("false".to_string()).price(dec!(1.0)).new_client_order_id("1".to_string()).new_order_resp_type(NewOrderNewOrderRespTypeEnum::Ack).price_match(NewOrderPriceMatchEnum::None).self_trade_prevention_mode(NewOrderSelfTradePreventionModeEnum::ExpireTaker).good_till_date(789).recv_window(5000).build().unwrap();
 
-            let resp_json: Value = serde_json::from_str(r#"{"clientOrderId":"testOrder","cumQty":"0","cumQuote":"0","executedQty":"0","orderId":22542179,"avgPrice":"0.00000","origQty":"10","price":"0","reduceOnly":false,"side":"BUY","positionSide":"SHORT","status":"NEW","stopPrice":"9300","closePosition":false,"symbol":"BTCUSDT","timeInForce":"GTD","type":"TRAILING_STOP_MARKET","origType":"TRAILING_STOP_MARKET","activatePrice":"9020","priceRate":"0.3","updateTime":1566818724722,"workingType":"CONTRACT_PRICE","priceProtect":false,"priceMatch":"NONE","selfTradePreventionMode":"NONE","goodTillDate":1693207680000}"#).unwrap();
+            let resp_json: Value = serde_json::from_str(r#"{"clientOrderId":"testOrder","cumQty":"0","cumQuote":"0","executedQty":"0","orderId":22542179,"avgPrice":"0.00000","origQty":"10","price":"0","reduceOnly":false,"side":"BUY","positionSide":"SHORT","status":"NEW","stopPrice":"9300","closePosition":false,"symbol":"BTCUSDT","timeInForce":"GTD","type":"TRAILING_STOP_MARKET","origType":"TRAILING_STOP_MARKET","updateTime":1566818724722,"workingType":"CONTRACT_PRICE","priceProtect":false,"priceMatch":"NONE","selfTradePreventionMode":"NONE","goodTillDate":1693207680000}"#).unwrap();
             let expected_response : models::NewOrderResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::NewOrderResponse");
 
             let resp = client.new_order(params).await.expect("Expected a response");
@@ -5111,7 +6663,7 @@ mod tests {
 
             let params = PlaceMultipleOrdersParams::builder(vec![],).build().unwrap();
 
-            let resp_json: Value = serde_json::from_str(r#"[{"clientOrderId":"testOrder","cumQty":"0","cumQuote":"0","executedQty":"0","orderId":22542179,"avgPrice":"0.00000","origQty":"10","price":"0","reduceOnly":false,"side":"BUY","positionSide":"SHORT","status":"NEW","stopPrice":"9300","symbol":"BTCUSDT","timeInForce":"GTC","type":"TRAILING_STOP_MARKET","origType":"TRAILING_STOP_MARKET","activatePrice":"9020","priceRate":"0.3","updateTime":1566818724722,"workingType":"CONTRACT_PRICE","priceProtect":false,"priceMatch":"NONE","selfTradePreventionMode":"NONE","goodTillDate":1693207680000},{"code":-2022,"msg":"ReduceOnly Order is rejected."}]"#).unwrap();
+            let resp_json: Value = serde_json::from_str(r#"[{"clientOrderId":"testOrder","cumQty":"0","cumQuote":"0","executedQty":"0","orderId":22542179,"avgPrice":"0.00000","origQty":"10","price":"0","reduceOnly":false,"side":"BUY","positionSide":"SHORT","status":"NEW","stopPrice":"0","closePosition":false,"symbol":"BTCUSDT","timeInForce":"GTC","type":"TRAILING_STOP_MARKET","origType":"TRAILING_STOP_MARKET","updateTime":1566818724722,"workingType":"CONTRACT_PRICE","priceProtect":false,"priceMatch":"NONE","selfTradePreventionMode":"NONE","goodTillDate":1693207680000},{"code":-2022,"msg":"ReduceOnly Order is rejected."}]"#).unwrap();
             let expected_response : Vec<models::PlaceMultipleOrdersResponseInner> = serde_json::from_value(resp_json.clone()).expect("should parse into Vec<models::PlaceMultipleOrdersResponseInner>");
 
             let resp = client.place_multiple_orders(params).await.expect("Expected a response");
@@ -5128,7 +6680,7 @@ mod tests {
 
             let params = PlaceMultipleOrdersParams::builder(vec![],).recv_window(5000).build().unwrap();
 
-            let resp_json: Value = serde_json::from_str(r#"[{"clientOrderId":"testOrder","cumQty":"0","cumQuote":"0","executedQty":"0","orderId":22542179,"avgPrice":"0.00000","origQty":"10","price":"0","reduceOnly":false,"side":"BUY","positionSide":"SHORT","status":"NEW","stopPrice":"9300","symbol":"BTCUSDT","timeInForce":"GTC","type":"TRAILING_STOP_MARKET","origType":"TRAILING_STOP_MARKET","activatePrice":"9020","priceRate":"0.3","updateTime":1566818724722,"workingType":"CONTRACT_PRICE","priceProtect":false,"priceMatch":"NONE","selfTradePreventionMode":"NONE","goodTillDate":1693207680000},{"code":-2022,"msg":"ReduceOnly Order is rejected."}]"#).unwrap();
+            let resp_json: Value = serde_json::from_str(r#"[{"clientOrderId":"testOrder","cumQty":"0","cumQuote":"0","executedQty":"0","orderId":22542179,"avgPrice":"0.00000","origQty":"10","price":"0","reduceOnly":false,"side":"BUY","positionSide":"SHORT","status":"NEW","stopPrice":"0","closePosition":false,"symbol":"BTCUSDT","timeInForce":"GTC","type":"TRAILING_STOP_MARKET","origType":"TRAILING_STOP_MARKET","updateTime":1566818724722,"workingType":"CONTRACT_PRICE","priceProtect":false,"priceMatch":"NONE","selfTradePreventionMode":"NONE","goodTillDate":1693207680000},{"code":-2022,"msg":"ReduceOnly Order is rejected."}]"#).unwrap();
             let expected_response : Vec<models::PlaceMultipleOrdersResponseInner> = serde_json::from_value(resp_json.clone()).expect("should parse into Vec<models::PlaceMultipleOrdersResponseInner>");
 
             let resp = client.place_multiple_orders(params).await.expect("Expected a response");
@@ -5307,6 +6859,108 @@ mod tests {
     }
 
     #[test]
+    fn query_algo_order_required_params_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockTradeApiClient { force_error: false };
+
+            let params = QueryAlgoOrderParams::builder().build().unwrap();
+
+            let resp_json: Value = serde_json::from_str(r#"{"algoId":2146760,"clientAlgoId":"6B2I9XVcJpCjqPAJ4YoFX7","algoType":"CONDITIONAL","orderType":"TAKE_PROFIT","symbol":"BNBUSDT","side":"SELL","positionSide":"BOTH","timeInForce":"GTC","quantity":"0.01","algoStatus":"CANCELED","actualOrderId":"","actualPrice":"0.00000","triggerPrice":"750.000","price":"750.000","icebergQuantity":null,"tpTriggerPrice":"0.000","tpPrice":"0.000","slTriggerPrice":"0.000","slPrice":"0.000","tpOrderType":"","selfTradePreventionMode":"EXPIRE_MAKER","workingType":"CONTRACT_PRICE","priceMatch":"NONE","closePosition":false,"priceProtect":false,"reduceOnly":false,"createTime":1750485492076,"updateTime":1750514545091,"triggerTime":0,"goodTillDate":0}"#).unwrap();
+            let expected_response : models::QueryAlgoOrderResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::QueryAlgoOrderResponse");
+
+            let resp = client.query_algo_order(params).await.expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn query_algo_order_optional_params_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockTradeApiClient { force_error: false };
+
+            let params = QueryAlgoOrderParams::builder().algo_id(1).client_algo_id("1".to_string()).recv_window(5000).build().unwrap();
+
+            let resp_json: Value = serde_json::from_str(r#"{"algoId":2146760,"clientAlgoId":"6B2I9XVcJpCjqPAJ4YoFX7","algoType":"CONDITIONAL","orderType":"TAKE_PROFIT","symbol":"BNBUSDT","side":"SELL","positionSide":"BOTH","timeInForce":"GTC","quantity":"0.01","algoStatus":"CANCELED","actualOrderId":"","actualPrice":"0.00000","triggerPrice":"750.000","price":"750.000","icebergQuantity":null,"tpTriggerPrice":"0.000","tpPrice":"0.000","slTriggerPrice":"0.000","slPrice":"0.000","tpOrderType":"","selfTradePreventionMode":"EXPIRE_MAKER","workingType":"CONTRACT_PRICE","priceMatch":"NONE","closePosition":false,"priceProtect":false,"reduceOnly":false,"createTime":1750485492076,"updateTime":1750514545091,"triggerTime":0,"goodTillDate":0}"#).unwrap();
+            let expected_response : models::QueryAlgoOrderResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::QueryAlgoOrderResponse");
+
+            let resp = client.query_algo_order(params).await.expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn query_algo_order_response_error() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockTradeApiClient { force_error: true };
+
+            let params = QueryAlgoOrderParams::builder().build().unwrap();
+
+            match client.query_algo_order(params).await {
+                Ok(_) => panic!("Expected an error"),
+                Err(err) => {
+                    assert_eq!(err.to_string(), "Connector client error: ResponseError");
+                }
+            }
+        });
+    }
+
+    #[test]
+    fn query_all_algo_orders_required_params_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockTradeApiClient { force_error: false };
+
+            let params = QueryAllAlgoOrdersParams::builder("symbol_example".to_string(),).build().unwrap();
+
+            let resp_json: Value = serde_json::from_str(r#"[{"algoId":2146760,"clientAlgoId":"6B2I9XVcJpCjqPAJ4YoFX7","algoType":"CONDITIONAL","orderType":"TAKE_PROFIT","symbol":"BNBUSDT","side":"SELL","positionSide":"BOTH","timeInForce":"GTC","quantity":"0.01","algoStatus":"CANCELED","actualOrderId":"","actualPrice":"0.00000","triggerPrice":"750.000","price":"750.000","icebergQuantity":null,"tpTriggerPrice":"0.000","tpPrice":"0.000","slTriggerPrice":"0.000","slPrice":"0.000","tpOrderType":"","selfTradePreventionMode":"EXPIRE_MAKER","workingType":"CONTRACT_PRICE","priceMatch":"NONE","closePosition":false,"priceProtect":false,"reduceOnly":false,"createTime":1750485492076,"updateTime":1750514545091,"triggerTime":0,"goodTillDate":0}]"#).unwrap();
+            let expected_response : Vec<models::QueryAllAlgoOrdersResponseInner> = serde_json::from_value(resp_json.clone()).expect("should parse into Vec<models::QueryAllAlgoOrdersResponseInner>");
+
+            let resp = client.query_all_algo_orders(params).await.expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn query_all_algo_orders_optional_params_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockTradeApiClient { force_error: false };
+
+            let params = QueryAllAlgoOrdersParams::builder("symbol_example".to_string(),).algo_id(1).start_time(1623319461670).end_time(1641782889000).page(789).limit(100).recv_window(5000).build().unwrap();
+
+            let resp_json: Value = serde_json::from_str(r#"[{"algoId":2146760,"clientAlgoId":"6B2I9XVcJpCjqPAJ4YoFX7","algoType":"CONDITIONAL","orderType":"TAKE_PROFIT","symbol":"BNBUSDT","side":"SELL","positionSide":"BOTH","timeInForce":"GTC","quantity":"0.01","algoStatus":"CANCELED","actualOrderId":"","actualPrice":"0.00000","triggerPrice":"750.000","price":"750.000","icebergQuantity":null,"tpTriggerPrice":"0.000","tpPrice":"0.000","slTriggerPrice":"0.000","slPrice":"0.000","tpOrderType":"","selfTradePreventionMode":"EXPIRE_MAKER","workingType":"CONTRACT_PRICE","priceMatch":"NONE","closePosition":false,"priceProtect":false,"reduceOnly":false,"createTime":1750485492076,"updateTime":1750514545091,"triggerTime":0,"goodTillDate":0}]"#).unwrap();
+            let expected_response : Vec<models::QueryAllAlgoOrdersResponseInner> = serde_json::from_value(resp_json.clone()).expect("should parse into Vec<models::QueryAllAlgoOrdersResponseInner>");
+
+            let resp = client.query_all_algo_orders(params).await.expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn query_all_algo_orders_response_error() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockTradeApiClient { force_error: true };
+
+            let params = QueryAllAlgoOrdersParams::builder("symbol_example".to_string())
+                .build()
+                .unwrap();
+
+            match client.query_all_algo_orders(params).await {
+                Ok(_) => panic!("Expected an error"),
+                Err(err) => {
+                    assert_eq!(err.to_string(), "Connector client error: ResponseError");
+                }
+            }
+        });
+    }
+
+    #[test]
     fn query_current_open_order_required_params_success() {
         TOKIO_SHARED_RT.block_on(async {
             let client = MockTradeApiClient { force_error: false };
@@ -5365,7 +7019,7 @@ mod tests {
 
             let params = QueryOrderParams::builder("symbol_example".to_string(),).build().unwrap();
 
-            let resp_json: Value = serde_json::from_str(r#"{"avgPrice":"0.00000","clientOrderId":"abc","cumQuote":"0","executedQty":"0","orderId":1917641,"origQty":"0.40","origType":"TRAILING_STOP_MARKET","price":"0","reduceOnly":false,"side":"BUY","positionSide":"SHORT","status":"NEW","stopPrice":"9300","closePosition":false,"symbol":"BTCUSDT","time":1579276756075,"timeInForce":"GTC","type":"TRAILING_STOP_MARKET","activatePrice":"9020","priceRate":"0.3","updateTime":1579276756075,"workingType":"CONTRACT_PRICE","priceProtect":false,"priceMatch":"NONE","selfTradePreventionMode":"NONE","goodTillDate":0}"#).unwrap();
+            let resp_json: Value = serde_json::from_str(r#"{"avgPrice":"0.00000","clientOrderId":"abc","cumQuote":"0","executedQty":"0","orderId":1917641,"origQty":"0.40","origType":"TRAILING_STOP_MARKET","price":"0","reduceOnly":false,"side":"BUY","positionSide":"SHORT","status":"NEW","stopPrice":"9300","closePosition":false,"symbol":"BTCUSDT","time":1579276756075,"timeInForce":"GTC","type":"TRAILING_STOP_MARKET","activatePrice":"9020","priceRate":"0.3","updateTime":1579276756075,"workingType":"CONTRACT_PRICE","priceProtect":false}"#).unwrap();
             let expected_response : models::QueryOrderResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::QueryOrderResponse");
 
             let resp = client.query_order(params).await.expect("Expected a response");
@@ -5382,7 +7036,7 @@ mod tests {
 
             let params = QueryOrderParams::builder("symbol_example".to_string(),).order_id(1).orig_client_order_id("1".to_string()).recv_window(5000).build().unwrap();
 
-            let resp_json: Value = serde_json::from_str(r#"{"avgPrice":"0.00000","clientOrderId":"abc","cumQuote":"0","executedQty":"0","orderId":1917641,"origQty":"0.40","origType":"TRAILING_STOP_MARKET","price":"0","reduceOnly":false,"side":"BUY","positionSide":"SHORT","status":"NEW","stopPrice":"9300","closePosition":false,"symbol":"BTCUSDT","time":1579276756075,"timeInForce":"GTC","type":"TRAILING_STOP_MARKET","activatePrice":"9020","priceRate":"0.3","updateTime":1579276756075,"workingType":"CONTRACT_PRICE","priceProtect":false,"priceMatch":"NONE","selfTradePreventionMode":"NONE","goodTillDate":0}"#).unwrap();
+            let resp_json: Value = serde_json::from_str(r#"{"avgPrice":"0.00000","clientOrderId":"abc","cumQuote":"0","executedQty":"0","orderId":1917641,"origQty":"0.40","origType":"TRAILING_STOP_MARKET","price":"0","reduceOnly":false,"side":"BUY","positionSide":"SHORT","status":"NEW","stopPrice":"9300","closePosition":false,"symbol":"BTCUSDT","time":1579276756075,"timeInForce":"GTC","type":"TRAILING_STOP_MARKET","activatePrice":"9020","priceRate":"0.3","updateTime":1579276756075,"workingType":"CONTRACT_PRICE","priceProtect":false}"#).unwrap();
             let expected_response : models::QueryOrderResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::QueryOrderResponse");
 
             let resp = client.query_order(params).await.expect("Expected a response");

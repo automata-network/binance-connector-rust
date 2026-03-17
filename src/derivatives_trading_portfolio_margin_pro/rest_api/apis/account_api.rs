@@ -51,6 +51,10 @@ pub trait AccountApi: Send + Sync {
         &self,
         params: GetAutoRepayFuturesStatusParams,
     ) -> anyhow::Result<RestApiResponse<models::GetAutoRepayFuturesStatusResponse>>;
+    async fn get_delta_mode_status(
+        &self,
+        params: GetDeltaModeStatusParams,
+    ) -> anyhow::Result<RestApiResponse<models::GetDeltaModeStatusResponse>>;
     async fn get_portfolio_margin_pro_account_balance(
         &self,
         params: GetPortfolioMarginProAccountBalanceParams,
@@ -71,10 +75,6 @@ pub trait AccountApi: Send + Sync {
     ) -> anyhow::Result<
         RestApiResponse<models::GetTransferableEarnAssetBalanceForPortfolioMarginResponse>,
     >;
-    async fn mint_bfusd_for_portfolio_margin(
-        &self,
-        params: MintBfusdForPortfolioMarginParams,
-    ) -> anyhow::Result<RestApiResponse<models::MintBfusdForPortfolioMarginResponse>>;
     async fn portfolio_margin_pro_bankruptcy_loan_repay(
         &self,
         params: PortfolioMarginProBankruptcyLoanRepayParams,
@@ -97,18 +97,18 @@ pub trait AccountApi: Send + Sync {
             Vec<models::QueryPortfolioMarginProNegativeBalanceInterestHistoryResponseInner>,
         >,
     >;
-    async fn redeem_bfusd_for_portfolio_margin(
-        &self,
-        params: RedeemBfusdForPortfolioMarginParams,
-    ) -> anyhow::Result<RestApiResponse<models::RedeemBfusdForPortfolioMarginResponse>>;
     async fn repay_futures_negative_balance(
         &self,
         params: RepayFuturesNegativeBalanceParams,
     ) -> anyhow::Result<RestApiResponse<models::RepayFuturesNegativeBalanceResponse>>;
-    async fn transfer_ldusdt_for_portfolio_margin(
+    async fn switch_delta_mode(
         &self,
-        params: TransferLdusdtForPortfolioMarginParams,
-    ) -> anyhow::Result<RestApiResponse<models::TransferLdusdtForPortfolioMarginResponse>>;
+        params: SwitchDeltaModeParams,
+    ) -> anyhow::Result<RestApiResponse<models::SwitchDeltaModeResponse>>;
+    async fn transfer_ldusdt_rwusd_for_portfolio_margin(
+        &self,
+        params: TransferLdusdtRwusdForPortfolioMarginParams,
+    ) -> anyhow::Result<RestApiResponse<models::TransferLdusdtRwusdForPortfolioMarginResponse>>;
 }
 
 #[derive(Debug, Clone)]
@@ -228,7 +228,7 @@ impl FundAutoCollectionParams {
 #[derive(Clone, Debug, Builder)]
 #[builder(pattern = "owned", build_fn(error = "ParamBuildError"))]
 pub struct FundCollectionByAssetParams {
-    /// `LDUSDT` only
+    /// `LDUSDT` and `RWUSD`
     ///
     /// This field is **required.
     #[builder(setter(into))]
@@ -246,7 +246,7 @@ impl FundCollectionByAssetParams {
     ///
     /// Required parameters:
     ///
-    /// * `asset` — `LDUSDT` only
+    /// * `asset` — `LDUSDT` and `RWUSD`
     ///
     #[must_use]
     pub fn builder(asset: String) -> FundCollectionByAssetParamsBuilder {
@@ -274,6 +274,29 @@ impl GetAutoRepayFuturesStatusParams {
     #[must_use]
     pub fn builder() -> GetAutoRepayFuturesStatusParamsBuilder {
         GetAutoRepayFuturesStatusParamsBuilder::default()
+    }
+}
+/// Request parameters for the [`get_delta_mode_status`] operation.
+///
+/// This struct holds all of the inputs you can pass when calling
+/// [`get_delta_mode_status`](#method.get_delta_mode_status).
+#[derive(Clone, Debug, Builder, Default)]
+#[builder(pattern = "owned", build_fn(error = "ParamBuildError"))]
+pub struct GetDeltaModeStatusParams {
+    ///
+    /// The `recv_window` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub recv_window: Option<i64>,
+}
+
+impl GetDeltaModeStatusParams {
+    /// Create a builder for [`get_delta_mode_status`].
+    ///
+    #[must_use]
+    pub fn builder() -> GetDeltaModeStatusParamsBuilder {
+        GetDeltaModeStatusParamsBuilder::default()
     }
 }
 /// Request parameters for the [`get_portfolio_margin_pro_account_balance`] operation.
@@ -358,7 +381,7 @@ impl GetPortfolioMarginProSpanAccountInfoParams {
 #[derive(Clone, Debug, Builder)]
 #[builder(pattern = "owned", build_fn(error = "ParamBuildError"))]
 pub struct GetTransferableEarnAssetBalanceForPortfolioMarginParams {
-    /// `LDUSDT` only
+    /// `LDUSDT` and `RWUSD`
     ///
     /// This field is **required.
     #[builder(setter(into))]
@@ -381,7 +404,7 @@ impl GetTransferableEarnAssetBalanceForPortfolioMarginParams {
     ///
     /// Required parameters:
     ///
-    /// * `asset` — `LDUSDT` only
+    /// * `asset` — `LDUSDT` and `RWUSD`
     /// * `transfer_type` — `EARN_TO_FUTURE` /`FUTURE_TO_EARN`
     ///
     #[must_use]
@@ -392,58 +415,6 @@ impl GetTransferableEarnAssetBalanceForPortfolioMarginParams {
         GetTransferableEarnAssetBalanceForPortfolioMarginParamsBuilder::default()
             .asset(asset)
             .transfer_type(transfer_type)
-    }
-}
-/// Request parameters for the [`mint_bfusd_for_portfolio_margin`] operation.
-///
-/// This struct holds all of the inputs you can pass when calling
-/// [`mint_bfusd_for_portfolio_margin`](#method.mint_bfusd_for_portfolio_margin).
-#[derive(Clone, Debug, Builder)]
-#[builder(pattern = "owned", build_fn(error = "ParamBuildError"))]
-pub struct MintBfusdForPortfolioMarginParams {
-    /// `BFUSD` only
-    ///
-    /// This field is **required.
-    #[builder(setter(into))]
-    pub from_asset: String,
-    /// `USDT` `USDC`
-    ///
-    /// This field is **required.
-    #[builder(setter(into))]
-    pub target_asset: String,
-    ///
-    /// The `amount` parameter.
-    ///
-    /// This field is **required.
-    #[builder(setter(into))]
-    pub amount: rust_decimal::Decimal,
-    ///
-    /// The `recv_window` parameter.
-    ///
-    /// This field is **optional.
-    #[builder(setter(into), default)]
-    pub recv_window: Option<i64>,
-}
-
-impl MintBfusdForPortfolioMarginParams {
-    /// Create a builder for [`mint_bfusd_for_portfolio_margin`].
-    ///
-    /// Required parameters:
-    ///
-    /// * `from_asset` — `BFUSD` only
-    /// * `target_asset` — `USDT` `USDC`
-    /// * `amount` — `rust_decimal::Decimal`
-    ///
-    #[must_use]
-    pub fn builder(
-        from_asset: String,
-        target_asset: String,
-        amount: rust_decimal::Decimal,
-    ) -> MintBfusdForPortfolioMarginParamsBuilder {
-        MintBfusdForPortfolioMarginParamsBuilder::default()
-            .from_asset(from_asset)
-            .target_asset(target_asset)
-            .amount(amount)
     }
 }
 /// Request parameters for the [`portfolio_margin_pro_bankruptcy_loan_repay`] operation.
@@ -588,58 +559,6 @@ impl QueryPortfolioMarginProNegativeBalanceInterestHistoryParams {
         QueryPortfolioMarginProNegativeBalanceInterestHistoryParamsBuilder::default()
     }
 }
-/// Request parameters for the [`redeem_bfusd_for_portfolio_margin`] operation.
-///
-/// This struct holds all of the inputs you can pass when calling
-/// [`redeem_bfusd_for_portfolio_margin`](#method.redeem_bfusd_for_portfolio_margin).
-#[derive(Clone, Debug, Builder)]
-#[builder(pattern = "owned", build_fn(error = "ParamBuildError"))]
-pub struct RedeemBfusdForPortfolioMarginParams {
-    /// `BFUSD` only
-    ///
-    /// This field is **required.
-    #[builder(setter(into))]
-    pub from_asset: String,
-    /// `USDT` `USDC`
-    ///
-    /// This field is **required.
-    #[builder(setter(into))]
-    pub target_asset: String,
-    ///
-    /// The `amount` parameter.
-    ///
-    /// This field is **required.
-    #[builder(setter(into))]
-    pub amount: rust_decimal::Decimal,
-    ///
-    /// The `recv_window` parameter.
-    ///
-    /// This field is **optional.
-    #[builder(setter(into), default)]
-    pub recv_window: Option<i64>,
-}
-
-impl RedeemBfusdForPortfolioMarginParams {
-    /// Create a builder for [`redeem_bfusd_for_portfolio_margin`].
-    ///
-    /// Required parameters:
-    ///
-    /// * `from_asset` — `BFUSD` only
-    /// * `target_asset` — `USDT` `USDC`
-    /// * `amount` — `rust_decimal::Decimal`
-    ///
-    #[must_use]
-    pub fn builder(
-        from_asset: String,
-        target_asset: String,
-        amount: rust_decimal::Decimal,
-    ) -> RedeemBfusdForPortfolioMarginParamsBuilder {
-        RedeemBfusdForPortfolioMarginParamsBuilder::default()
-            .from_asset(from_asset)
-            .target_asset(target_asset)
-            .amount(amount)
-    }
-}
 /// Request parameters for the [`repay_futures_negative_balance`] operation.
 ///
 /// This struct holds all of the inputs you can pass when calling
@@ -668,14 +587,46 @@ impl RepayFuturesNegativeBalanceParams {
         RepayFuturesNegativeBalanceParamsBuilder::default()
     }
 }
-/// Request parameters for the [`transfer_ldusdt_for_portfolio_margin`] operation.
+/// Request parameters for the [`switch_delta_mode`] operation.
 ///
 /// This struct holds all of the inputs you can pass when calling
-/// [`transfer_ldusdt_for_portfolio_margin`](#method.transfer_ldusdt_for_portfolio_margin).
+/// [`switch_delta_mode`](#method.switch_delta_mode).
 #[derive(Clone, Debug, Builder)]
 #[builder(pattern = "owned", build_fn(error = "ParamBuildError"))]
-pub struct TransferLdusdtForPortfolioMarginParams {
-    /// `LDUSDT` only
+pub struct SwitchDeltaModeParams {
+    /// `true` to enable Delta mode; `false` to disable Delta mode
+    ///
+    /// This field is **required.
+    #[builder(setter(into))]
+    pub delta_enabled: String,
+    ///
+    /// The `recv_window` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub recv_window: Option<i64>,
+}
+
+impl SwitchDeltaModeParams {
+    /// Create a builder for [`switch_delta_mode`].
+    ///
+    /// Required parameters:
+    ///
+    /// * `delta_enabled` — `true` to enable Delta mode; `false` to disable Delta mode
+    ///
+    #[must_use]
+    pub fn builder(delta_enabled: String) -> SwitchDeltaModeParamsBuilder {
+        SwitchDeltaModeParamsBuilder::default().delta_enabled(delta_enabled)
+    }
+}
+/// Request parameters for the [`transfer_ldusdt_rwusd_for_portfolio_margin`] operation.
+///
+/// This struct holds all of the inputs you can pass when calling
+/// [`transfer_ldusdt_rwusd_for_portfolio_margin`](#method.transfer_ldusdt_rwusd_for_portfolio_margin).
+#[derive(Clone, Debug, Builder)]
+#[builder(pattern = "owned", build_fn(error = "ParamBuildError"))]
+pub struct TransferLdusdtRwusdForPortfolioMarginParams {
+    /// `LDUSDT` and `RWUSD`
     ///
     /// This field is **required.
     #[builder(setter(into))]
@@ -699,12 +650,12 @@ pub struct TransferLdusdtForPortfolioMarginParams {
     pub recv_window: Option<i64>,
 }
 
-impl TransferLdusdtForPortfolioMarginParams {
-    /// Create a builder for [`transfer_ldusdt_for_portfolio_margin`].
+impl TransferLdusdtRwusdForPortfolioMarginParams {
+    /// Create a builder for [`transfer_ldusdt_rwusd_for_portfolio_margin`].
     ///
     /// Required parameters:
     ///
-    /// * `asset` — `LDUSDT` only
+    /// * `asset` — `LDUSDT` and `RWUSD`
     /// * `transfer_type` — `EARN_TO_FUTURE` /`FUTURE_TO_EARN`
     /// * `amount` — `rust_decimal::Decimal`
     ///
@@ -713,8 +664,8 @@ impl TransferLdusdtForPortfolioMarginParams {
         asset: String,
         transfer_type: String,
         amount: rust_decimal::Decimal,
-    ) -> TransferLdusdtForPortfolioMarginParamsBuilder {
-        TransferLdusdtForPortfolioMarginParamsBuilder::default()
+    ) -> TransferLdusdtRwusdForPortfolioMarginParamsBuilder {
+        TransferLdusdtRwusdForPortfolioMarginParamsBuilder::default()
             .asset(asset)
             .transfer_type(transfer_type)
             .amount(amount)
@@ -734,6 +685,7 @@ impl AccountApi for AccountApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("amount".to_string(), json!(amount));
 
@@ -748,6 +700,7 @@ impl AccountApi for AccountApiClient {
             "/sapi/v1/portfolio/bnb-transfer",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -768,6 +721,7 @@ impl AccountApi for AccountApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("autoRepay".to_string(), json!(auto_repay));
 
@@ -780,6 +734,7 @@ impl AccountApi for AccountApiClient {
             "/sapi/v1/portfolio/repay-futures-switch",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -797,6 +752,7 @@ impl AccountApi for AccountApiClient {
         let FundAutoCollectionParams { recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = recv_window {
             query_params.insert("recvWindow".to_string(), json!(rw));
@@ -807,6 +763,7 @@ impl AccountApi for AccountApiClient {
             "/sapi/v1/portfolio/auto-collection",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -824,6 +781,7 @@ impl AccountApi for AccountApiClient {
         let FundCollectionByAssetParams { asset, recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("asset".to_string(), json!(asset));
 
@@ -836,6 +794,7 @@ impl AccountApi for AccountApiClient {
             "/sapi/v1/portfolio/asset-collection",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -853,6 +812,7 @@ impl AccountApi for AccountApiClient {
         let GetAutoRepayFuturesStatusParams { recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = recv_window {
             query_params.insert("recvWindow".to_string(), json!(rw));
@@ -863,6 +823,36 @@ impl AccountApi for AccountApiClient {
             "/sapi/v1/portfolio/repay-futures-switch",
             reqwest::Method::GET,
             query_params,
+            body_params,
+            if HAS_TIME_UNIT {
+                self.configuration.time_unit
+            } else {
+                None
+            },
+            true,
+        )
+        .await
+    }
+
+    async fn get_delta_mode_status(
+        &self,
+        params: GetDeltaModeStatusParams,
+    ) -> anyhow::Result<RestApiResponse<models::GetDeltaModeStatusResponse>> {
+        let GetDeltaModeStatusParams { recv_window } = params;
+
+        let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
+
+        if let Some(rw) = recv_window {
+            query_params.insert("recvWindow".to_string(), json!(rw));
+        }
+
+        send_request::<models::GetDeltaModeStatusResponse>(
+            &self.configuration,
+            "/sapi/v1/portfolio/delta-mode",
+            reqwest::Method::GET,
+            query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -882,6 +872,7 @@ impl AccountApi for AccountApiClient {
         let GetPortfolioMarginProAccountBalanceParams { asset, recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = asset {
             query_params.insert("asset".to_string(), json!(rw));
@@ -896,6 +887,7 @@ impl AccountApi for AccountApiClient {
             "/sapi/v1/portfolio/balance",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -913,6 +905,7 @@ impl AccountApi for AccountApiClient {
         let GetPortfolioMarginProAccountInfoParams { recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = recv_window {
             query_params.insert("recvWindow".to_string(), json!(rw));
@@ -923,6 +916,7 @@ impl AccountApi for AccountApiClient {
             "/sapi/v1/portfolio/account",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -940,6 +934,7 @@ impl AccountApi for AccountApiClient {
         let GetPortfolioMarginProSpanAccountInfoParams { recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = recv_window {
             query_params.insert("recvWindow".to_string(), json!(rw));
@@ -950,6 +945,7 @@ impl AccountApi for AccountApiClient {
             "/sapi/v2/portfolio/account",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -973,6 +969,7 @@ impl AccountApi for AccountApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("asset".to_string(), json!(asset));
 
@@ -987,44 +984,7 @@ impl AccountApi for AccountApiClient {
             "/sapi/v1/portfolio/earn-asset-balance",
             reqwest::Method::GET,
             query_params,
-            if HAS_TIME_UNIT {
-                self.configuration.time_unit
-            } else {
-                None
-            },
-            true,
-        )
-        .await
-    }
-
-    async fn mint_bfusd_for_portfolio_margin(
-        &self,
-        params: MintBfusdForPortfolioMarginParams,
-    ) -> anyhow::Result<RestApiResponse<models::MintBfusdForPortfolioMarginResponse>> {
-        let MintBfusdForPortfolioMarginParams {
-            from_asset,
-            target_asset,
-            amount,
-            recv_window,
-        } = params;
-
-        let mut query_params = BTreeMap::new();
-
-        query_params.insert("fromAsset".to_string(), json!(from_asset));
-
-        query_params.insert("targetAsset".to_string(), json!(target_asset));
-
-        query_params.insert("amount".to_string(), json!(amount));
-
-        if let Some(rw) = recv_window {
-            query_params.insert("recvWindow".to_string(), json!(rw));
-        }
-
-        send_request::<models::MintBfusdForPortfolioMarginResponse>(
-            &self.configuration,
-            "/sapi/v1/portfolio/mint",
-            reqwest::Method::POST,
-            query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1043,6 +1003,7 @@ impl AccountApi for AccountApiClient {
         let PortfolioMarginProBankruptcyLoanRepayParams { from, recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = from {
             query_params.insert("from".to_string(), json!(rw));
@@ -1057,6 +1018,7 @@ impl AccountApi for AccountApiClient {
             "/sapi/v1/portfolio/repay",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1075,6 +1037,7 @@ impl AccountApi for AccountApiClient {
         let QueryPortfolioMarginProBankruptcyLoanAmountParams { recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = recv_window {
             query_params.insert("recvWindow".to_string(), json!(rw));
@@ -1085,6 +1048,7 @@ impl AccountApi for AccountApiClient {
             "/sapi/v1/portfolio/pmLoan",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1110,6 +1074,7 @@ impl AccountApi for AccountApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = start_time {
             query_params.insert("startTime".to_string(), json!(rw));
@@ -1136,6 +1101,7 @@ impl AccountApi for AccountApiClient {
             "/sapi/v1/portfolio/pmloan-history",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1163,6 +1129,7 @@ impl AccountApi for AccountApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = asset {
             query_params.insert("asset".to_string(), json!(rw));
@@ -1191,44 +1158,7 @@ impl AccountApi for AccountApiClient {
             "/sapi/v1/portfolio/interest-history",
             reqwest::Method::GET,
             query_params,
-            if HAS_TIME_UNIT {
-                self.configuration.time_unit
-            } else {
-                None
-            },
-            true,
-        )
-        .await
-    }
-
-    async fn redeem_bfusd_for_portfolio_margin(
-        &self,
-        params: RedeemBfusdForPortfolioMarginParams,
-    ) -> anyhow::Result<RestApiResponse<models::RedeemBfusdForPortfolioMarginResponse>> {
-        let RedeemBfusdForPortfolioMarginParams {
-            from_asset,
-            target_asset,
-            amount,
-            recv_window,
-        } = params;
-
-        let mut query_params = BTreeMap::new();
-
-        query_params.insert("fromAsset".to_string(), json!(from_asset));
-
-        query_params.insert("targetAsset".to_string(), json!(target_asset));
-
-        query_params.insert("amount".to_string(), json!(amount));
-
-        if let Some(rw) = recv_window {
-            query_params.insert("recvWindow".to_string(), json!(rw));
-        }
-
-        send_request::<models::RedeemBfusdForPortfolioMarginResponse>(
-            &self.configuration,
-            "/sapi/v1/portfolio/redeem",
-            reqwest::Method::POST,
-            query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1246,6 +1176,7 @@ impl AccountApi for AccountApiClient {
         let RepayFuturesNegativeBalanceParams { from, recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = from {
             query_params.insert("from".to_string(), json!(rw));
@@ -1260,6 +1191,7 @@ impl AccountApi for AccountApiClient {
             "/sapi/v1/portfolio/repay-futures-negative-balance",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1270,11 +1202,46 @@ impl AccountApi for AccountApiClient {
         .await
     }
 
-    async fn transfer_ldusdt_for_portfolio_margin(
+    async fn switch_delta_mode(
         &self,
-        params: TransferLdusdtForPortfolioMarginParams,
-    ) -> anyhow::Result<RestApiResponse<models::TransferLdusdtForPortfolioMarginResponse>> {
-        let TransferLdusdtForPortfolioMarginParams {
+        params: SwitchDeltaModeParams,
+    ) -> anyhow::Result<RestApiResponse<models::SwitchDeltaModeResponse>> {
+        let SwitchDeltaModeParams {
+            delta_enabled,
+            recv_window,
+        } = params;
+
+        let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
+
+        query_params.insert("deltaEnabled".to_string(), json!(delta_enabled));
+
+        if let Some(rw) = recv_window {
+            query_params.insert("recvWindow".to_string(), json!(rw));
+        }
+
+        send_request::<models::SwitchDeltaModeResponse>(
+            &self.configuration,
+            "/sapi/v1/portfolio/delta-mode",
+            reqwest::Method::POST,
+            query_params,
+            body_params,
+            if HAS_TIME_UNIT {
+                self.configuration.time_unit
+            } else {
+                None
+            },
+            true,
+        )
+        .await
+    }
+
+    async fn transfer_ldusdt_rwusd_for_portfolio_margin(
+        &self,
+        params: TransferLdusdtRwusdForPortfolioMarginParams,
+    ) -> anyhow::Result<RestApiResponse<models::TransferLdusdtRwusdForPortfolioMarginResponse>>
+    {
+        let TransferLdusdtRwusdForPortfolioMarginParams {
             asset,
             transfer_type,
             amount,
@@ -1282,6 +1249,7 @@ impl AccountApi for AccountApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("asset".to_string(), json!(asset));
 
@@ -1293,11 +1261,12 @@ impl AccountApi for AccountApiClient {
             query_params.insert("recvWindow".to_string(), json!(rw));
         }
 
-        send_request::<models::TransferLdusdtForPortfolioMarginResponse>(
+        send_request::<models::TransferLdusdtRwusdForPortfolioMarginResponse>(
             &self.configuration,
             "/sapi/v1/portfolio/earn-asset-transfer",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1346,9 +1315,11 @@ mod tests {
             _params: BnbTransferParams,
         ) -> anyhow::Result<RestApiResponse<models::BnbTransferResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"tranId":100000001}"#).unwrap();
@@ -1371,9 +1342,11 @@ mod tests {
             _params: ChangeAutoRepayFuturesStatusParams,
         ) -> anyhow::Result<RestApiResponse<models::ChangeAutoRepayFuturesStatusResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"msg":"success"}"#).unwrap();
@@ -1396,9 +1369,11 @@ mod tests {
             _params: FundAutoCollectionParams,
         ) -> anyhow::Result<RestApiResponse<models::FundAutoCollectionResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"msg":"success"}"#).unwrap();
@@ -1421,9 +1396,11 @@ mod tests {
             _params: FundCollectionByAssetParams,
         ) -> anyhow::Result<RestApiResponse<models::FundCollectionByAssetResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"msg":"success"}"#).unwrap();
@@ -1446,15 +1423,44 @@ mod tests {
             _params: GetAutoRepayFuturesStatusParams,
         ) -> anyhow::Result<RestApiResponse<models::GetAutoRepayFuturesStatusResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"autoRepay":true}"#).unwrap();
             let dummy_response: models::GetAutoRepayFuturesStatusResponse =
                 serde_json::from_value(resp_json.clone())
                     .expect("should parse into models::GetAutoRepayFuturesStatusResponse");
+
+            let dummy = DummyRestApiResponse {
+                inner: Box::new(move || Box::pin(async move { Ok(dummy_response) })),
+                status: 200,
+                headers: HashMap::new(),
+                rate_limits: None,
+            };
+
+            Ok(dummy.into())
+        }
+
+        async fn get_delta_mode_status(
+            &self,
+            _params: GetDeltaModeStatusParams,
+        ) -> anyhow::Result<RestApiResponse<models::GetDeltaModeStatusResponse>> {
+            if self.force_error {
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
+            }
+
+            let resp_json: Value = serde_json::from_str(r#"{"deltaEnabled":false}"#).unwrap();
+            let dummy_response: models::GetDeltaModeStatusResponse =
+                serde_json::from_value(resp_json.clone())
+                    .expect("should parse into models::GetDeltaModeStatusResponse");
 
             let dummy = DummyRestApiResponse {
                 inner: Box::new(move || Box::pin(async move { Ok(dummy_response) })),
@@ -1473,9 +1479,11 @@ mod tests {
             RestApiResponse<Vec<models::GetPortfolioMarginProAccountBalanceResponseInner>>,
         > {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"asset":"BTC","totalWalletBalance":"100","crossMarginAsset":"100","crossMarginBorrowed":"0","crossMarginFree":"100","crossMarginInterest":"0","crossMarginLocked":"0","umWalletBalance":"0","umUnrealizedPNL":"0","cmWalletBalance":"0","cmUnrealizedPNL":"0","updateTime":0,"negativeBalance":"0","optionWalletBalance":"0","optionEquity":"0"}]"#).unwrap();
@@ -1497,9 +1505,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::GetPortfolioMarginProAccountInfoResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"uniMMR":"5167.92171923","accountEquity":"122607.35137903","actualEquity":"142607.35137903","accountMaintMargin":"23.72469206","accountInitialMargin":"47.44938412","totalAvailableBalance":"122,559.90199491","accountStatus":"NORMAL","accountType":"PM_1"}"#).unwrap();
@@ -1523,9 +1533,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::GetPortfolioMarginProSpanAccountInfoResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"uniMMR":"5167.92171923","accountEquity":"122607.35137903","actualEquity":"142607.35137903","accountMaintMargin":"23.72469206","riskUnitMMList":[{"asset":"BTC","uniMaintainUsd":"23.72469206"}],"marginMM":"0.00000000","otherMM":"0.00000000","accountStatus":"NORMAL","accountType":"PM_3"}"#).unwrap();
@@ -1551,39 +1563,16 @@ mod tests {
             RestApiResponse<models::GetTransferableEarnAssetBalanceForPortfolioMarginResponse>,
         > {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value =
                 serde_json::from_str(r#"{"asset":"LDUSDT","amount":"0.55"}"#).unwrap();
             let dummy_response : models::GetTransferableEarnAssetBalanceForPortfolioMarginResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::GetTransferableEarnAssetBalanceForPortfolioMarginResponse");
-
-            let dummy = DummyRestApiResponse {
-                inner: Box::new(move || Box::pin(async move { Ok(dummy_response) })),
-                status: 200,
-                headers: HashMap::new(),
-                rate_limits: None,
-            };
-
-            Ok(dummy.into())
-        }
-
-        async fn mint_bfusd_for_portfolio_margin(
-            &self,
-            _params: MintBfusdForPortfolioMarginParams,
-        ) -> anyhow::Result<RestApiResponse<models::MintBfusdForPortfolioMarginResponse>> {
-            if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
-            }
-
-            let resp_json: Value = serde_json::from_str(r#"{"fromAsset":"USDT","targetAsset":"BFUSD","fromAssetQty":10,"targetAssetQty":9.998,"rate":0.9998}"#).unwrap();
-            let dummy_response: models::MintBfusdForPortfolioMarginResponse =
-                serde_json::from_value(resp_json.clone())
-                    .expect("should parse into models::MintBfusdForPortfolioMarginResponse");
 
             let dummy = DummyRestApiResponse {
                 inner: Box::new(move || Box::pin(async move { Ok(dummy_response) })),
@@ -1601,9 +1590,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::PortfolioMarginProBankruptcyLoanRepayResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"tranId":58203331886213500}"#).unwrap();
@@ -1629,9 +1620,11 @@ mod tests {
             RestApiResponse<models::QueryPortfolioMarginProBankruptcyLoanAmountResponse>,
         > {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value =
@@ -1658,9 +1651,11 @@ mod tests {
             RestApiResponse<models::QueryPortfolioMarginProBankruptcyLoanRepayHistoryResponse>,
         > {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"total":3,"rows":[{"asset":"USDT","amount":"404.80294503","repayTime":1731336427804},{"asset":"USDT","amount":"4620.41204574","repayTime":1726125090016}]}"#).unwrap();
@@ -1685,39 +1680,15 @@ mod tests {
             >,
         > {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"asset":"USDT","interest":"24.4440","interestAccruedTime":1670227200000,"interestRate":"0.0001164","principal":"210000"}]"#).unwrap();
             let dummy_response : Vec<models::QueryPortfolioMarginProNegativeBalanceInterestHistoryResponseInner> = serde_json::from_value(resp_json.clone()).expect("should parse into Vec<models::QueryPortfolioMarginProNegativeBalanceInterestHistoryResponseInner>");
-
-            let dummy = DummyRestApiResponse {
-                inner: Box::new(move || Box::pin(async move { Ok(dummy_response) })),
-                status: 200,
-                headers: HashMap::new(),
-                rate_limits: None,
-            };
-
-            Ok(dummy.into())
-        }
-
-        async fn redeem_bfusd_for_portfolio_margin(
-            &self,
-            _params: RedeemBfusdForPortfolioMarginParams,
-        ) -> anyhow::Result<RestApiResponse<models::RedeemBfusdForPortfolioMarginResponse>>
-        {
-            if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
-            }
-
-            let resp_json: Value = serde_json::from_str(r#"{"fromAsset":"BFUSD","targetAsset":"USDT","fromAssetQty":9.99800001,"targetAssetQty":9.996000409998,"rate":0.9998}"#).unwrap();
-            let dummy_response: models::RedeemBfusdForPortfolioMarginResponse =
-                serde_json::from_value(resp_json.clone())
-                    .expect("should parse into models::RedeemBfusdForPortfolioMarginResponse");
 
             let dummy = DummyRestApiResponse {
                 inner: Box::new(move || Box::pin(async move { Ok(dummy_response) })),
@@ -1734,9 +1705,11 @@ mod tests {
             _params: RepayFuturesNegativeBalanceParams,
         ) -> anyhow::Result<RestApiResponse<models::RepayFuturesNegativeBalanceResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"msg":"success"}"#).unwrap();
@@ -1754,21 +1727,51 @@ mod tests {
             Ok(dummy.into())
         }
 
-        async fn transfer_ldusdt_for_portfolio_margin(
+        async fn switch_delta_mode(
             &self,
-            _params: TransferLdusdtForPortfolioMarginParams,
-        ) -> anyhow::Result<RestApiResponse<models::TransferLdusdtForPortfolioMarginResponse>>
-        {
+            _params: SwitchDeltaModeParams,
+        ) -> anyhow::Result<RestApiResponse<models::SwitchDeltaModeResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"msg":"success"}"#).unwrap();
-            let dummy_response: models::TransferLdusdtForPortfolioMarginResponse =
+            let dummy_response: models::SwitchDeltaModeResponse =
                 serde_json::from_value(resp_json.clone())
-                    .expect("should parse into models::TransferLdusdtForPortfolioMarginResponse");
+                    .expect("should parse into models::SwitchDeltaModeResponse");
+
+            let dummy = DummyRestApiResponse {
+                inner: Box::new(move || Box::pin(async move { Ok(dummy_response) })),
+                status: 200,
+                headers: HashMap::new(),
+                rate_limits: None,
+            };
+
+            Ok(dummy.into())
+        }
+
+        async fn transfer_ldusdt_rwusd_for_portfolio_margin(
+            &self,
+            _params: TransferLdusdtRwusdForPortfolioMarginParams,
+        ) -> anyhow::Result<RestApiResponse<models::TransferLdusdtRwusdForPortfolioMarginResponse>>
+        {
+            if self.force_error {
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
+            }
+
+            let resp_json: Value = serde_json::from_str(r#"{"msg":"success"}"#).unwrap();
+            let dummy_response: models::TransferLdusdtRwusdForPortfolioMarginResponse =
+                serde_json::from_value(resp_json.clone()).expect(
+                    "should parse into models::TransferLdusdtRwusdForPortfolioMarginResponse",
+                );
 
             let dummy = DummyRestApiResponse {
                 inner: Box::new(move || Box::pin(async move { Ok(dummy_response) })),
@@ -1853,7 +1856,7 @@ mod tests {
         TOKIO_SHARED_RT.block_on(async {
             let client = MockAccountApiClient { force_error: false };
 
-            let params = ChangeAutoRepayFuturesStatusParams::builder(String::new())
+            let params = ChangeAutoRepayFuturesStatusParams::builder("true".to_string())
                 .build()
                 .unwrap();
 
@@ -1877,7 +1880,7 @@ mod tests {
         TOKIO_SHARED_RT.block_on(async {
             let client = MockAccountApiClient { force_error: false };
 
-            let params = ChangeAutoRepayFuturesStatusParams::builder(String::new())
+            let params = ChangeAutoRepayFuturesStatusParams::builder("true".to_string())
                 .recv_window(5000)
                 .build()
                 .unwrap();
@@ -1902,7 +1905,7 @@ mod tests {
         TOKIO_SHARED_RT.block_on(async {
             let client = MockAccountApiClient { force_error: true };
 
-            let params = ChangeAutoRepayFuturesStatusParams::builder(String::new())
+            let params = ChangeAutoRepayFuturesStatusParams::builder("true".to_string())
                 .build()
                 .unwrap();
 
@@ -2100,6 +2103,69 @@ mod tests {
             let params = GetAutoRepayFuturesStatusParams::builder().build().unwrap();
 
             match client.get_auto_repay_futures_status(params).await {
+                Ok(_) => panic!("Expected an error"),
+                Err(err) => {
+                    assert_eq!(err.to_string(), "Connector client error: ResponseError");
+                }
+            }
+        });
+    }
+
+    #[test]
+    fn get_delta_mode_status_required_params_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockAccountApiClient { force_error: false };
+
+            let params = GetDeltaModeStatusParams::builder().build().unwrap();
+
+            let resp_json: Value = serde_json::from_str(r#"{"deltaEnabled":false}"#).unwrap();
+            let expected_response: models::GetDeltaModeStatusResponse =
+                serde_json::from_value(resp_json.clone())
+                    .expect("should parse into models::GetDeltaModeStatusResponse");
+
+            let resp = client
+                .get_delta_mode_status(params)
+                .await
+                .expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn get_delta_mode_status_optional_params_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockAccountApiClient { force_error: false };
+
+            let params = GetDeltaModeStatusParams::builder()
+                .recv_window(5000)
+                .build()
+                .unwrap();
+
+            let resp_json: Value = serde_json::from_str(r#"{"deltaEnabled":false}"#).unwrap();
+            let expected_response: models::GetDeltaModeStatusResponse =
+                serde_json::from_value(resp_json.clone())
+                    .expect("should parse into models::GetDeltaModeStatusResponse");
+
+            let resp = client
+                .get_delta_mode_status(params)
+                .await
+                .expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn get_delta_mode_status_response_error() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockAccountApiClient { force_error: true };
+
+            let params = GetDeltaModeStatusParams::builder().build().unwrap();
+
+            match client.get_delta_mode_status(params).await {
                 Ok(_) => panic!("Expected an error"),
                 Err(err) => {
                     assert_eq!(err.to_string(), "Connector client error: ResponseError");
@@ -2320,62 +2386,6 @@ mod tests {
                 .get_transferable_earn_asset_balance_for_portfolio_margin(params)
                 .await
             {
-                Ok(_) => panic!("Expected an error"),
-                Err(err) => {
-                    assert_eq!(err.to_string(), "Connector client error: ResponseError");
-                }
-            }
-        });
-    }
-
-    #[test]
-    fn mint_bfusd_for_portfolio_margin_required_params_success() {
-        TOKIO_SHARED_RT.block_on(async {
-            let client = MockAccountApiClient { force_error: false };
-
-            let params = MintBfusdForPortfolioMarginParams::builder("from_asset_example".to_string(),"target_asset_example".to_string(),dec!(1.0),).build().unwrap();
-
-            let resp_json: Value = serde_json::from_str(r#"{"fromAsset":"USDT","targetAsset":"BFUSD","fromAssetQty":10,"targetAssetQty":9.998,"rate":0.9998}"#).unwrap();
-            let expected_response : models::MintBfusdForPortfolioMarginResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::MintBfusdForPortfolioMarginResponse");
-
-            let resp = client.mint_bfusd_for_portfolio_margin(params).await.expect("Expected a response");
-            let data_future = resp.data();
-            let actual_response = data_future.await.unwrap();
-            assert_eq!(actual_response, expected_response);
-        });
-    }
-
-    #[test]
-    fn mint_bfusd_for_portfolio_margin_optional_params_success() {
-        TOKIO_SHARED_RT.block_on(async {
-            let client = MockAccountApiClient { force_error: false };
-
-            let params = MintBfusdForPortfolioMarginParams::builder("from_asset_example".to_string(),"target_asset_example".to_string(),dec!(1.0),).recv_window(5000).build().unwrap();
-
-            let resp_json: Value = serde_json::from_str(r#"{"fromAsset":"USDT","targetAsset":"BFUSD","fromAssetQty":10,"targetAssetQty":9.998,"rate":0.9998}"#).unwrap();
-            let expected_response : models::MintBfusdForPortfolioMarginResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::MintBfusdForPortfolioMarginResponse");
-
-            let resp = client.mint_bfusd_for_portfolio_margin(params).await.expect("Expected a response");
-            let data_future = resp.data();
-            let actual_response = data_future.await.unwrap();
-            assert_eq!(actual_response, expected_response);
-        });
-    }
-
-    #[test]
-    fn mint_bfusd_for_portfolio_margin_response_error() {
-        TOKIO_SHARED_RT.block_on(async {
-            let client = MockAccountApiClient { force_error: true };
-
-            let params = MintBfusdForPortfolioMarginParams::builder(
-                "from_asset_example".to_string(),
-                "target_asset_example".to_string(),
-                dec!(1.0),
-            )
-            .build()
-            .unwrap();
-
-            match client.mint_bfusd_for_portfolio_margin(params).await {
                 Ok(_) => panic!("Expected an error"),
                 Err(err) => {
                     assert_eq!(err.to_string(), "Connector client error: ResponseError");
@@ -2642,62 +2652,6 @@ mod tests {
     }
 
     #[test]
-    fn redeem_bfusd_for_portfolio_margin_required_params_success() {
-        TOKIO_SHARED_RT.block_on(async {
-            let client = MockAccountApiClient { force_error: false };
-
-            let params = RedeemBfusdForPortfolioMarginParams::builder("from_asset_example".to_string(),"target_asset_example".to_string(),dec!(1.0),).build().unwrap();
-
-            let resp_json: Value = serde_json::from_str(r#"{"fromAsset":"BFUSD","targetAsset":"USDT","fromAssetQty":9.99800001,"targetAssetQty":9.996000409998,"rate":0.9998}"#).unwrap();
-            let expected_response : models::RedeemBfusdForPortfolioMarginResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::RedeemBfusdForPortfolioMarginResponse");
-
-            let resp = client.redeem_bfusd_for_portfolio_margin(params).await.expect("Expected a response");
-            let data_future = resp.data();
-            let actual_response = data_future.await.unwrap();
-            assert_eq!(actual_response, expected_response);
-        });
-    }
-
-    #[test]
-    fn redeem_bfusd_for_portfolio_margin_optional_params_success() {
-        TOKIO_SHARED_RT.block_on(async {
-            let client = MockAccountApiClient { force_error: false };
-
-            let params = RedeemBfusdForPortfolioMarginParams::builder("from_asset_example".to_string(),"target_asset_example".to_string(),dec!(1.0),).recv_window(5000).build().unwrap();
-
-            let resp_json: Value = serde_json::from_str(r#"{"fromAsset":"BFUSD","targetAsset":"USDT","fromAssetQty":9.99800001,"targetAssetQty":9.996000409998,"rate":0.9998}"#).unwrap();
-            let expected_response : models::RedeemBfusdForPortfolioMarginResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::RedeemBfusdForPortfolioMarginResponse");
-
-            let resp = client.redeem_bfusd_for_portfolio_margin(params).await.expect("Expected a response");
-            let data_future = resp.data();
-            let actual_response = data_future.await.unwrap();
-            assert_eq!(actual_response, expected_response);
-        });
-    }
-
-    #[test]
-    fn redeem_bfusd_for_portfolio_margin_response_error() {
-        TOKIO_SHARED_RT.block_on(async {
-            let client = MockAccountApiClient { force_error: true };
-
-            let params = RedeemBfusdForPortfolioMarginParams::builder(
-                "from_asset_example".to_string(),
-                "target_asset_example".to_string(),
-                dec!(1.0),
-            )
-            .build()
-            .unwrap();
-
-            match client.redeem_bfusd_for_portfolio_margin(params).await {
-                Ok(_) => panic!("Expected an error"),
-                Err(err) => {
-                    assert_eq!(err.to_string(), "Connector client error: ResponseError");
-                }
-            }
-        });
-    }
-
-    #[test]
     fn repay_futures_negative_balance_required_params_success() {
         TOKIO_SHARED_RT.block_on(async {
             let client = MockAccountApiClient { force_error: false };
@@ -2766,25 +2720,21 @@ mod tests {
     }
 
     #[test]
-    fn transfer_ldusdt_for_portfolio_margin_required_params_success() {
+    fn switch_delta_mode_required_params_success() {
         TOKIO_SHARED_RT.block_on(async {
             let client = MockAccountApiClient { force_error: false };
 
-            let params = TransferLdusdtForPortfolioMarginParams::builder(
-                "asset_example".to_string(),
-                "transfer_type_example".to_string(),
-                dec!(1.0),
-            )
-            .build()
-            .unwrap();
+            let params = SwitchDeltaModeParams::builder("delta_enabled_example".to_string())
+                .build()
+                .unwrap();
 
             let resp_json: Value = serde_json::from_str(r#"{"msg":"success"}"#).unwrap();
-            let expected_response: models::TransferLdusdtForPortfolioMarginResponse =
+            let expected_response: models::SwitchDeltaModeResponse =
                 serde_json::from_value(resp_json.clone())
-                    .expect("should parse into models::TransferLdusdtForPortfolioMarginResponse");
+                    .expect("should parse into models::SwitchDeltaModeResponse");
 
             let resp = client
-                .transfer_ldusdt_for_portfolio_margin(params)
+                .switch_delta_mode(params)
                 .await
                 .expect("Expected a response");
             let data_future = resp.data();
@@ -2794,11 +2744,83 @@ mod tests {
     }
 
     #[test]
-    fn transfer_ldusdt_for_portfolio_margin_optional_params_success() {
+    fn switch_delta_mode_optional_params_success() {
         TOKIO_SHARED_RT.block_on(async {
             let client = MockAccountApiClient { force_error: false };
 
-            let params = TransferLdusdtForPortfolioMarginParams::builder(
+            let params = SwitchDeltaModeParams::builder("delta_enabled_example".to_string())
+                .recv_window(5000)
+                .build()
+                .unwrap();
+
+            let resp_json: Value = serde_json::from_str(r#"{"msg":"success"}"#).unwrap();
+            let expected_response: models::SwitchDeltaModeResponse =
+                serde_json::from_value(resp_json.clone())
+                    .expect("should parse into models::SwitchDeltaModeResponse");
+
+            let resp = client
+                .switch_delta_mode(params)
+                .await
+                .expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn switch_delta_mode_response_error() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockAccountApiClient { force_error: true };
+
+            let params = SwitchDeltaModeParams::builder("delta_enabled_example".to_string())
+                .build()
+                .unwrap();
+
+            match client.switch_delta_mode(params).await {
+                Ok(_) => panic!("Expected an error"),
+                Err(err) => {
+                    assert_eq!(err.to_string(), "Connector client error: ResponseError");
+                }
+            }
+        });
+    }
+
+    #[test]
+    fn transfer_ldusdt_rwusd_for_portfolio_margin_required_params_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockAccountApiClient { force_error: false };
+
+            let params = TransferLdusdtRwusdForPortfolioMarginParams::builder(
+                "asset_example".to_string(),
+                "transfer_type_example".to_string(),
+                dec!(1.0),
+            )
+            .build()
+            .unwrap();
+
+            let resp_json: Value = serde_json::from_str(r#"{"msg":"success"}"#).unwrap();
+            let expected_response: models::TransferLdusdtRwusdForPortfolioMarginResponse =
+                serde_json::from_value(resp_json.clone()).expect(
+                    "should parse into models::TransferLdusdtRwusdForPortfolioMarginResponse",
+                );
+
+            let resp = client
+                .transfer_ldusdt_rwusd_for_portfolio_margin(params)
+                .await
+                .expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn transfer_ldusdt_rwusd_for_portfolio_margin_optional_params_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockAccountApiClient { force_error: false };
+
+            let params = TransferLdusdtRwusdForPortfolioMarginParams::builder(
                 "asset_example".to_string(),
                 "transfer_type_example".to_string(),
                 dec!(1.0),
@@ -2808,12 +2830,13 @@ mod tests {
             .unwrap();
 
             let resp_json: Value = serde_json::from_str(r#"{"msg":"success"}"#).unwrap();
-            let expected_response: models::TransferLdusdtForPortfolioMarginResponse =
-                serde_json::from_value(resp_json.clone())
-                    .expect("should parse into models::TransferLdusdtForPortfolioMarginResponse");
+            let expected_response: models::TransferLdusdtRwusdForPortfolioMarginResponse =
+                serde_json::from_value(resp_json.clone()).expect(
+                    "should parse into models::TransferLdusdtRwusdForPortfolioMarginResponse",
+                );
 
             let resp = client
-                .transfer_ldusdt_for_portfolio_margin(params)
+                .transfer_ldusdt_rwusd_for_portfolio_margin(params)
                 .await
                 .expect("Expected a response");
             let data_future = resp.data();
@@ -2823,11 +2846,11 @@ mod tests {
     }
 
     #[test]
-    fn transfer_ldusdt_for_portfolio_margin_response_error() {
+    fn transfer_ldusdt_rwusd_for_portfolio_margin_response_error() {
         TOKIO_SHARED_RT.block_on(async {
             let client = MockAccountApiClient { force_error: true };
 
-            let params = TransferLdusdtForPortfolioMarginParams::builder(
+            let params = TransferLdusdtRwusdForPortfolioMarginParams::builder(
                 "asset_example".to_string(),
                 "transfer_type_example".to_string(),
                 dec!(1.0),
@@ -2835,7 +2858,10 @@ mod tests {
             .build()
             .unwrap();
 
-            match client.transfer_ldusdt_for_portfolio_margin(params).await {
+            match client
+                .transfer_ldusdt_rwusd_for_portfolio_margin(params)
+                .await
+            {
                 Ok(_) => panic!("Expected an error"),
                 Err(err) => {
                     assert_eq!(err.to_string(), "Connector client error: ResponseError");

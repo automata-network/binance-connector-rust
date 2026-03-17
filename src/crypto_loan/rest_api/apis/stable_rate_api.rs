@@ -369,6 +369,7 @@ impl StableRateApi for StableRateApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("loanCoin".to_string(), json!(loan_coin));
 
@@ -385,6 +386,7 @@ impl StableRateApi for StableRateApiClient {
             "/sapi/v1/loan/repay/collateral/rate",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -410,6 +412,7 @@ impl StableRateApi for StableRateApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = asset {
             query_params.insert("asset".to_string(), json!(rw));
@@ -440,6 +443,7 @@ impl StableRateApi for StableRateApiClient {
             "/sapi/v1/loan/income",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -466,6 +470,7 @@ impl StableRateApi for StableRateApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = order_id {
             query_params.insert("orderId".to_string(), json!(rw));
@@ -504,6 +509,7 @@ impl StableRateApi for StableRateApiClient {
             "/sapi/v1/loan/borrow/history",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -530,6 +536,7 @@ impl StableRateApi for StableRateApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = order_id {
             query_params.insert("orderId".to_string(), json!(rw));
@@ -568,6 +575,7 @@ impl StableRateApi for StableRateApiClient {
             "/sapi/v1/loan/ltv/adjustment/history",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -594,6 +602,7 @@ impl StableRateApi for StableRateApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = order_id {
             query_params.insert("orderId".to_string(), json!(rw));
@@ -632,6 +641,7 @@ impl StableRateApi for StableRateApiClient {
             "/sapi/v1/loan/repay/history",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -681,9 +691,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::CheckCollateralRepayRateStableRateResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"loanlCoin":"BUSD","collateralCoin":"BNB","repayAmount":"1000","rate":"300.36781234"}"#).unwrap();
@@ -707,9 +719,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<Vec<models::GetCryptoLoansIncomeHistoryResponseInner>>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"asset":"BUSD","type":"borrowIn","amount":"100","timestamp":1633771139847,"tranId":"80423589583"},{"asset":"BUSD","type":"borrowIn","amount":"100","timestamp":1634638371496,"tranId":"81685123491"}]"#).unwrap();
@@ -733,9 +747,11 @@ mod tests {
             _params: GetLoanBorrowHistoryParams,
         ) -> anyhow::Result<RestApiResponse<models::GetLoanBorrowHistoryResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"rows":[{"orderId":100000001,"loanCoin":"BUSD","initialLoanAmount":"10000","hourlyInterestRate":"0.000057","loanTerm":"7","collateralCoin":"BNB","initialCollateralAmount":"49.27565492","borrowTime":1575018510000,"status":"Repaid"}],"total":1}"#).unwrap();
@@ -758,9 +774,11 @@ mod tests {
             _params: GetLoanLtvAdjustmentHistoryParams,
         ) -> anyhow::Result<RestApiResponse<models::GetLoanLtvAdjustmentHistoryResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"rows":[{"loanCoin":"BUSD","collateralCoin":"BNB","direction":"ADDITIONAL","amount":"5.235","preLTV":"0.78","afterLTV":"0.56","adjustTime":1575018510000,"orderId":756783308056935400}],"total":1}"#).unwrap();
@@ -783,9 +801,11 @@ mod tests {
             _params: GetLoanRepaymentHistoryParams,
         ) -> anyhow::Result<RestApiResponse<models::GetLoanRepaymentHistoryResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"rows":[{"loanCoin":"BUSD","repayAmount":"10000","collateralCoin":"BNB","collateralUsed":"0","collateralReturn":"49.27565492","repayType":"1","repayStatus":"Repaid","repayTime":1575018510000,"orderId":756783308056935400}],"total":1}"#).unwrap();

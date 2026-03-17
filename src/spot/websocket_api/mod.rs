@@ -425,6 +425,34 @@ impl WebsocketApi {
         self.account_api_client.my_allocations(params).await
     }
 
+    /// WebSocket Query Relevant Filters
+    ///
+    /// Retrieves the list of [filters](filters.md) relevant to an account on a given symbol. This is the only method that shows if an account has `MAX_ASSET` filters applied to it.
+    /// Weight: 40
+    ///
+    /// # Arguments
+    ///
+    /// - `params`: [`MyFiltersParams`]
+    ///   The parameters for this operation.
+    ///
+    /// # Returns
+    ///
+    /// [`WebsocketApiResponse<Box<models::MyFiltersResponseResult>>`] on success.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`anyhow::Error`] if the WebSocket request fails, if parameters are invalid, or if parsing the response fails.
+    ///
+    ///
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/binance-spot-api-docs/websocket-api/account-requests#query-relevant-filters-user_data).
+    ///
+    pub async fn my_filters(
+        &self,
+        params: MyFiltersParams,
+    ) -> anyhow::Result<WebsocketApiResponse<Box<models::MyFiltersResponseResult>>> {
+        self.account_api_client.my_filters(params).await
+    }
+
     /// WebSocket Account prevented matches
     ///
     /// Displays the list of orders that were expired due to STP.
@@ -780,6 +808,39 @@ impl WebsocketApi {
         self.general_api_client.exchange_info(params).await
     }
 
+    /// WebSocket Query Execution Rules
+    ///
+    ///
+    /// Weight: Parameter | Weight|
+    /// ---        | ---
+    /// `symbol`  | 2
+    /// `symbols` | 2 for each `symbol`, capped at a max of 40|
+    /// `symbolStatus` |40|
+    /// None            |40|
+    ///
+    /// # Arguments
+    ///
+    /// - `params`: [`ExecutionRulesParams`]
+    ///   The parameters for this operation.
+    ///
+    /// # Returns
+    ///
+    /// [`WebsocketApiResponse<Box<models::ExecutionRulesResponseResult>>`] on success.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`anyhow::Error`] if the WebSocket request fails, if parameters are invalid, or if parsing the response fails.
+    ///
+    ///
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/binance-spot-api-docs/websocket-api/general-requests#query-execution-rules).
+    ///
+    pub async fn execution_rules(
+        &self,
+        params: ExecutionRulesParams,
+    ) -> anyhow::Result<WebsocketApiResponse<Box<models::ExecutionRulesResponseResult>>> {
+        self.general_api_client.execution_rules(params).await
+    }
+
     /// WebSocket Test connectivity
     ///
     /// Test connectivity to the WebSocket API.
@@ -943,6 +1004,65 @@ impl WebsocketApi {
         params: KlinesParams,
     ) -> anyhow::Result<WebsocketApiResponse<Vec<Vec<models::KlinesItemInner>>>> {
         self.market_api_client.klines(params).await
+    }
+
+    /// WebSocket Query Reference Price
+    ///
+    ///
+    /// Weight: 2
+    ///
+    /// # Arguments
+    ///
+    /// - `params`: [`ReferencePriceParams`]
+    ///   The parameters for this operation.
+    ///
+    /// # Returns
+    ///
+    /// [`WebsocketApiResponse<Box<models::ReferencePriceResponseResult>>`] on success.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`anyhow::Error`] if the WebSocket request fails, if parameters are invalid, or if parsing the response fails.
+    ///
+    ///
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/binance-spot-api-docs/websocket-api/market-data-requests#query-reference-price).
+    ///
+    pub async fn reference_price(
+        &self,
+        params: ReferencePriceParams,
+    ) -> anyhow::Result<WebsocketApiResponse<Box<models::ReferencePriceResponseResult>>> {
+        self.market_api_client.reference_price(params).await
+    }
+
+    /// WebSocket Query Reference Price Calculation
+    ///
+    /// Describes how reference price is calculated for a given symbol.
+    /// Weight: 2
+    ///
+    /// # Arguments
+    ///
+    /// - `params`: [`ReferencePriceCalculationParams`]
+    ///   The parameters for this operation.
+    ///
+    /// # Returns
+    ///
+    /// [`WebsocketApiResponse<Box<models::ReferencePriceCalculationResponseResult>>`] on success.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`anyhow::Error`] if the WebSocket request fails, if parameters are invalid, or if parsing the response fails.
+    ///
+    ///
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/binance-spot-api-docs/websocket-api/market-data-requests#query-reference-price-calculation).
+    ///
+    pub async fn reference_price_calculation(
+        &self,
+        params: ReferencePriceCalculationParams,
+    ) -> anyhow::Result<WebsocketApiResponse<Box<models::ReferencePriceCalculationResponseResult>>>
+    {
+        self.market_api_client
+            .reference_price_calculation(params)
+            .await
     }
 
     /// WebSocket Rolling window price change statistics
@@ -1356,9 +1476,9 @@ impl WebsocketApi {
 
     /// WebSocket Cancel and replace order
     ///
-    /// Cancel an existing order and immediately place a new order instead of the canceled one.
-    ///
-    /// A new order that was not attempted (i.e. when `newOrderResult: NOT_ATTEMPTED`), will still increase the unfilled order count by 1.
+    /// * Cancel an existing order and immediately place a new order instead of the canceled one.
+    /// * A new order that was not attempted (i.e. when `newOrderResult: NOT_ATTEMPTED`), will still increase the unfilled order count by 1.
+    /// * You can only cancel an individual order from an orderList using this method, but the result is the same as canceling the entire orderList.
     /// Weight: 1
     ///
     /// # Arguments
@@ -1439,6 +1559,10 @@ impl WebsocketApi {
     ///
     /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/binance-spot-api-docs/websocket-api/trading-requests#place-new-oco---deprecated-trade).
     ///
+    /// # Deprecation
+    ///
+    /// **Deprecated:** This method may be removed in a future version.
+    #[deprecated]
     pub async fn order_list_place(
         &self,
         params: OrderListPlaceParams,
@@ -1485,6 +1609,68 @@ impl WebsocketApi {
         params: OrderListPlaceOcoParams,
     ) -> anyhow::Result<WebsocketApiResponse<Box<models::OrderListPlaceOcoResponseResult>>> {
         self.trade_api_client.order_list_place_oco(params).await
+    }
+
+    /// WebSocket OPO
+    ///
+    /// Place an [OPO](./faqs/opo.md).
+    ///
+    /// * OPOs add 2 orders to the `EXCHANGE_MAX_NUM_ORDERS` filter and `MAX_NUM_ORDERS` filter.
+    /// Weight: 1
+    ///
+    /// Unfilled Order Count: 2
+    ///
+    /// # Arguments
+    ///
+    /// - `params`: [`OrderListPlaceOpoParams`]
+    ///   The parameters for this operation.
+    ///
+    /// # Returns
+    ///
+    /// [`WebsocketApiResponse<Box<models::OrderListPlaceOpoResponseResult>>`] on success.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`anyhow::Error`] if the WebSocket request fails, if parameters are invalid, or if parsing the response fails.
+    ///
+    ///
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/binance-spot-api-docs/websocket-api/trading-requests#opo-trade).
+    ///
+    pub async fn order_list_place_opo(
+        &self,
+        params: OrderListPlaceOpoParams,
+    ) -> anyhow::Result<WebsocketApiResponse<Box<models::OrderListPlaceOpoResponseResult>>> {
+        self.trade_api_client.order_list_place_opo(params).await
+    }
+
+    /// WebSocket OPOCO
+    ///
+    /// Place an [OPOCO](./faqs/opo.md).
+    /// Weight: 1
+    ///
+    /// Unfilled Order Count: 3
+    ///
+    /// # Arguments
+    ///
+    /// - `params`: [`OrderListPlaceOpocoParams`]
+    ///   The parameters for this operation.
+    ///
+    /// # Returns
+    ///
+    /// [`WebsocketApiResponse<Box<models::OrderListPlaceOpocoResponseResult>>`] on success.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`anyhow::Error`] if the WebSocket request fails, if parameters are invalid, or if parsing the response fails.
+    ///
+    ///
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/binance-spot-api-docs/websocket-api/trading-requests#opoco-trade).
+    ///
+    pub async fn order_list_place_opoco(
+        &self,
+        params: OrderListPlaceOpocoParams,
+    ) -> anyhow::Result<WebsocketApiResponse<Box<models::OrderListPlaceOpocoResponseResult>>> {
+        self.trade_api_client.order_list_place_opoco(params).await
     }
 
     /// WebSocket Place new Order list - OTO
@@ -1725,107 +1911,6 @@ impl WebsocketApi {
             .await
     }
 
-    /// WebSocket Ping user data stream
-    ///
-    /// Ping a user data stream to keep it alive.
-    ///
-    /// User data streams close automatically after 60 minutes,
-    /// even if you're listening to them on WebSocket Streams.
-    /// In order to keep the stream open, you have to regularly send pings using the `userDataStream.ping` request.
-    ///
-    /// It is recommended to send a ping once every 30 minutes.
-    ///
-    /// This request does not require `signature`.
-    /// Weight: 2
-    ///
-    /// # Arguments
-    ///
-    /// - `params`: [`UserDataStreamPingParams`]
-    ///   The parameters for this operation.
-    ///
-    /// # Returns
-    ///
-    /// [`WebsocketApiResponse<serde_json::Value>`] on success.
-    ///
-    /// # Errors
-    ///
-    /// Returns an [`anyhow::Error`] if the WebSocket request fails, if parameters are invalid, or if parsing the response fails.
-    ///
-    ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/binance-spot-api-docs/websocket-api/user-Data-Stream-requests#ping-user-data-stream-user_stream).
-    ///
-    pub async fn user_data_stream_ping(
-        &self,
-        params: UserDataStreamPingParams,
-    ) -> anyhow::Result<WebsocketApiResponse<serde_json::Value>> {
-        self.user_data_stream_api_client
-            .user_data_stream_ping(params)
-            .await
-    }
-
-    /// WebSocket Start user data stream
-    ///
-    /// Start a new user data stream.
-    /// Note the stream will close in 60 minutes unless `userDataStream.ping` requests are sent regularly.
-    /// This request does not require `signature`.
-    /// Weight: 2
-    ///
-    /// # Arguments
-    ///
-    /// - `params`: [`UserDataStreamStartParams`]
-    ///   The parameters for this operation.
-    ///
-    /// # Returns
-    ///
-    /// [`WebsocketApiResponse<Box<models::UserDataStreamStartResponseResult>>`] on success.
-    ///
-    /// # Errors
-    ///
-    /// Returns an [`anyhow::Error`] if the WebSocket request fails, if parameters are invalid, or if parsing the response fails.
-    ///
-    ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/binance-spot-api-docs/websocket-api/user-Data-Stream-requests#start-user-data-stream-user_stream).
-    ///
-    pub async fn user_data_stream_start(
-        &self,
-        params: UserDataStreamStartParams,
-    ) -> anyhow::Result<WebsocketApiResponse<Box<models::UserDataStreamStartResponseResult>>> {
-        self.user_data_stream_api_client
-            .user_data_stream_start(params)
-            .await
-    }
-
-    /// WebSocket Stop user data stream
-    ///
-    /// Explicitly stop and close the user data stream.
-    /// This request does not require `signature`.
-    /// Weight: 2
-    ///
-    /// # Arguments
-    ///
-    /// - `params`: [`UserDataStreamStopParams`]
-    ///   The parameters for this operation.
-    ///
-    /// # Returns
-    ///
-    /// [`WebsocketApiResponse<serde_json::Value>`] on success.
-    ///
-    /// # Errors
-    ///
-    /// Returns an [`anyhow::Error`] if the WebSocket request fails, if parameters are invalid, or if parsing the response fails.
-    ///
-    ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/binance-spot-api-docs/websocket-api/user-Data-Stream-requests#stop-user-data-stream-user_stream).
-    ///
-    pub async fn user_data_stream_stop(
-        &self,
-        params: UserDataStreamStopParams,
-    ) -> anyhow::Result<WebsocketApiResponse<serde_json::Value>> {
-        self.user_data_stream_api_client
-            .user_data_stream_stop(params)
-            .await
-    }
-
     /// WebSocket Subscribe to User Data Stream
     ///
     /// Subscribe to the User Data Stream in the current WebSocket connection.
@@ -1862,6 +1947,7 @@ impl WebsocketApi {
             WebsocketBase::WebsocketApi(self.websocket_api_base.clone()),
             random_string(),
             None,
+            None,
         )
         .await;
 
@@ -1887,7 +1973,7 @@ impl WebsocketApi {
     /// Returns an [`anyhow::Error`] if the WebSocket request fails, if parameters are invalid, or if parsing the response fails.
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/binance-spot-api-docs/websocket-api/user-Data-Stream-requests#subscribe-to-user-data-stream-through-signature-subscription-user_data).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/binance-spot-api-docs/websocket-api/user-Data-Stream-requests#subscribe-to-user-data-stream-through-signature-subscription-user_stream).
     ///
     pub async fn user_data_stream_subscribe_signature(
         &self,
@@ -1904,6 +1990,7 @@ impl WebsocketApi {
             WebsocketBase::WebsocketApi(self.websocket_api_base.clone()),
             random_string(),
             None,
+            None,
         )
         .await;
 
@@ -1914,7 +2001,7 @@ impl WebsocketApi {
     ///
     /// Stop listening to the User Data Stream in the current WebSocket connection.
     ///
-    /// Note that `session.logout` will only close the subscription created with `userdataStream.subscribe` but not subscriptions opened with `userDataStream.subscribe.signature`.
+    /// Note that `session.logout` will only close the subscription created with `userDataStream.subscribe` but not subscriptions opened with `userDataStream.subscribe.signature`.
     /// Weight: 2
     ///
     /// # Arguments

@@ -1,5 +1,1147 @@
 # Changelog
 
+## 43.0.0 - 2026-03-12
+
+**Derivatives Trading Options**
+
+### Changed (1)
+
+#### REST API
+
+- Modified response for `cancel_all_option_orders_on_specific_symbol()` (`DELETE /eapi/v1/allOpenOrders`):
+  - `code`: type `integer` → `string`
+
+**Derivatives Trading Usds Futures**
+
+### Changed (1)
+
+#### REST API
+
+- Modified response for `query_order()` (`GET /fapi/v1/order`):
+  - property `origQty` added
+  - property `symbol` added
+  - property `cumQuote` added
+  - property `priceRate` added
+  - property `type` added
+  - property `time` added
+  - property `orderId` added
+  - property `timeInForce` added
+  - property `priceProtect` added
+  - property `closePosition` added
+  - property `activatePrice` added
+  - property `stopPrice` added
+  - property `executedQty` added
+  - property `reduceOnly` added
+  - property `avgPrice` added
+  - property `price` added
+  - property `side` added
+  - property `positionSide` added
+  - property `updateTime` added
+  - property `workingType` added
+  - property `origType` added
+  - property `clientOrderId` added
+  - property `id` deleted
+  - property `result` deleted
+  - `status`: type `integer` → `string`
+
+**Simple Earn**
+
+### Changed (1)
+
+- Modified response for `get_bfusd_quota_details()` (`GET /sapi/v1/bfusd/quota`):
+  - property `subscriptionQuota` added
+
+**Spot**
+
+### Added (7)
+
+#### REST API
+
+- `execution_rules()` (`GET /api/v3/executionRules`)
+- `reference_price()` (`GET /api/v3/referencePrice`)
+- `reference_price_calculation()` (`GET /api/v3/referencePrice/calculation`)
+
+#### WebSocket API
+
+- `execution_rules()` (`executionRules` method)
+- `reference_price()` (`referencePrice` method)
+- `reference_price_calculation()` (`referencePrice.calculation` method)
+
+#### WebSocket Streams
+
+- `reference_price()` (`<symbol>@referencePrice` stream)
+
+## 42.0.0 - 2026-03-05
+
+**Derivatives Trading Coin Futures**
+
+### Changed (1)
+
+#### REST API
+
+- Modified response for `exchange_information()` (`GET /dapi/v1/exchangeInfo`):
+  - `symbols`.items: property `orderTypes` added
+  - `symbols`.items: property `OrderType` deleted
+  - `symbols`.items: item property `orderTypes` added
+  - `symbols`.items: item property `OrderType` deleted
+
+**Derivatives Trading Usds Futures**
+
+### Changed (2)
+
+#### REST API
+
+- Modified response for `exchange_information()` (`GET /fapi/v1/exchangeInfo`):
+  - `symbols`.items: property `orderTypes` added
+  - `symbols`.items: property `OrderType` deleted
+  - `symbols`.items: item property `orderTypes` added
+  - `symbols`.items: item property `OrderType` deleted
+
+- Modified response for `cancel_order()` (`DELETE /fapi/v1/order`):
+  - property `avgPrice` added
+
+## 41.0.0 - 2026-03-02
+
+**Wallet**
+
+### Changed (1)
+
+- Modified response for `vasp_list()` (`GET /sapi/v1/localentity/vasp`):
+  - items: property `identifier` added
+  - items: item property `identifier` added
+
+## 40.1.0 - 2026-02-16
+
+### Added (1)
+
+- Support `rust-tls` backend for non-signed requests (`openssl-tls` remains the default selected option).
+
+## 40.0.0 - 2026-02-13
+
+**Margin Trading**
+
+### Added (2)
+
+#### REST API
+
+- `get_margin_restricted_assets()` (`GET /sapi/v1/margin/restricted-asset`)
+- `query_prevented_matches()` (`GET /sapi/v1/margin/myPreventedMatches`)
+
+## 39.0.0 - 2026-02-02
+
+**Derivatives Trading Portfolio Margin**
+
+### Changed (1)
+
+#### REST API
+
+- Modified parameter `strategyType`:
+  - enum added: `LIMIT_MAKER`
+  - affected methods:
+    - `new_cm_conditional_order()` (`POST /papi/v1/cm/conditional/order`)
+    - `new_um_conditional_order()` (`POST /papi/v1/um/conditional/order`)
+
+**Sub Account**
+
+### Changed (2)
+
+- Added parameter `limit`
+  - affected methods:
+    - `get_summary_of_sub_accounts_futures_account()` (`GET /sapi/v1/sub-account/futures/accountSummary`)
+- Added parameter `page`
+  - affected methods:
+    - `get_summary_of_sub_accounts_futures_account()` (`GET /sapi/v1/sub-account/futures/accountSummary`)
+
+## 38.0.0 - 2026-01-27
+
+**Convert**
+
+### Changed (1)
+
+- Modified response for `place_limit_order()` (`POST /sapi/v1/convert/limit/placeOrder`):
+  - property `orderId` added
+  - property `status` added
+  - property `toAmount` deleted
+  - property `validTimestamp` deleted
+  - property `fromAmount` deleted
+  - property `inverseRatio` deleted
+  - property `quoteId` deleted
+  - property `ratio` deleted
+
+**Derivatives Trading Coin Futures**
+
+### Changed (2)
+
+#### REST API
+
+- Modified response for `cancel_multiple_orders()` (`DELETE /dapi/v1/batchOrders`):
+  - items: property `pair` added
+  - items: item property `pair` added
+
+- Modified response for `current_all_open_orders()` (`GET /dapi/v1/openOrders`):
+  - items: property `pair` added
+  - items: item property `pair` added
+
+**Derivatives Trading Usds Futures**
+
+### Changed (6)
+
+#### REST API
+
+- Added parameter `newOrderRespType`
+  - affected methods:
+    - `new_algo_order()` (`POST /fapi/v1/algoOrder`)
+- Modified parameter `batchOrders`:
+  - items: property `stopPrice` added
+  - items: item property `stopPrice` added
+  - affected methods:
+    - `modify_multiple_orders()` (`PUT /fapi/v1/batchOrders`)
+- Modified response for `place_multiple_orders()` (`POST /fapi/v1/batchOrders`):
+  - items: property `closePosition` added
+  - items: item property `closePosition` added
+
+- Modified response for `query_order()` (`GET /fapi/v1/order`):
+  - property `result` added
+  - property `id` added
+  - property `executedQty` deleted
+  - property `reduceOnly` deleted
+  - property `priceProtect` deleted
+  - property `closePosition` deleted
+  - property `type` deleted
+  - property `avgPrice` deleted
+  - property `orderId` deleted
+  - property `updateTime` deleted
+  - property `activatePrice` deleted
+  - property `timeInForce` deleted
+  - property `cumQuote` deleted
+  - property `workingType` deleted
+  - property `goodTillDate` deleted
+  - property `positionSide` deleted
+  - property `side` deleted
+  - property `origQty` deleted
+  - property `time` deleted
+  - property `selfTradePreventionMode` deleted
+  - property `clientOrderId` deleted
+  - property `origType` deleted
+  - property `price` deleted
+  - property `priceMatch` deleted
+  - property `stopPrice` deleted
+  - property `priceRate` deleted
+  - property `symbol` deleted
+  - `status`: type `string` → `integer`
+
+#### WebSocket API
+
+- Added parameter `newOrderRespType`
+  - affected methods:
+    - `new_algo_order()` (`algoOrder.place` method)
+- Modified response for `position_information_v2()` (`v2/account.position` method):
+  - `result`.items: property `unRealizedProfit` added
+  - `result`.items: property `unrealizedProfit` deleted
+  - `result`.items: item property `unRealizedProfit` added
+  - `result`.items: item property `unrealizedProfit` deleted
+
+**Margin Trading**
+
+### Added (1)
+
+#### REST API
+
+- `get_margin_asset_risk_based_liquidation_ratio()` (`GET /sapi/v1/margin/risk-based-liquidation-ratio`)
+
+**Spot**
+
+### Changed (1)
+
+#### WebSocket API
+
+- Added parameter `recvWindow`
+  - affected methods:
+    - `user_data_stream_subscribe_signature()` (`userDataStream.subscribe.signature` method)
+
+**Wallet**
+
+### Changed (1)
+
+- Modified response for `asset_dividend_record()` (`GET /sapi/v1/asset/assetDividend`):
+  - `rows`.items: property `direction` added
+  - `rows`.items: item property `direction` added
+
+## 37.0.0 - 2026-01-20
+
+### Added (1)
+
+- Expose `code` on REST API response errors.
+
+**Alpha**
+
+- Initial release.
+
+**Derivatives Trading Portfolio Margin**
+
+### Changed (1)
+
+#### REST API
+
+- Modified response for `query_current_cm_open_order()` (`GET /papi/v1/cm/openOrder`):
+  - type `object` → `array`
+  - property `side` deleted
+  - property `reduceOnly` deleted
+  - property `orderId` deleted
+  - property `updateTime` deleted
+  - property `status` deleted
+  - property `avgPrice` deleted
+  - property `clientOrderId` deleted
+  - property `type` deleted
+  - property `time` deleted
+  - property `cumBase` deleted
+  - property `executedQty` deleted
+  - property `price` deleted
+  - property `symbol` deleted
+  - property `positionSide` deleted
+  - property `origQty` deleted
+  - property `origType` deleted
+  - property `pair` deleted
+  - property `timeInForce` deleted
+
+**Mining**
+
+### Changed (2)
+
+- Deleted parameter `userName`
+  - affected methods:
+    - `hashrate_resale_detail()` (`GET /sapi/v1/mining/hash-transfer/profit/details`)
+- Modified response for `hashrate_resale_list()` (`GET /sapi/v1/mining/hash-transfer/config/details/list`):
+  - `data`.`configDetails`.items: property `type` added
+  - `data`.`configDetails`.items: item property `type` added
+
+**Simple Earn**
+
+### Changed (1)
+
+- Modified response for `get_bfusd_quota_details()` (`GET /sapi/v1/bfusd/quota`):
+  - property `subscribeEnable` deleted
+  - property `redeemEnable` deleted
+
+**Vip Loan**
+
+### Changed (1)
+
+- Modified response for `get_vip_loan_ongoing_orders()` (`GET /sapi/v1/loan/vip/ongoing/orders`):
+  - `rows`.items: property `loanRate` added
+  - `rows`.items: item property `loanRate` added
+
+**Wallet**
+
+### Changed (4)
+
+- Added parameter `accountType`
+  - affected methods:
+    - `dustlog()` (`GET /sapi/v1/asset/dribblet`)
+- Added parameter `asset`
+  - affected methods:
+    - `asset_detail()` (`GET /sapi/v1/asset/assetDetail`)
+- Modified response for `withdraw_history_v1()` (`GET /sapi/v1/localentity/withdraw/history`):
+  - items: property `addressTag` deleted
+  - items: item property `addressTag` deleted
+
+- Modified response for `withdraw_history_v2()` (`GET /sapi/v2/localentity/withdraw/history`):
+  - items: property `addressTag` deleted
+  - items: item property `addressTag` deleted
+
+## 36.0.0 - 2026-01-13
+
+**Crypto Loan**
+
+### Added (1)
+
+- `get_flexible_loan_interest_rate_history()` (`GET /sapi/v2/loan/interestRateHistory`)
+
+**Derivatives Trading Coin Futures**
+
+### Added (1)
+
+#### REST API
+
+- `place_multiple_orders()` (`POST /dapi/v1/batchOrders`)
+
+**Derivatives Trading Options**
+
+- Update REST API and Websocket Streams to match latest API changes.
+
+**Derivatives Trading Portfolio Margin Pro**
+
+### Added (2)
+
+#### REST API
+
+- `get_delta_mode_status()` (`GET /sapi/v1/portfolio/delta-mode`)
+- `switch_delta_mode()` (`POST /sapi/v1/portfolio/delta-mode`)
+
+**Derivatives Trading Usds Futures**
+
+### Changed (12)
+
+#### REST API
+
+- Added parameter `algo_id`
+  - affected methods:
+    - `cancel_algo_order()` (`DELETE /fapi/v1/algoOrder`)
+- Added parameter `client_algo_id`
+  - affected methods:
+    - `cancel_algo_order()` (`DELETE /fapi/v1/algoOrder`)
+- Deleted parameter `algo_id`
+  - affected methods:
+    - `cancel_algo_order()` (`DELETE /fapi/v1/algoOrder`)
+- Deleted parameter `client_algo_id`
+  - affected methods:
+    - `cancel_algo_order()` (`DELETE /fapi/v1/algoOrder`)
+- Modified response for `symbol_configuration()` (`GET /fapi/v1/symbolConfig`):
+  - items.`is_auto_add_margin`: type `string` → `boolean`
+  - items.`is_auto_add_margin`: type `string` → `boolean`
+
+#### WebSocket API
+
+- Added parameter `algo_id`
+  - affected methods:
+    - `cancel_algo_order()` (`algoOrder.cancel` method)
+- Added parameter `client_algo_id`
+  - affected methods:
+    - `cancel_algo_order()` (`algoOrder.cancel` method)
+- Deleted parameter `algo_id`
+  - affected methods:
+    - `cancel_algo_order()` (`algoOrder.cancel` method)
+- Deleted parameter `client_algo_id`
+  - affected methods:
+    - `cancel_algo_order()` (`algoOrder.cancel` method)
+- Added parameter `activate_price`
+  - affected methods:
+    - `new_algo_order()` (`algoOrder.place` method)
+- Deleted parameter `activation_price`
+  - affected methods:
+    - `new_algo_order()` (`algoOrder.place` method)
+
+#### WebSocket Streams
+
+- Modified response for `aggregate_trade_streams()` (`<symbol>@aggTrade` stream):
+  - property `nq` added
+
+**Dual Investment**
+
+### Changed (1)
+
+- Update documentation URLs.
+
+**VIP Loan**
+
+### Added (2)
+
+- `get_vip_loan_accrued_interest()` (`GET /sapi/v1/loan/vip/accruedInterest`)
+- `get_vip_loan_interest_rate_history()` (`GET /sapi/v1/loan/vip/interestRateHistory`)
+
+**Wallet**
+
+### Added (1)
+
+- `submit_deposit_questionnaire_v2()` (`PUT /sapi/v2/localentity/deposit/provide-info`)
+
+### Changed (1)
+
+- Modified parameter `deposit_id`:
+  - type `string` → `integer`
+  - affected methods:
+    - `submit_deposit_questionnaire()` (`PUT /sapi/v1/localentity/broker/deposit/provide-info`)
+
+## 35.0.0 - 2025-12-19
+
+### Changed (1)
+
+- Support integer randomisation on WS streams subscription/unsubscription.
+
+**Derivatives Trading Options**
+
+### Changed (1)
+
+#### WebSocket Streams
+
+- Modified parameter `id`:
+  - type `string` → `integer`
+  - affected methods:
+    - `partial_book_depth_streams()` (`<symbol>@depth<levels>@<updateSpeed>` stream)
+    - `index_price_streams()` (`<symbol>@index` stream)
+    - `kline_candlestick_streams()` (`<symbol>@kline_<interval>` stream)
+    - `ticker24_hour()` (`<symbol>@ticker` stream)
+    - `trade_streams()` (`<symbol>@trade` stream)
+    - `mark_price()` (`<underlyingAsset>@markPrice` stream)
+    - `open_interest()` (`<underlyingAsset>@openInterest@<expirationDate>` stream)
+    - `ticker24_hour_by_underlying_asset_and_expiration_data()` (`<underlyingAsset>@ticker@<expirationDate>` stream)
+    - `new_symbol_info()` (`option_pair` stream)
+
+**Derivatives Trading Usds Futures**
+
+### Changed (2)
+
+#### REST API
+
+- Added parameter `activatePrice`
+  - affected methods:
+    - `new_algo_order()` (`POST /fapi/v1/algoOrder`)
+- Deleted parameter `activationPrice`
+  - affected methods:
+    - `new_algo_order()` (`POST /fapi/v1/algoOrder`)
+
+**Spot**
+
+### Added (1)
+
+#### WebSocket API
+
+- `order_amend_keep_priority()` (`order.amend.keepPriority` method)
+
+**Wallet**
+
+### Added (2)
+
+- `dust_convert()` (`POST /sapi/v1/asset/dust-convert/convert`)
+- `dust_convertible_assets()` (`POST /sapi/v1/asset/dust-convert/query-convertible-assets`)
+
+## 34.0.0 - 2025-12-16
+
+### Changed (1)
+
+- Support request body params on `send_request` and `send_signed_request` functions across all products.
+
+**Derivatives Trading Coin Futures**
+
+### Changed (1)
+
+#### REST API
+
+- Modified parameter `batchOrders`:
+  - items.`orderId`: type `integer` → `string`
+  - items.`price`: type `number` → `string`
+  - items.`quantity`: type `number` → `string`
+  - items.`recvWindow`: type `integer` → `string`
+  - items.`orderId`: type `integer` → `string`
+  - items.`price`: type `number` → `string`
+  - items.`quantity`: type `number` → `string`
+  - items.`recvWindow`: type `integer` → `string`
+  - affected methods:
+    - `modify_multiple_orders()` (`PUT /dapi/v1/batchOrders`)
+
+**Derivatives Trading Options**
+
+### Changed (1)
+
+#### REST API
+
+- Modified parameter `orders`:
+  - items.`isMmp`: type `boolean` → `string`
+  - items.`postOnly`: type `boolean` → `string`
+  - items.`price`: type `number` → `string`
+  - items.`quantity`: type `number` → `string`
+  - items.`reduceOnly`: type `boolean` → `string`
+  - items.`isMmp`: type `boolean` → `string`
+  - items.`postOnly`: type `boolean` → `string`
+  - items.`price`: type `number` → `string`
+  - items.`quantity`: type `number` → `string`
+  - items.`reduceOnly`: type `boolean` → `string`
+  - affected methods:
+    - `place_multiple_orders()` (`POST /eapi/v1/batchOrders`)
+
+**Derivatives Trading Portfolio Margin**
+
+### Changed (1)
+
+#### REST API
+
+- Modified response for `um_position_adl_quantile_estimation()` (`GET /papi/v1/um/adlQuantile`):
+  - items.`adlQuantile`: property `HEDGE` deleted
+
+**Derivatives Trading Usds Futures**
+
+### Added (3)
+
+#### REST API
+
+- `futures_tradfi_perps_contract()` (`POST /fapi/v1/stock/contract`)
+- `trading_schedule()` (`GET /fapi/v1/tradingSchedule`)
+
+#### WebSocket Streams
+
+- `trading_session_stream()` (`tradingSession` stream)
+
+### Changed (11)
+
+#### REST API
+
+- Deleted parameter `activationPrice`
+  - affected methods:
+    - `new_order()` (`POST /fapi/v1/order`)
+- Deleted parameter `callbackRate`
+  - affected methods:
+    - `new_order()` (`POST /fapi/v1/order`)
+- Deleted parameter `closePosition`
+  - affected methods:
+    - `new_order()` (`POST /fapi/v1/order`)
+- Deleted parameter `priceProtect`
+  - affected methods:
+    - `new_order()` (`POST /fapi/v1/order`)
+- Deleted parameter `stopPrice`
+  - affected methods:
+    - `new_order()` (`POST /fapi/v1/order`)
+- Deleted parameter `workingType`
+  - affected methods:
+    - `new_order()` (`POST /fapi/v1/order`)
+- Modified parameter `batchOrders`:
+  - items: property `activationPrice` deleted
+  - items: property `callbackRate` deleted
+  - items: property `stopPrice` deleted
+  - items: property `workingType` deleted
+  - items: property `priceProtect` deleted
+  - items: item property `activationPrice` deleted
+  - items: item property `callbackRate` deleted
+  - items: item property `stopPrice` deleted
+  - items: item property `workingType` deleted
+  - items: item property `priceProtect` deleted
+  - affected methods:
+    - `place_multiple_orders()` (`POST /fapi/v1/batchOrders`)
+- Modified parameter `batchOrders`:
+  - items.`orderId`: type `integer` → `string`
+  - items.`price`: type `number` → `string`
+  - items.`quantity`: type `number` → `string`
+  - items.`recvWindow`: type `integer` → `string`
+  - items.`orderId`: type `integer` → `string`
+  - items.`price`: type `number` → `string`
+  - items.`quantity`: type `number` → `string`
+  - items.`recvWindow`: type `integer` → `string`
+  - affected methods:
+    - `modify_multiple_orders()` (`PUT /fapi/v1/batchOrders`)
+
+- Modified response for `place_multiple_orders()` (`POST /fapi/v1/batchOrders`):
+  - items: property `priceRate` deleted
+  - items: property `activatePrice` deleted
+  - items: item property `priceRate` deleted
+  - items: item property `activatePrice` deleted
+
+- Modified response for `new_order()` (`POST /fapi/v1/order`):
+  - property `activatePrice` deleted
+  - property `priceRate` deleted
+
+#### WebSocket API
+
+- Modified response for `cancel_algo_order()` (`algoOrder.cancel` method):
+  - `result`: property `msg` added
+  - `result`: property `code` added
+  - `result`: property `icebergQuantity` deleted
+  - `result`: property `orderType` deleted
+  - `result`: property `createTime` deleted
+  - `result`: property `algoStatus` deleted
+  - `result`: property `reduceOnly` deleted
+  - `result`: property `updateTime` deleted
+  - `result`: property `triggerPrice` deleted
+  - `result`: property `positionSide` deleted
+  - `result`: property `priceMatch` deleted
+  - `result`: property `closePosition` deleted
+  - `result`: property `timeInForce` deleted
+  - `result`: property `quantity` deleted
+  - `result`: property `goodTillDate` deleted
+  - `result`: property `triggerTime` deleted
+  - `result`: property `priceProtect` deleted
+  - `result`: property `workingType` deleted
+  - `result`: property `algoType` deleted
+  - `result`: property `price` deleted
+  - `result`: property `side` deleted
+  - `result`: property `selfTradePreventionMode` deleted
+  - `result`: property `symbol` deleted
+
+**Fiat**
+
+### Added (3)
+
+- `deposit()` (`POST /sapi/v1/fiat/deposit`)
+- `fiat_withdraw()` (`POST /sapi/v2/fiat/withdraw`)
+- `get_order_detail()` (`GET /sapi/v1/fiat/get-order-detail`)
+
+**Spot**
+
+### Added (4)
+
+#### REST API
+
+- `order_list_opo()` (`POST /api/v3/orderList/opo`)
+- `order_list_opoco()` (`POST /api/v3/orderList/opoco`)
+
+#### WebSocket API
+
+- `order_list_place_opo()` (`orderList.place.opo` method)
+- `order_list_place_opoco()` (`orderList.place.opoco` method)
+
+### Changed (2)
+
+#### REST API
+
+- Modified response for `exchange_info()` (`GET /api/v3/exchangeInfo`):
+  - `symbols`.items: property `opoAllowed` added
+  - `symbols`.items: item property `opoAllowed` added
+
+#### WebSocket API
+
+- Modified response for `exchange_info()` (`exchangeInfo` method):
+  - `result`.`symbols`.items: property `opoAllowed` added
+  - `result`.`symbols`.items: item property `opoAllowed` added
+
+### Removed (2)
+
+#### WebSocket API
+
+- `/order.amend.keep_priority()` (`order.amend.keepPriority` method)
+
+#### WebSocket Streams
+
+- `/!ticker@arr()` (`!ticker@arr` stream)
+
+## 33.0.1 - 2025-12-01
+
+### Changed (2)
+
+- Removed unstable `if let` chains on rust versions older than 1.90.0.
+- Added logger initialisation on examples.
+
+## 33.0.0 - 2025-11-27
+
+### Changed (1)
+
+- The crate no longer auto-initializes a global `tracing` subscriber. Logging configuration is now opt-in and must be performed by the application. The existing helper `logger::init()` is still available, but it is no longer called automatically by the library.
+
+  - If you previously relied on the connector to set up logging for you, call this once in your application before creating any clients:
+
+    ```rust
+    use binance_sdk::logger;
+
+    fn main() {
+      logger::init();
+    }
+    ```
+
+  - If your application already configures a global `tracing` subscriber, nothing changes: `logger::init()` is not called by the library and if you call it yourself it will early-return when a subscriber is already set.
+
+**Derivatives Trading Usds Futures**
+
+### Added (2)
+
+#### REST API
+
+- `rpi_order_book()` (`GET /fapi/v1/rpiDepth`)
+
+#### WebSocket Streams
+
+- `rpi_diff_book_depth_streams()` (`<symbol>@rpiDepth@500ms` stream)
+
+### Changed (2)
+
+#### REST API
+
+- Modified response for `user_commission_rate()` (`GET /dapi/v1/commissionRate`):
+  - property `rpi_commission_rate` added
+
+#### WebSocket Streams
+
+- Modified `UserDataStreamEventsResponse` for `AlgoUpdate`:
+  - `o`: property `rm` added
+
+**Simple Earn**
+
+### Changed (2)
+
+- Modified response for `get_bfusd_account()` (`GET /sapi/v1/bfusd/account`):
+  - property `usdt_profit` added
+  - property `bfusd_profit` added
+  - property `total_profit` removed
+
+- Modified response for `get_bfusd_rewards_history()` (`GET /sapi/v1/bfusd/history/rewardsHistory`):
+  - `rows`.items: property `reward_asset` added
+
+## 32.0.0 - 2025-11-20
+
+**Derivatives Trading Portfolio Margin Pro**
+
+### Changed (1)
+
+#### REST API
+
+- Renamed `transfer_ldusdt_for_portfolio_margin()` to `transfer_ldusdt_rwusd_for_portfolio_margin()`.
+
+**Derivatives Trading Usds Futures**
+
+### Added (1)
+
+#### REST API
+
+- `adl_risk()` (`GET /fapi/v1/symbolAdlRisk`)
+
+## 31.0.0 - 2025-11-18
+
+**Derivatives Trading Options**
+
+### Changed (1)
+
+#### REST API
+
+- Renamed `symbol_price_ticker()` to `index_price_ticker()`.
+
+### Changed (1)
+
+#### WebSocket Streams
+
+- Modified response for `trade_streams()` (`<symbol>@trade` method):
+  - `t`: number -> string
+
+**Derivatives Trading Portfolio Margin**
+
+### Changed (1)
+
+#### WebSocket Streams
+
+- Modified response for `user_data()` method:
+  - removed `m_uppercase` from `Executionreport`
+
+**Derivatives Trading Usds Futures**
+
+### Changed (5)
+
+#### REST API
+
+- Modified parameter `batchOrders`:
+  - items.`timeInForce`: enum added: `RPI`
+  - items.`timeInForce`: enum added: `RPI`
+  - affected methods:
+    - `place_multiple_orders()` (`POST /fapi/v1/batchOrders`)
+- Modified parameter `timeInForce`:
+  - enum added: `RPI`
+  - affected methods:
+    - `new_algo_order()` (`POST /fapi/v1/algoOrder`)
+    - `new_order()` (`POST /fapi/v1/order`)
+    - `test_order()` (`POST /fapi/v1/order/test`)
+- Modified response for `old_trades_lookup()` (`GET /fapi/v1/historicalTrades`):
+  - items: property `isRPITrade` added
+  - items: item property `isRPITrade` added
+
+- Modified response for `recent_trades_list()` (`GET /fapi/v1/trades`):
+  - items: property `isRPITrade` added
+  - items: item property `isRPITrade` added
+
+#### WebSocket API
+
+- Modified parameter `timeInForce`:
+  - enum added: `RPI`
+  - affected methods:
+    - `new_algo_order()` (`algoOrder.place` method)
+    - `new_order()` (`order.place` method)
+
+**Fiat**
+
+### Removed (2)
+
+- `fiat_withdraw()` (`GET /sapi/v2/fiat/withdraw`)
+- `get_order_detail()` (`GET /sapi/v1/fiat/get-order-detail`)
+
+**Spot**
+
+### Changed (1)
+
+#### WebSocket Streams
+
+- Marked `all_ticker()` (`!ticker@arr` stream) as deprecated.
+
+## 30.0.0 - 2025-11-10
+
+**C2C**
+
+### Changed (4)
+
+- Added parameter `endTimestamp`
+  - affected methods:
+    - `get_c2_c_trade_history()` (`GET /sapi/v1/c2c/orderMatch/listUserOrderHistory`)
+- Added parameter `startTimestamp`
+  - affected methods:
+    - `get_c2_c_trade_history()` (`GET /sapi/v1/c2c/orderMatch/listUserOrderHistory`)
+- Deleted parameter `endTime`
+  - affected methods:
+    - `get_c2_c_trade_history()` (`GET /sapi/v1/c2c/orderMatch/listUserOrderHistory`)
+- Deleted parameter `startTime`
+  - affected methods:
+    - `get_c2_c_trade_history()` (`GET /sapi/v1/c2c/orderMatch/listUserOrderHistory`)
+
+**Derivatives Trading Portfolio Margin Pro**
+
+### Removed (2)
+
+#### REST API
+
+- `mint_bfusd_for_portfolio_margin()` (`POST /sapi/v1/portfolio/mint`)
+- `redeem_bfusd_for_portfolio_margin()` (`POST /sapi/v1/portfolio/redeem`)
+
+**Derivatives Trading Usds Futures**
+
+### Added (2)
+
+#### WebSocket API
+
+- `cancel_algo_order()` (`algoOrder.cancel` method)
+- `new_algo_order()` (`algoOrder.place` method)
+
+**Fiat**
+
+### Added (2)
+
+- `fiat_withdraw()` (`GET /sapi/v2/fiat/withdraw`)
+- `get_order_detail()` (`GET /sapi/v1/fiat/get-order-detail`)
+
+**Margin Trading**
+
+### Removed (6)
+
+#### REST API
+
+- `close_isolated_margin_user_data_stream()` (`DELETE /sapi/v1/userDataStream/isolated`)
+- `close_margin_user_data_stream()` (`DELETE /sapi/v1/userDataStream`)
+- `keepalive_isolated_margin_user_data_stream()` (`PUT /sapi/v1/userDataStream/isolated`)
+- `keepalive_margin_user_data_stream()` (`PUT /sapi/v1/userDataStream`)
+- `start_isolated_margin_user_data_stream()` (`POST /sapi/v1/userDataStream/isolated`)
+- `start_margin_user_data_stream()` (`POST /sapi/v1/userDataStream`)
+
+## 29.0.0 - 2025-11-07
+
+**Derivatives Trading Usds Futures**
+
+### Added (6)
+
+#### REST API
+
+- `cancel_algo_order()` (`DELETE /fapi/v1/algoOrder`)
+- `cancel_all_algo_open_orders()` (`DELETE /fapi/v1/algoOpenOrders`)
+- `current_all_algo_open_orders()` (`GET /fapi/v1/openAlgoOrders`)
+- `new_algo_order()` (`POST /fapi/v1/algoOrder`)
+- `query_algo_order()` (`GET /fapi/v1/algoOrder`)
+- `query_all_algo_orders()` (`GET /fapi/v1/allAlgoOrders`)
+
+## 28.0.0 - 2025-11-06
+
+**C2c**
+
+### Changed (2)
+
+- Added parameter `rows`
+  - affected methods:
+    - `get_c2_c_trade_history()` (`GET /sapi/v1/c2c/orderMatch/listUserOrderHistory`)
+- Added parameter `tradeType`
+  - affected methods:
+    - `get_c2_c_trade_history()` (`GET /sapi/v1/c2c/orderMatch/listUserOrderHistory`)
+
+## 27.0.0 - 2025-10-30
+
+**Simple Earn**
+
+### Added (8)
+
+- `get_bfusd_account()` (`GET /sapi/v1/bfusd/account`)
+- `get_bfusd_quota_details()` (`GET /sapi/v1/bfusd/quota`)
+- `get_bfusd_rate_history()` (`GET /sapi/v1/bfusd/history/rateHistory`)
+- `get_bfusd_redemption_history()` (`GET /sapi/v1/bfusd/history/redemptionHistory`)
+- `get_bfusd_rewards_history()` (`GET /sapi/v1/bfusd/history/rewardsHistory`)
+- `get_bfusd_subscription_history()` (`GET /sapi/v1/bfusd/history/subscriptionHistory`)
+- `redeem_bfusd()` (`POST /sapi/v1/bfusd/redeem`)
+- `subscribe_bfusd()` (`POST /sapi/v1/bfusd/subscribe`)
+
+**Spot**
+
+### Changed (2)
+
+#### REST API
+
+- Added parameter `symbolStatus`
+  - affected methods:
+    - `depth()` (`GET /api/v3/depth`)
+    - `ticker()` (`GET /api/v3/ticker`)
+    - `ticker24hr()` (`GET /api/v3/ticker/24hr`)
+    - `ticker_book_ticker()` (`GET /api/v3/ticker/bookTicker`)
+    - `ticker_price()` (`GET /api/v3/ticker/price`)
+    - `ticker_trading_day()` (`GET /api/v3/ticker/tradingDay`)
+
+#### WebSocket API
+
+- Added parameter `symbolStatus`
+  - affected methods:
+    - `depth()` (`depth` method)
+    - `ticker()` (`ticker` method)
+    - `ticker24hr()` (`ticker.24hr` method)
+    - `ticker_book()` (`ticker.book` method)
+    - `ticker_price()` (`ticker.price` method)
+    - `ticker_trading_day()` (`ticker.tradingDay` method)
+
+**Staking**
+
+### Changed (1)
+
+- Modified response for `get_current_eth_staking_quota()` (`GET /sapi/v1/eth-staking/eth/quota`):
+  - property `minRedeemAmount` added
+  - property `redeemPeriod` added
+  - property `stakeable` added
+  - property `commissionFee` added
+  - property `redeemable` added
+  - property `calculating` added
+  - property `minStakeAmount` added
+
+## 26.0.0 - 2025-10-27
+
+**Derivatives Trading Usds Futures**
+
+### Changed (1)
+
+#### REST API
+
+- Marked `symbol_price_ticker` (`GET /fapi/v1/ticker/price`) as deprecated.
+
+**Margin Trading**
+
+### Changed (6)
+
+#### REST API
+
+- Marked `close_isolated_margin_user_data_stream` (`DELETE /sapi/v1/userDataStream/isolated`) as deprecated
+- Marked `close_margin_user_data_stream` (`DELETE /sapi/v1/userDataStream`) as deprecated
+- Marked `keepalive_isolated_margin_user_data_stream` (`PUT /sapi/v1/userDataStream/isolated`) as deprecated
+- Marked `keepalive_margin_user_data_stream` (`PUT /sapi/v1/userDataStream`) as deprecated
+- Marked `start_isolated_margin_user_data_stream` (`POST /sapi/v1/userDataStream/isolated`) as deprecated
+- Marked `start_margin_user_data_stream` (`POST /sapi/v1/userDataStream`) as deprecated
+
+**Spot**
+
+### Changed (2)
+
+#### REST API
+
+- Marked `order_oco` (`POST /api/v3/order/oco`) as deprecated.
+
+#### WebSocket API
+
+- Marked `order_list_place` (`orderList.place` method) as deprecated.
+
+### Removed (6)
+
+#### REST API
+
+- `delete_user_data_stream()` (`DELETE /api/v3/userDataStream`)
+- `new_user_data_stream()` (`POST /api/v3/userDataStream`)
+- `put_user_data_stream()` (`PUT /api/v3/userDataStream`)
+
+#### WebSocket API
+
+- `/user_data_stream.ping()` (`userDataStream.ping` method)
+- `/user_data_stream.start()` (`userDataStream.start` method)
+- `/user_data_stream.stop()` (`userDataStream.stop` method)
+
+## 25.0.0 - 2025-10-20
+
+**Derivatives Trading Usds Futures**
+
+### Changed (1)
+
+#### WebSocket Streams
+
+- Modified User Data Streams response for `OrderTradeUpdateO`:
+  - `er` added 
+
+## 24.0.0 - 2025-10-09
+
+**Derivatives Trading Coin Futures**
+
+### Changed (1)
+
+#### REST API
+
+- Modified response for `query_order()` (`GET /dapi/v1/order`):
+  - property `positionSide` added
+
+**Derivatives Trading Options**
+
+### Changed (4)
+
+#### REST API
+
+- Deleted parameter `price`
+  - affected methods:
+    - `new_block_trade_order()` (`POST /eapi/v1/block/order/create`)
+- Deleted parameter `quantity`
+  - affected methods:
+    - `new_block_trade_order()` (`POST /eapi/v1/block/order/create`)
+- Deleted parameter `side`
+  - affected methods:
+    - `new_block_trade_order()` (`POST /eapi/v1/block/order/create`)
+- Deleted parameter `symbol`
+  - affected methods:
+    - `new_block_trade_order()` (`POST /eapi/v1/block/order/create`)
+
+**Spot**
+
+### Changed (4)
+
+#### REST API
+
+- Modified response for `exchange_info()` (`GET /api/v3/exchangeInfo`):
+  - modified `exchange_filters` and `symbols`.`filters`
+
+- Modified response for `my_filters()` (`GET /api/v3/myFilters`):
+  - modified `asset_filters`, `exchange_filters` and `symbol_filters`
+
+#### WebSocket API
+
+- Modified response for `exchange_info()` (`exchangeInfo` method):
+  - modified `result`.`exchange_filters` and `result`.`symbols`.`filters`
+
+- Modified response for `my_filters()` (`myFilters` method):
+  - modified `result`.`asset_filters`, `result`.`exchange_filters` and `result`.`symbol_filters`
+
+## 23.0.0 - 2025-10-06
+
+**Derivatives Trading Options**
+
+### Changed (1)
+
+#### REST API
+
+- Deleted parameter `limit`
+  - affected methods:
+    - `query_current_open_option_orders()` (`GET /eapi/v1/openOrders`)
+
+**Sub Account**
+
+### Changed (1)
+
+- Modified parameter `orderArgs`:
+  - item property `positionSide` added
+  - item property `quantity` added
+  - item property `symbol` added
+  - affected methods:
+    - `move_position_for_sub_account()` (`POST /sapi/v1/sub-account/futures/move-position`)
+
+## 22.0.0 - 2025-09-29
+
+**Derivatives Trading Portfolio Margin Pro**
+
+### Changed (2)
+
+#### REST API
+
+- Modified response for `mint_bfusd_for_portfolio_margin()` (`POST /sapi/v1/portfolio/mint`):
+  - property `mintRate` added
+  - property `rate` deleted
+
+- Modified response for `redeem_bfusd_for_portfolio_margin()` (`POST /sapi/v1/portfolio/redeem`):
+  - property `redeemRate` added
+  - property `rate` deleted
+
 ## 21.0.0 - 2025-09-24
 
 **Spot**

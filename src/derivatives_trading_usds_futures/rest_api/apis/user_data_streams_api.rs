@@ -55,12 +55,14 @@ impl UserDataStreamsApiClient {
 impl UserDataStreamsApi for UserDataStreamsApiClient {
     async fn close_user_data_stream(&self) -> anyhow::Result<RestApiResponse<Value>> {
         let query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         send_request::<Value>(
             &self.configuration,
             "/fapi/v1/listenKey",
             reqwest::Method::DELETE,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -75,12 +77,14 @@ impl UserDataStreamsApi for UserDataStreamsApiClient {
         &self,
     ) -> anyhow::Result<RestApiResponse<models::KeepaliveUserDataStreamResponse>> {
         let query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         send_request::<models::KeepaliveUserDataStreamResponse>(
             &self.configuration,
             "/fapi/v1/listenKey",
             reqwest::Method::PUT,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -95,12 +99,14 @@ impl UserDataStreamsApi for UserDataStreamsApiClient {
         &self,
     ) -> anyhow::Result<RestApiResponse<models::StartUserDataStreamResponse>> {
         let query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         send_request::<models::StartUserDataStreamResponse>(
             &self.configuration,
             "/fapi/v1/listenKey",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -146,9 +152,11 @@ mod tests {
     impl UserDataStreamsApi for MockUserDataStreamsApiClient {
         async fn close_user_data_stream(&self) -> anyhow::Result<RestApiResponse<Value>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let dummy_response = Value::Null;
@@ -167,9 +175,11 @@ mod tests {
             &self,
         ) -> anyhow::Result<RestApiResponse<models::KeepaliveUserDataStreamResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"listenKey":"3HBntNTepshgEdjIwSUIBgB9keLyOCg5qv3n6bYAtktG8ejcaW5HXz9Vx1JgIieg"}"#).unwrap();
@@ -191,9 +201,11 @@ mod tests {
             &self,
         ) -> anyhow::Result<RestApiResponse<models::StartUserDataStreamResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"listenKey":"pqia91ma19a5s61cv6a81va65sdf19v8a65a1a5s61cv6a81va65sdf19v8a65a1"}"#).unwrap();

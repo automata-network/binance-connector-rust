@@ -5,6 +5,7 @@ pub mod websocket_streams;
 use crate::common::{
     config::{ConfigurationRestApi, ConfigurationWebsocketApi, ConfigurationWebsocketStreams},
     constants::{
+        DERIVATIVES_TRADING_USDS_FUTURES_REST_API_DEMO_URL,
         DERIVATIVES_TRADING_USDS_FUTURES_REST_API_PROD_URL,
         DERIVATIVES_TRADING_USDS_FUTURES_REST_API_TESTNET_URL,
         DERIVATIVES_TRADING_USDS_FUTURES_WS_API_PROD_URL,
@@ -12,13 +13,12 @@ use crate::common::{
         DERIVATIVES_TRADING_USDS_FUTURES_WS_STREAMS_PROD_URL,
         DERIVATIVES_TRADING_USDS_FUTURES_WS_STREAMS_TESTNET_URL,
     },
-    logger,
     utils::build_user_agent,
 };
 
 /// Represents the `DerivativesTradingUsdsFutures` REST API client for interacting with the Binance `DerivativesTradingUsdsFutures` REST API.
 ///
-/// This struct provides methods to create REST API clients for both production and testnet environments.
+/// This struct provides methods to create REST API clients for production , demo and testnet environments.
 pub struct DerivativesTradingUsdsFuturesRestApi {}
 
 impl DerivativesTradingUsdsFuturesRestApi {
@@ -35,8 +35,6 @@ impl DerivativesTradingUsdsFuturesRestApi {
     /// A new REST API client configured with the provided settings
     #[must_use]
     pub fn from_config(mut config: ConfigurationRestApi) -> rest_api::RestApi {
-        logger::init();
-
         config.user_agent = build_user_agent("derivatives-trading-usds-futures");
         if config.base_path.is_none() {
             config.base_path = Some(DERIVATIVES_TRADING_USDS_FUTURES_REST_API_PROD_URL.to_string());
@@ -73,11 +71,26 @@ impl DerivativesTradingUsdsFuturesRestApi {
         config.base_path = Some(DERIVATIVES_TRADING_USDS_FUTURES_REST_API_TESTNET_URL.to_string());
         DerivativesTradingUsdsFuturesRestApi::from_config(config)
     }
+
+    /// Creates a REST API client configured for the demo environment.
+    ///
+    /// # Arguments
+    ///
+    /// * `config` - Configuration for the REST API client
+    ///
+    /// # Returns
+    ///
+    /// A new REST API client configured for the demo environment
+    #[must_use]
+    pub fn demo(mut config: ConfigurationRestApi) -> rest_api::RestApi {
+        config.base_path = Some(DERIVATIVES_TRADING_USDS_FUTURES_REST_API_DEMO_URL.to_string());
+        DerivativesTradingUsdsFuturesRestApi::from_config(config)
+    }
 }
 
 /// Represents the `DerivativesTradingUsdsFutures` WebSocket API client for interacting with the Binance `DerivativesTradingUsdsFutures` WebSocket API.
 ///
-/// This struct provides methods to create WebSocket API clients for both production and testnet environments.
+/// This struct provides methods to create WebSocket API clients for production  and testnet environments.
 pub struct DerivativesTradingUsdsFuturesWsApi {}
 
 impl DerivativesTradingUsdsFuturesWsApi {
@@ -94,8 +107,6 @@ impl DerivativesTradingUsdsFuturesWsApi {
     /// A new WebSocket API client configured with the provided settings
     #[must_use]
     pub fn from_config(mut config: ConfigurationWebsocketApi) -> websocket_api::WebsocketApiHandle {
-        logger::init();
-
         config.user_agent = build_user_agent("derivatives-trading-usds-futures");
         if config.ws_url.is_none() {
             config.ws_url = Some(DERIVATIVES_TRADING_USDS_FUTURES_WS_API_PROD_URL.to_string());
@@ -136,7 +147,7 @@ impl DerivativesTradingUsdsFuturesWsApi {
 
 /// Represents the `DerivativesTradingUsdsFutures` WebSocket Streams client for interacting with the Binance `DerivativesTradingUsdsFutures` WebSocket Streams.
 ///
-/// This struct provides methods to create WebSocket Streams clients for both production and testnet environments.
+/// This struct provides methods to create WebSocket Streams clients for production  and testnet environments.
 pub struct DerivativesTradingUsdsFuturesWsStreams {}
 
 impl DerivativesTradingUsdsFuturesWsStreams {
@@ -155,8 +166,6 @@ impl DerivativesTradingUsdsFuturesWsStreams {
     pub fn from_config(
         mut config: ConfigurationWebsocketStreams,
     ) -> websocket_streams::WebsocketStreamsHandle {
-        logger::init();
-
         config.user_agent = build_user_agent("derivatives-trading-usds-futures");
         if config.ws_url.is_none() {
             config.ws_url = Some(DERIVATIVES_TRADING_USDS_FUTURES_WS_STREAMS_PROD_URL.to_string());

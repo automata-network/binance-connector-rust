@@ -1,9 +1,13 @@
 use alloy_primitives::{Address, keccak256};
 use alloy_sol_types::SolValue;
 use anyhow::{Context, Result};
+#[cfg(feature = "openssl-tls")]
 use base64::{Engine as _, engine::general_purpose};
+#[cfg(feature = "openssl-tls")]
 use ed25519_dalek::Signer as Ed25519Signer;
+#[cfg(feature = "openssl-tls")]
 use ed25519_dalek::SigningKey;
+#[cfg(feature = "openssl-tls")]
 use ed25519_dalek::pkcs8::DecodePrivateKey;
 use flate2::read::GzDecoder;
 use hex;
@@ -13,14 +17,16 @@ use http::HeaderValue;
 use http::header::ACCEPT_ENCODING;
 use k256::ecdsa::{SigningKey as Secp256k1SigningKey, signature::hazmat::PrehashSigner};
 use once_cell::sync::OnceCell;
+#[cfg(feature = "openssl-tls")]
 use openssl::{hash::MessageDigest, pkey::PKey, sign::Signer as OpenSslSigner};
-use rand::RngCore;
+use rand::{RngCore, rngs::OsRng};
 use regex::Captures;
 use regex::Regex;
 use reqwest::Client;
 use reqwest::Proxy;
 use reqwest::{Method, Request};
 use serde::de::DeserializeOwned;
+use serde_json::Number;
 use serde_json::{Value, json};
 use sha2::Sha256;
 use std::fmt::Display;
@@ -29,21 +35,24 @@ use std::sync::LazyLock;
 use std::{
     collections::BTreeMap,
     collections::HashMap,
-    fs,
     io::Read,
-    path::Path,
     time::Duration,
     time::{SystemTime, UNIX_EPOCH},
 };
+#[cfg(feature = "openssl-tls")]
+use std::{fs, path::Path};
 use tokio::time::sleep;
 use tracing::info;
+use url::form_urlencoded;
 use url::{Url, form_urlencoded::Serializer};
 
 use super::config::{
     ConfigurationRestApi, ConfigurationWebsocketApi, HttpAgent, PrivateKey, ProxyConfig,
 };
 use super::errors::ConnectorError;
-use super::models::{Interval, RateLimitType, RestApiRateLimit, RestApiResponse, TimeUnit};
+use super::models::{
+    Interval, RateLimitType, RestApiRateLimit, RestApiResponse, StreamId, TimeUnit,
+};
 use super::websocket::WebsocketMessageSendOptions;
 
 pub(crate) static ID_REGEX: LazyLock<Regex> =
@@ -65,12 +74,15 @@ static PLACEHOLDER_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(@)?<([^>
 /// * `key_object`: Lazily initialized OpenSSL private key
 /// * `ed25519_signing_key`: Lazily initialized Ed25519 signing key
 #[derive(Debug, Default, Clone)]
+#[allow(dead_code)]
 pub struct SignatureGenerator {
     api_secret: Option<String>,
     private_key: Option<PrivateKey>,
     private_key_passphrase: Option<String>,
     raw_key_data: OnceCell<String>,
+    #[cfg(feature = "openssl-tls")]
     key_object: OnceCell<PKey<openssl::pkey::Private>>,
+    #[cfg(feature = "openssl-tls")]
     ed25519_signing_key: OnceCell<SigningKey>,
     user: Option<String>,
     signer: Option<String>,
@@ -93,7 +105,9 @@ impl SignatureGenerator {
             private_key,
             private_key_passphrase,
             raw_key_data: OnceCell::new(),
+            #[cfg(feature = "openssl-tls")]
             key_object: OnceCell::new(),
+            #[cfg(feature = "openssl-tls")]
             ed25519_signing_key: OnceCell::new(),
             user,
             signer,
@@ -116,6 +130,7 @@ impl SignatureGenerator {
     /// - No private key is provided
     /// - The private key file does not exist
     /// - The private key file cannot be read
+    #[cfg(feature = "openssl-tls")]
     fn get_raw_key_data(&self) -> Result<&String> {
         self.raw_key_data.get_or_try_init(|| {
             let pk = self
@@ -150,6 +165,7 @@ impl SignatureGenerator {
     /// - The key cannot be parsed from PEM format
     /// - A passphrase is required but incorrect
     /// - The key data is invalid
+    #[cfg(feature = "openssl-tls")]
     fn get_key_object(&self) -> Result<&PKey<openssl::pkey::Private>> {
         self.key_object.get_or_try_init(|| {
             let key_data = self.get_raw_key_data()?;
@@ -175,6 +191,7 @@ impl SignatureGenerator {
     /// Returns an error if:
     /// - The key cannot be base64 decoded
     /// - The key cannot be parsed from PKCS8 DER format
+    #[cfg(feature = "openssl-tls")]
     fn get_ed25519_signing_key(
         &self,
         key_obj: &PKey<openssl::pkey::Private>,
@@ -210,11 +227,25 @@ impl SignatureGenerator {
     /// - HMAC with API secret
     /// - RSA private key
     /// - ED25519 private key
-    pub fn get_signature(&self, query_params: &BTreeMap<String, Value>) -> Result<String> {
-        let params = build_query_string(query_params)?;
+    pub fn get_signature(
+        &self,
+        query_params: &BTreeMap<String, Value>,
+        body_params: Option<&BTreeMap<String, Value>>,
+    ) -> Result<String> {
+        let query_str = build_query_string(query_params)?;
+        let params = if let Some(body) = body_params {
+            if body.is_empty() {
+                query_str
+            } else {
+                let body_str = build_query_string(body)?;
+                format!("{query_str}{body_str}")
+            }
+        } else {
+            query_str
+        };
 
-        if let Some(secret) = self.api_secret.as_ref() {
-            if self.private_key.is_none() {
+        if self.private_key.is_none() {
+            if let Some(secret) = self.api_secret.as_ref() {
                 let mut mac = Hmac::<Sha256>::new_from_slice(secret.as_bytes())
                     .context("HMAC key initialization failed")?;
                 mac.update(params.as_bytes());
@@ -224,28 +255,38 @@ impl SignatureGenerator {
         }
 
         if self.private_key.is_some() {
-            let key_obj = self.get_key_object()?;
-            match key_obj.id() {
-                openssl::pkey::Id::RSA => {
-                    let mut signer = OpenSslSigner::new(MessageDigest::sha256(), key_obj)
-                        .context("Failed to create RSA signer")?;
-                    signer
-                        .update(params.as_bytes())
-                        .context("Failed to update RSA signer")?;
-                    let sig = signer.sign_to_vec().context("RSA signing failed")?;
-                    return Ok(general_purpose::STANDARD.encode(sig));
+            #[cfg(feature = "openssl-tls")]
+            {
+                let key_obj = self.get_key_object()?;
+                match key_obj.id() {
+                    openssl::pkey::Id::RSA => {
+                        let mut signer = OpenSslSigner::new(MessageDigest::sha256(), key_obj)
+                            .context("Failed to create RSA signer")?;
+                        signer
+                            .update(params.as_bytes())
+                            .context("Failed to update RSA signer")?;
+                        let sig = signer.sign_to_vec().context("RSA signing failed")?;
+                        return Ok(general_purpose::STANDARD.encode(sig));
+                    }
+                    openssl::pkey::Id::ED25519 => {
+                        let signing_key = self.get_ed25519_signing_key(key_obj)?;
+                        let signature = signing_key.sign(params.as_bytes());
+                        return Ok(general_purpose::STANDARD.encode(signature.to_bytes()));
+                    }
+                    other => {
+                        return Err(anyhow::anyhow!(
+                            "Unsupported private key type: {:?}. Must be RSA or ED25519.",
+                            other
+                        ));
+                    }
                 }
-                openssl::pkey::Id::ED25519 => {
-                    let signing_key = self.get_ed25519_signing_key(key_obj)?;
-                    let signature = signing_key.sign(params.as_bytes());
-                    return Ok(general_purpose::STANDARD.encode(signature.to_bytes()));
-                }
-                other => {
-                    return Err(anyhow::anyhow!(
-                        "Unsupported private key type: {:?}. Must be RSA or ED25519.",
-                        other
-                    ));
-                }
+            }
+
+            #[cfg(not(feature = "openssl-tls"))]
+            {
+                return Err(anyhow::anyhow!(
+                    "Private key signing requires the 'openssl-tls' feature to be enabled."
+                ));
             }
         }
 
@@ -686,7 +727,7 @@ pub fn should_retry_request(
 ///
 /// # Panics
 ///
-/// * If the static regex fails to compile (via `Regex::new(...).unwrap()`), which can only happen if the literal pattern is invalid.  
+/// * If the static regex fails to compile (via `Regex::new(...).unwrap()`), which can only happen if the literal pattern is invalid.
 /// * If a matching header’s key doesn’t actually contain both capture groups (so `caps.get(2).unwrap()` or `caps.get(3).unwrap()` fails).
 ///
 /// # Examples
@@ -722,6 +763,7 @@ where
                 } else {
                     RateLimitType::Orders
                 };
+
                 rate_limits.push(RestApiRateLimit {
                     rate_limit_type,
                     interval,
@@ -777,7 +819,10 @@ pub async fn http_request<T: DeserializeOwned + Send + 'static>(
         let req_clone = req
             .try_clone()
             .context("Failed to clone request")
-            .map_err(|e| ConnectorError::ConnectorClientError(e.to_string()))?;
+            .map_err(|e| ConnectorError::ConnectorClientError {
+                msg: e.to_string(),
+                code: None,
+            })?;
         match client.execute(req_clone).await {
             Ok(response) => {
                 let status = response.status();
@@ -794,9 +839,10 @@ pub async fn http_request<T: DeserializeOwned + Send + 'static>(
                         if attempt <= retries {
                             continue;
                         }
-                        return Err(ConnectorError::ConnectorClientError(format!(
-                            "Failed to get response bytes: {e}"
-                        )));
+                        return Err(ConnectorError::ConnectorClientError {
+                            msg: format!("Failed to get response bytes: {e}"),
+                            code: None,
+                        });
                     }
                 };
 
@@ -809,40 +855,82 @@ pub async fn http_request<T: DeserializeOwned + Send + 'static>(
                     decoder
                         .read_to_string(&mut decompressed)
                         .context("Failed to decompress gzip response")
-                        .map_err(|e| ConnectorError::ConnectorClientError(e.to_string()))?;
+                        .map_err(|e: anyhow::Error| ConnectorError::ConnectorClientError {
+                            msg: e.to_string(),
+                            code: None,
+                        })?;
                     decompressed
                 } else {
                     String::from_utf8(raw_bytes.to_vec())
                         .context("Failed to convert response to UTF-8")
-                        .map_err(|e| ConnectorError::ConnectorClientError(e.to_string()))?
+                        .map_err(|e| ConnectorError::ConnectorClientError {
+                            msg: e.to_string(),
+                            code: None,
+                        })?
                 };
 
                 let rate_limits = parse_rate_limit_headers(&headers_map);
 
                 if status.is_client_error() || status.is_server_error() {
-                    let error_msg = serde_json::from_str::<serde_json::Value>(&content)
-                        .ok()
-                        .and_then(|v| {
-                            v.get("msg")
-                                .and_then(|m| m.as_str())
-                                .map(std::string::ToString::to_string)
-                        })
-                        .unwrap_or_else(|| content.clone());
+                    let mut err_msg = content.clone();
+                    let mut err_code: Option<i64> = None;
+
+                    if let Ok(v) = serde_json::from_str::<serde_json::Value>(&content) {
+                        if let Some(m) = v.get("msg").and_then(|m| m.as_str()) {
+                            err_msg = m.to_string();
+                        }
+                        err_code = v.get("code").and_then(serde_json::Value::as_i64);
+                    }
 
                     match status.as_u16() {
-                        400 => return Err(ConnectorError::BadRequestError(error_msg)),
-                        401 => return Err(ConnectorError::UnauthorizedError(error_msg)),
-                        403 => return Err(ConnectorError::ForbiddenError(error_msg)),
-                        404 => return Err(ConnectorError::NotFoundError(error_msg)),
-                        418 => return Err(ConnectorError::RateLimitBanError(error_msg)),
-                        429 => return Err(ConnectorError::TooManyRequestsError(error_msg)),
+                        400 => {
+                            return Err(ConnectorError::BadRequestError {
+                                msg: err_msg,
+                                code: err_code,
+                            });
+                        }
+                        401 => {
+                            return Err(ConnectorError::UnauthorizedError {
+                                msg: err_msg,
+                                code: err_code,
+                            });
+                        }
+                        403 => {
+                            return Err(ConnectorError::ForbiddenError {
+                                msg: err_msg,
+                                code: err_code,
+                            });
+                        }
+                        404 => {
+                            return Err(ConnectorError::NotFoundError {
+                                msg: err_msg,
+                                code: err_code,
+                            });
+                        }
+                        418 => {
+                            return Err(ConnectorError::RateLimitBanError {
+                                msg: err_msg,
+                                code: err_code,
+                            });
+                        }
+                        429 => {
+                            return Err(ConnectorError::TooManyRequestsError {
+                                msg: err_msg,
+                                code: err_code,
+                            });
+                        }
                         s if (500..600).contains(&s) => {
                             return Err(ConnectorError::ServerError {
                                 msg: format!("Server error: {s}"),
                                 status_code: Some(s),
                             });
                         }
-                        _ => return Err(ConnectorError::ConnectorClientError(error_msg)),
+                        _ => {
+                            return Err(ConnectorError::ConnectorClientError {
+                                msg: err_msg,
+                                code: err_code,
+                            });
+                        }
                     }
                 }
 
@@ -850,8 +938,12 @@ pub async fn http_request<T: DeserializeOwned + Send + 'static>(
                 return Ok(RestApiResponse {
                     data_fn: Box::new(move || {
                         Box::pin(async move {
-                            let parsed: T = serde_json::from_str(&raw)
-                                .map_err(|e| ConnectorError::ConnectorClientError(e.to_string()))?;
+                            let parsed: T = serde_json::from_str(&raw).map_err(|e| {
+                                ConnectorError::ConnectorClientError {
+                                    msg: e.to_string(),
+                                    code: None,
+                                }
+                            })?;
                             Ok(parsed)
                         })
                     }),
@@ -870,9 +962,10 @@ pub async fn http_request<T: DeserializeOwned + Send + 'static>(
                     delay(backoff * attempt as u64).await;
                     continue;
                 }
-                return Err(ConnectorError::ConnectorClientError(format!(
-                    "HTTP request failed: {e}"
-                )));
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: format!("HTTP request failed: {e}"),
+                    code: None,
+                });
             }
         }
     }
@@ -885,7 +978,8 @@ pub async fn http_request<T: DeserializeOwned + Send + 'static>(
 /// - `configuration`: REST API configuration containing client, base path, and authentication details
 /// - `endpoint`: The specific API endpoint path to send the request to
 /// - `method`: HTTP method for the request (GET, POST, etc.)
-/// - `params`: Parameters to be sent with the request, as a key-value map
+/// - `query_params`: Query parameters to be sent with the request, as a key-value map
+/// - `body_params`: Body parameters to be sent with the request, as a key-value map
 /// - `time_unit`: Optional time unit for the request header
 /// - `is_signed`: Optional flag to indicate whether the request requires authentication
 ///
@@ -896,9 +990,9 @@ pub async fn http_request<T: DeserializeOwned + Send + 'static>(
 /// # Panics
 ///
 /// This function will panic if any of the following `.unwrap()` calls fail:
-/// - Parsing the literal `"application/json"` into a header value (should never fail)  
-/// - Parsing `configuration.user_agent` or `configuration.api_key` into header values  
-/// - Parsing the literal `"gzip, deflate, br"` into a header value when `compression` is enabled  
+/// - Parsing the literal `"application/json"` into a header value (should never fail)
+/// - Parsing `configuration.user_agent` or `configuration.api_key` into header values
+/// - Parsing the literal `"gzip, deflate, br"` into a header value when `compression` is enabled
 ///
 /// # Errors
 ///
@@ -907,7 +1001,8 @@ pub async fn send_request<T: DeserializeOwned + Send + 'static>(
     configuration: &ConfigurationRestApi,
     endpoint: &str,
     method: Method,
-    mut params: BTreeMap<String, Value>,
+    mut query_params: BTreeMap<String, Value>,
+    body_params: BTreeMap<String, Value>,
     time_unit: Option<TimeUnit>,
     is_signed: bool,
 ) -> anyhow::Result<RestApiResponse<T>> {
@@ -1047,6 +1142,55 @@ pub fn random_string() -> String {
     let mut buf = [0u8; 16];
     rand::thread_rng().fill_bytes(&mut buf);
     hex::encode(buf)
+}
+
+/// Generates a cryptographically secure random 32-bit unsigned integer.
+///
+/// Uses the operating system RNG (CSPRNG) to generate a value between
+/// 0 and 4,294,967,295 (2^32 - 1).
+///
+/// # Returns
+///
+/// A random `u32`.
+#[must_use]
+pub fn random_integer() -> u32 {
+    let mut buf = [0u8; 4];
+    OsRng.fill_bytes(&mut buf);
+    u32::from_ne_bytes(buf)
+}
+
+/// Normalizes a stream ID to ensure it is valid, generating a random ID if needed.
+///
+/// Behavior:
+/// - If `stream_id_is_strictly_number == true`: always returns a number
+///   - keeps the input only if it's a valid number input
+///   - otherwise generates a new random integer
+/// - Otherwise:
+///   - string: returns it if it's a valid 32-char hex (case-insensitive), else random hex
+///   - number: returns it if valid, else random integer
+///   - none: random hex
+#[must_use]
+pub fn normalize_stream_id(id: Option<StreamId>, stream_id_is_strictly_number: bool) -> Value {
+    if stream_id_is_strictly_number {
+        let n = match id {
+            Some(StreamId::Number(n)) => n,
+            _ => random_integer(),
+        };
+        return Value::Number(Number::from(n));
+    }
+
+    match id {
+        Some(StreamId::Number(n)) => Value::Number(Number::from(n)),
+        Some(StreamId::Str(s)) => {
+            let out = if ID_REGEX.is_match(&s) {
+                s
+            } else {
+                random_string()
+            };
+            Value::String(out)
+        }
+        None => Value::String(random_string()),
+    }
 }
 
 /// Removes entries with empty or null values from an iterator of key-value pairs.
@@ -1260,6 +1404,7 @@ pub fn build_websocket_api_message(
             let nonce = get_nonce();
             let sig = configuration
                 .signature_gen
+<<<<<<< HEAD
                 .get_signature_v3(&params, nonce)
                 .expect("V3 signature generation");
 
@@ -1287,6 +1432,11 @@ pub fn build_websocket_api_message(
                 sorted.insert("signature".into(), Value::String(sig));
             }
             params = sorted.into_iter().collect();
+=======
+                .get_signature(&sorted, None)
+                .expect("signature generation");
+            sorted.insert("signature".into(), Value::String(sig));
+>>>>>>> main
         }
     }
 
@@ -1745,11 +1895,13 @@ mod tests {
         }
     }
 
+    #[cfg(feature = "openssl-tls")]
     mod signature_generator {
         use base64::{Engine, engine::general_purpose};
         use ed25519_dalek::{SigningKey, ed25519::signature::SignerMut, pkcs8::DecodePrivateKey};
         use hex;
         use hmac::{Hmac, Mac};
+        #[cfg(feature = "openssl-tls")]
         use openssl::{hash::MessageDigest, pkey::PKey, rsa::Rsa, sign::Verifier};
         use serde_json::Value;
         use sha2::Sha256;
@@ -1767,7 +1919,7 @@ mod tests {
 
             let signature_gen = SignatureGenerator::new(Some("test-secret".into()), None, None, None, None, None);
             let sig = signature_gen
-                .get_signature(&params)
+                .get_signature(&params, None)
                 .expect("HMAC signing failed");
 
             let mut mac = Hmac::<Sha256>::new_from_slice(b"test-secret").unwrap();
@@ -1779,12 +1931,45 @@ mod tests {
         }
 
         #[test]
+        fn hmac_sha256_signature_with_body() {
+            let mut query_params = BTreeMap::new();
+            query_params.insert("b".into(), Value::Number(2.into()));
+            query_params.insert("a".into(), Value::Number(1.into()));
+
+            let mut body_params = BTreeMap::new();
+            body_params.insert("d".into(), Value::Number(4.into()));
+            body_params.insert("c".into(), Value::Number(3.into()));
+
+            let signature_gen = SignatureGenerator::new(Some("test-secret".into()), None, None);
+            let sig = signature_gen
+                .get_signature(&query_params, Some(&body_params))
+                .expect("HMAC signing with body failed");
+
+            let query_str = "a=1&b=2";
+            let body_str = "c=3&d=4";
+
+            let payload = format!("{query_str}{body_str}");
+
+            let mut mac = Hmac::<Sha256>::new_from_slice(b"test-secret").unwrap();
+            mac.update(payload.as_bytes());
+            let expected = hex::encode(mac.finalize().into_bytes());
+
+            assert_eq!(sig, expected);
+        }
+
+        #[test]
         fn repeated_hmac_signature() {
             let mut params = BTreeMap::new();
             params.insert("x".into(), Value::String("y".into()));
+<<<<<<< HEAD
             let signature_gen = SignatureGenerator::new(Some("abc".into()), None, None, None, None, None);
             let s1 = signature_gen.get_signature(&params).unwrap();
             let s2 = signature_gen.get_signature(&params).unwrap();
+=======
+            let signature_gen = SignatureGenerator::new(Some("abc".into()), None, None);
+            let s1 = signature_gen.get_signature(&params, None).unwrap();
+            let s2 = signature_gen.get_signature(&params, None).unwrap();
+>>>>>>> main
             assert_eq!(s1, s2);
         }
 
@@ -1801,7 +1986,7 @@ mod tests {
             let signature_gen =
                 SignatureGenerator::new(None, Some(PrivateKey::Raw(priv_pem.clone())), None, None, None, None);
             let sig = signature_gen
-                .get_signature(&params)
+                .get_signature(&params, None)
                 .expect("RSA signing failed");
 
             let sig_bytes = general_purpose::STANDARD.decode(&sig).unwrap();
@@ -1812,15 +1997,48 @@ mod tests {
         }
 
         #[test]
+        fn rsa_signature_verification_with_body() {
+            let mut query_params = BTreeMap::new();
+            query_params.insert("a".into(), Value::Number(1.into()));
+            query_params.insert("b".into(), Value::Number(2.into()));
+
+            let mut body_params = BTreeMap::new();
+            body_params.insert("c".into(), Value::Number(3.into()));
+            body_params.insert("d".into(), Value::Number(4.into()));
+
+            let rsa = Rsa::generate(2048).unwrap();
+            let priv_pem = rsa.private_key_to_pem().unwrap();
+            let pub_pem = rsa.public_key_to_pem_pkcs1().unwrap();
+
+            let signature_gen =
+                SignatureGenerator::new(None, Some(PrivateKey::Raw(priv_pem.clone())), None);
+            let sig = signature_gen
+                .get_signature(&query_params, Some(&body_params))
+                .expect("RSA signing with body failed");
+
+            let sig_bytes = general_purpose::STANDARD.decode(&sig).unwrap();
+            let pubkey = PKey::public_key_from_pem(&pub_pem).unwrap();
+            let mut verifier = Verifier::new(MessageDigest::sha256(), &pubkey).unwrap();
+            verifier.update(b"a=1&b=2c=3&d=4").unwrap();
+            assert!(verifier.verify(&sig_bytes).unwrap());
+        }
+
+        #[test]
         fn repeated_rsa_signature() {
             let mut params = BTreeMap::new();
             params.insert("k".into(), Value::Number(5.into()));
             let rsa = Rsa::generate(2048).unwrap();
             let priv_pem = rsa.private_key_to_pem().unwrap();
             let signature_gen =
+<<<<<<< HEAD
                 SignatureGenerator::new(None, Some(PrivateKey::Raw(priv_pem)), None, None, None, None);
             let s1 = signature_gen.get_signature(&params).unwrap();
             let s2 = signature_gen.get_signature(&params).unwrap();
+=======
+                SignatureGenerator::new(None, Some(PrivateKey::Raw(priv_pem)), None);
+            let s1 = signature_gen.get_signature(&params, None).unwrap();
+            let s2 = signature_gen.get_signature(&params, None).unwrap();
+>>>>>>> main
             assert_eq!(s1, s2);
         }
 
@@ -1837,7 +2055,7 @@ mod tests {
             let signature_gen =
                 SignatureGenerator::new(None, Some(PrivateKey::Raw(priv_pem.clone())), None, None, None, None);
             let sig = signature_gen
-                .get_signature(&params)
+                .get_signature(&params, None)
                 .expect("Ed25519 signing failed");
 
             let pem_str = String::from_utf8(priv_pem).unwrap();
@@ -1853,15 +2071,55 @@ mod tests {
         }
 
         #[test]
+        fn ed25519_signature_verification_with_body() {
+            let mut query_params = BTreeMap::new();
+            query_params.insert("a".into(), Value::Number(1.into()));
+            query_params.insert("b".into(), Value::Number(2.into()));
+            let qs = "a=1&b=2";
+
+            let mut body_params = BTreeMap::new();
+            body_params.insert("c".into(), Value::Number(3.into()));
+            body_params.insert("d".into(), Value::Number(4.into()));
+            let body_qs = "c=3&d=4";
+
+            let ed = PKey::generate_ed25519().unwrap();
+            let priv_pem = ed.private_key_to_pem_pkcs8().unwrap();
+
+            let signature_gen =
+                SignatureGenerator::new(None, Some(PrivateKey::Raw(priv_pem.clone())), None);
+            let sig = signature_gen
+                .get_signature(&query_params, Some(&body_params))
+                .expect("Ed25519 signing with body failed");
+
+            let pem_str = String::from_utf8(priv_pem).unwrap();
+            let b64 = pem_str
+                .lines()
+                .filter(|l| !l.starts_with("-----"))
+                .collect::<String>();
+            let der = general_purpose::STANDARD.decode(b64).unwrap();
+            let mut sk = SigningKey::from_pkcs8_der(&der).unwrap();
+            let payload = format!("{qs}{body_qs}");
+            let expected_bytes = sk.sign(payload.as_bytes()).to_bytes();
+            let expected_sig = general_purpose::STANDARD.encode(expected_bytes);
+            assert_eq!(sig, expected_sig);
+        }
+
+        #[test]
         fn repeated_ed25519_signature() {
             let mut params = BTreeMap::new();
             params.insert("m".into(), Value::String("n".into()));
             let ed = PKey::generate_ed25519().unwrap();
             let priv_pem = ed.private_key_to_pem_pkcs8().unwrap();
             let signature_gen =
+<<<<<<< HEAD
                 SignatureGenerator::new(None, Some(PrivateKey::Raw(priv_pem.clone())), None, None, None, None);
             let s1 = signature_gen.get_signature(&params).unwrap();
             let s2 = signature_gen.get_signature(&params).unwrap();
+=======
+                SignatureGenerator::new(None, Some(PrivateKey::Raw(priv_pem.clone())), None);
+            let s1 = signature_gen.get_signature(&params, None).unwrap();
+            let s2 = signature_gen.get_signature(&params, None).unwrap();
+>>>>>>> main
             assert_eq!(s1, s2);
         }
 
@@ -1878,8 +2136,13 @@ mod tests {
             let mut params = BTreeMap::new();
             params.insert("z".into(), Value::Number(9.into()));
 
+<<<<<<< HEAD
             let signature_gen = SignatureGenerator::new(None, Some(PrivateKey::File(path)), None, None, None, None);
             let sig = signature_gen.get_signature(&params).unwrap();
+=======
+            let signature_gen = SignatureGenerator::new(None, Some(PrivateKey::File(path)), None);
+            let sig = signature_gen.get_signature(&params, None).unwrap();
+>>>>>>> main
 
             let sig_bytes = general_purpose::STANDARD.decode(&sig).unwrap();
             let pubkey = PKey::public_key_from_pem(&pub_pem).unwrap();
@@ -1888,6 +2151,7 @@ mod tests {
             assert!(verifier.verify(&sig_bytes).unwrap());
         }
 
+        #[cfg(feature = "openssl-tls")]
         #[test]
         fn unsupported_key_type_error() {
             let mut params = BTreeMap::new();
@@ -1901,7 +2165,7 @@ mod tests {
 
             let signature_gen = SignatureGenerator::new(None, Some(PrivateKey::Raw(raw)), None, None, None, None);
             let err = signature_gen
-                .get_signature(&params)
+                .get_signature(&params, None)
                 .unwrap_err()
                 .to_string();
             assert!(err.contains("Unsupported private key type"));
@@ -1915,7 +2179,7 @@ mod tests {
             let signature_gen =
                 SignatureGenerator::new(None, Some(PrivateKey::Raw(b"not a key".to_vec())), None, None, None, None);
             let err = signature_gen
-                .get_signature(&params)
+                .get_signature(&params, None)
                 .unwrap_err()
                 .to_string();
             assert!(err.contains("Failed to parse private key"));
@@ -1928,7 +2192,7 @@ mod tests {
 
             let signature_gen = SignatureGenerator::new(None, None, None, None, None, None);
             let err = signature_gen
-                .get_signature(&params)
+                .get_signature(&params, None)
                 .unwrap_err()
                 .to_string();
             assert!(err.contains("Either 'api_secret' or 'private_key' must be provided"));
@@ -2189,7 +2453,7 @@ mod tests {
                     when.method(httpmock::Method::GET).path("/400");
                     then.status(400)
                         .header("Content-Type", "application/json")
-                        .body(r#"{"msg":"bad request"}"#);
+                        .body(r#"{"code":-1121,"msg":"bad request"}"#);
                 });
 
                 let client = Client::new();
@@ -2200,10 +2464,17 @@ mod tests {
                 let cfg = make_config(&server.url(""));
 
                 let result = http_request::<Dummy>(req, &cfg).await;
-                assert!(matches!(result, Err(ConnectorError::BadRequestError(_))));
-                if let Err(ConnectorError::BadRequestError(msg)) = result {
+
+                assert!(matches!(
+                    result,
+                    Err(ConnectorError::BadRequestError { .. })
+                ));
+
+                if let Err(ConnectorError::BadRequestError { msg, code }) = result {
                     assert_eq!(msg, "bad request");
+                    assert_eq!(code, Some(-1121));
                 }
+
                 mock.assert();
             });
         }
@@ -2216,7 +2487,7 @@ mod tests {
                     when.method(httpmock::Method::GET).path("/401");
                     then.status(401)
                         .header("Content-Type", "application/json")
-                        .body(r#"{"msg":"unauthorized"}"#);
+                        .body(r#"{"code":-2015,"msg":"unauthorized"}"#);
                 });
 
                 let client = Client::new();
@@ -2227,10 +2498,17 @@ mod tests {
                 let cfg = make_config(&server.url(""));
 
                 let result = http_request::<Dummy>(req, &cfg).await;
-                assert!(matches!(result, Err(ConnectorError::UnauthorizedError(_))));
-                if let Err(ConnectorError::UnauthorizedError(msg)) = result {
+
+                assert!(matches!(
+                    result,
+                    Err(ConnectorError::UnauthorizedError { .. })
+                ));
+
+                if let Err(ConnectorError::UnauthorizedError { msg, code }) = result {
                     assert_eq!(msg, "unauthorized");
+                    assert_eq!(code, Some(-2015));
                 }
+
                 mock.assert();
             });
         }
@@ -2243,7 +2521,7 @@ mod tests {
                     when.method(httpmock::Method::GET).path("/403");
                     then.status(403)
                         .header("Content-Type", "application/json")
-                        .body(r#"{"msg":"forbidden"}"#);
+                        .body(r#"{"code":-2010,"msg":"forbidden"}"#);
                 });
 
                 let client = Client::new();
@@ -2254,10 +2532,14 @@ mod tests {
                 let cfg = make_config(&server.url(""));
 
                 let result = http_request::<Dummy>(req, &cfg).await;
-                assert!(matches!(result, Err(ConnectorError::ForbiddenError(_))));
-                if let Err(ConnectorError::ForbiddenError(msg)) = result {
+
+                assert!(matches!(result, Err(ConnectorError::ForbiddenError { .. })));
+
+                if let Err(ConnectorError::ForbiddenError { msg, code }) = result {
                     assert_eq!(msg, "forbidden");
+                    assert_eq!(code, Some(-2010));
                 }
+
                 mock.assert();
             });
         }
@@ -2270,7 +2552,7 @@ mod tests {
                     when.method(httpmock::Method::GET).path("/404");
                     then.status(404)
                         .header("Content-Type", "application/json")
-                        .body(r#"{"msg":"not found"}"#);
+                        .body(r#"{"code":-1003,"msg":"not found"}"#);
                 });
 
                 let client = Client::new();
@@ -2281,10 +2563,14 @@ mod tests {
                 let cfg = make_config(&server.url(""));
 
                 let result = http_request::<Dummy>(req, &cfg).await;
-                assert!(matches!(result, Err(ConnectorError::NotFoundError(_))));
-                if let Err(ConnectorError::NotFoundError(msg)) = result {
+
+                assert!(matches!(result, Err(ConnectorError::NotFoundError { .. })));
+
+                if let Err(ConnectorError::NotFoundError { msg, code }) = result {
                     assert_eq!(msg, "not found");
+                    assert_eq!(code, Some(-1003));
                 }
+
                 mock.assert();
             });
         }
@@ -2297,7 +2583,7 @@ mod tests {
                     when.method(httpmock::Method::GET).path("/418");
                     then.status(418)
                         .header("Content-Type", "application/json")
-                        .body(r#"{"msg":"rate limit exceeded"}"#);
+                        .body(r#"{"code":-1003,"msg":"rate limit exceeded"}"#);
                 });
 
                 let client = Client::new();
@@ -2308,10 +2594,17 @@ mod tests {
                 let cfg = make_config(&server.url(""));
 
                 let result = http_request::<Dummy>(req, &cfg).await;
-                assert!(matches!(result, Err(ConnectorError::RateLimitBanError(_))));
-                if let Err(ConnectorError::RateLimitBanError(msg)) = result {
+
+                assert!(matches!(
+                    result,
+                    Err(ConnectorError::RateLimitBanError { .. })
+                ));
+
+                if let Err(ConnectorError::RateLimitBanError { msg, code }) = result {
                     assert_eq!(msg, "rate limit exceeded");
+                    assert_eq!(code, Some(-1003));
                 }
+
                 mock.assert();
             });
         }
@@ -2324,7 +2617,7 @@ mod tests {
                     when.method(httpmock::Method::GET).path("/429");
                     then.status(429)
                         .header("Content-Type", "application/json")
-                        .body(r#"{"msg":"too many requests"}"#);
+                        .body(r#"{"code":-1003,"msg":"too many requests"}"#);
                 });
 
                 let client = Client::new();
@@ -2335,13 +2628,17 @@ mod tests {
                 let cfg = make_config(&server.url(""));
 
                 let result = http_request::<Dummy>(req, &cfg).await;
+
                 assert!(matches!(
                     result,
-                    Err(ConnectorError::TooManyRequestsError(_))
+                    Err(ConnectorError::TooManyRequestsError { .. })
                 ));
-                if let Err(ConnectorError::TooManyRequestsError(msg)) = result {
+
+                if let Err(ConnectorError::TooManyRequestsError { msg, code }) = result {
                     assert_eq!(msg, "too many requests");
+                    assert_eq!(code, Some(-1003));
                 }
+
                 mock.assert();
             });
         }
@@ -2354,7 +2651,7 @@ mod tests {
                     when.method(httpmock::Method::GET).path("/500");
                     then.status(500)
                         .header("Content-Type", "application/json")
-                        .body(r#"{"msg":"internal server error"}"#);
+                        .body(r#"{"code":-1000,"msg":"internal server error"}"#);
                 });
 
                 let client = Client::new();
@@ -2365,7 +2662,9 @@ mod tests {
                 let cfg = make_config(&server.url(""));
 
                 let result = http_request::<Dummy>(req, &cfg).await;
+
                 assert!(matches!(result, Err(ConnectorError::ServerError { .. })));
+
                 if let Err(ConnectorError::ServerError {
                     msg,
                     status_code: Some(500),
@@ -2373,6 +2672,7 @@ mod tests {
                 {
                     assert_eq!(msg, "Server error: 500".to_string());
                 }
+
                 mock.assert();
             });
         }
@@ -2381,10 +2681,12 @@ mod tests {
         fn http_request_unexpected_status_maps_generic() {
             TOKIO_SHARED_RT.block_on(async {
                 let server = MockServer::start();
-                let code = 402;
+                let code_http = 402;
                 let mock = server.mock(|when, then| {
                     when.method(httpmock::Method::GET).path("/402");
-                    then.status(code).body("error text");
+                    then.status(code_http)
+                        .header("Content-Type", "application/json")
+                        .body(r#"{"code":-12345,"msg":"payment required"}"#);
                 });
 
                 let client = Client::new();
@@ -2395,10 +2697,17 @@ mod tests {
                 let cfg = make_config(&server.url(""));
 
                 let result = http_request::<Dummy>(req, &cfg).await;
+
                 assert!(matches!(
                     result,
-                    Err(ConnectorError::ConnectorClientError(_))
+                    Err(ConnectorError::ConnectorClientError { .. })
                 ));
+
+                if let Err(ConnectorError::ConnectorClientError { msg, code }) = result {
+                    assert_eq!(msg, "payment required");
+                    assert_eq!(code, Some(-12345));
+                }
+
                 mock.assert();
             });
         }
@@ -2421,18 +2730,20 @@ mod tests {
                     .unwrap();
                 let cfg = make_config(&server.url(""));
 
-                // 1) HTTP layer still “succeeds”:
                 let resp = http_request::<Dummy>(req, &cfg)
                     .await
                     .expect("http_request should succeed even if JSON is bad");
 
-                // 2) only when we call `.data().await` do we hit the parse‐error:
                 let err = resp
-                    .data() // or however you invoke that boxed future
+                    .data()
                     .await
                     .expect_err("malformed JSON should turn into ConnectorClientError");
 
-                assert!(matches!(err, ConnectorError::ConnectorClientError(_)));
+                assert!(matches!(err, ConnectorError::ConnectorClientError { .. }));
+
+                if let ConnectorError::ConnectorClientError { msg: _, code } = err {
+                    assert_eq!(code, None);
+                }
 
                 mock.assert();
             });
@@ -2486,6 +2797,7 @@ mod tests {
                     "/api/v1/test",
                     Method::GET,
                     params,
+                    BTreeMap::new(),
                     None,
                     false,
                 )
@@ -2529,6 +2841,53 @@ mod tests {
                     "/api/v3/order",
                     Method::POST,
                     params,
+                    BTreeMap::new(),
+                    None,
+                    true,
+                )
+                .await?;
+
+                let data = result.data().await.unwrap();
+                assert_eq!(data.message, "order placed");
+
+                Ok(())
+            })
+        }
+
+        #[test]
+        fn signed_post_request_with_body() -> Result<()> {
+            TOKIO_SHARED_RT.block_on(async {
+                let server = MockServer::start();
+
+                server.mock(|when, then| {
+                    when.method(POST).path("/api/v3/order");
+                    then.status(200)
+                        .header("content-type", "application/json")
+                        .body(r#"{"message": "order placed"}"#);
+                });
+
+                let configuration = ConfigurationRestApi::builder()
+                    .api_key("key")
+                    .api_secret("secret")
+                    .base_path(server.base_url())
+                    .compression(false)
+                    .build()
+                    .expect("Failed to build configuration");
+
+                let mut query_params = BTreeMap::new();
+                query_params.insert("symbol".to_string(), json!("ETHUSDT"));
+
+                let mut body_params = BTreeMap::new();
+                body_params.insert("side".to_string(), json!("BUY"));
+                body_params.insert("type".to_string(), json!("MARKET"));
+                body_params.insert("quantity".to_string(), json!("1"));
+
+                let result = send_request::<TestResponse>(
+                    &configuration,
+                    "/api/v3/order",
+                    Method::POST,
+                    query_params,
+                    body_params,
                     None,
                     true,
                 )
@@ -2573,6 +2932,7 @@ mod tests {
                     "/api/v1/data",
                     Method::GET,
                     params,
+                    BTreeMap::new(),
                     None,
                     false,
                 )
@@ -2605,6 +2965,7 @@ mod tests {
                     "http://invalid",
                     Method::GET,
                     params,
+                    BTreeMap::new(),
                     None,
                     false,
                 )
@@ -2636,6 +2997,7 @@ mod tests {
                     "/api/v3/order",
                     Method::POST,
                     params,
+                    BTreeMap::new(),
                     None,
                     true,
                 )
@@ -2673,6 +3035,7 @@ mod tests {
                     "/api/v1/test",
                     Method::GET,
                     params,
+                    BTreeMap::new(),
                     None,
                     false,
                 )
@@ -2715,6 +3078,7 @@ mod tests {
                     "/api/v1/test",
                     Method::GET,
                     params,
+                    BTreeMap::new(),
                     Some(TimeUnit::Millisecond),
                     false,
                 )
@@ -2759,6 +3123,7 @@ mod tests {
                     "/api/v1/test",
                     Method::GET,
                     params,
+                    BTreeMap::new(),
                     None,
                     false,
                 )
@@ -2807,6 +3172,7 @@ mod tests {
                     "/api/v1/test",
                     Method::GET,
                     params,
+                    BTreeMap::new(),
                     None,
                     false,
                 )
@@ -2852,6 +3218,7 @@ mod tests {
                     "/api/v1/test",
                     Method::GET,
                     params,
+                    BTreeMap::new(),
                     None,
                     false,
                 )
@@ -2912,6 +3279,152 @@ mod tests {
         }
     }
 
+    mod random_integer {
+        use crate::common::utils::random_integer;
+
+        #[test]
+        fn is_within_u32_range() {
+            let n = random_integer();
+            assert!(
+                n <= u32::MAX,
+                "random_integer() should be <= u32::MAX, got {n}"
+            );
+        }
+
+        #[test]
+        fn two_calls_can_differ() {
+            let a = random_integer();
+            let b = random_integer();
+            assert_ne!(
+                a, b,
+                "Two calls to random_integer() returned the same value: {a}"
+            );
+        }
+    }
+
+    mod normalize_stream_id {
+        use crate::common::utils::{StreamId, normalize_stream_id};
+        use serde_json::Value;
+
+        fn is_lower_hex32(s: &str) -> bool {
+            s.len() == 32 && s.chars().all(|c| matches!(c, '0'..='9' | 'a'..='f'))
+        }
+
+        #[test]
+        fn valid_hex_string_is_kept() {
+            let id = "0123456789abcdef0123456789abcdef".to_string();
+            let out = normalize_stream_id(Some(StreamId::Str(id.clone())), false);
+
+            match out {
+                Value::String(s) => assert_eq!(s, id, "Expected to keep the valid hex id"),
+                other => panic!("Expected Value::String, got {other:?}"),
+            }
+        }
+
+        #[test]
+        fn invalid_hex_string_generates_random_hex() {
+            let id = "not-hex".to_string();
+            let out = normalize_stream_id(Some(StreamId::Str(id.clone())), false);
+
+            match out {
+                Value::String(s) => {
+                    assert_eq!(s.len(), 32, "Expected 32-char hex, got {}", s.len());
+                    assert_ne!(s, id, "Expected generated id to differ from input");
+                    assert!(
+                        is_lower_hex32(&s),
+                        "Generated id contains invalid hex characters: {s}"
+                    );
+                }
+                other => panic!("Expected Value::String, got {other:?}"),
+            }
+        }
+
+        #[test]
+        fn none_generates_random_hex() {
+            let out = normalize_stream_id(None, false);
+
+            match out {
+                Value::String(s) => {
+                    assert_eq!(s.len(), 32, "Expected 32-char hex, got {}", s.len());
+                    assert!(
+                        is_lower_hex32(&s),
+                        "Generated id contains invalid hex characters: {s}"
+                    );
+                }
+                other => panic!("Expected Value::String, got {other:?}"),
+            }
+        }
+
+        #[test]
+        fn number_is_kept_when_not_strict() {
+            let out = normalize_stream_id(Some(StreamId::Number(42)), false);
+
+            match out {
+                Value::Number(n) => {
+                    assert_eq!(n.as_u64(), Some(42), "Expected to keep the numeric id");
+                }
+                other => panic!("Expected Value::Number, got {other:?}"),
+            }
+        }
+
+        #[test]
+        fn strict_number_forces_number_even_for_valid_hex_string() {
+            let id = "0123456789abcdef0123456789abcdef".to_string();
+            let out = normalize_stream_id(Some(StreamId::Str(id)), true);
+
+            match out {
+                Value::Number(n) => {
+                    assert!(
+                        n.as_u64().is_some(),
+                        "Expected unsigned integer JSON number, got {n}"
+                    );
+                }
+                other => panic!("Expected Value::Number, got {other:?}"),
+            }
+        }
+
+        #[test]
+        fn strict_number_keeps_number_if_provided() {
+            let out = normalize_stream_id(Some(StreamId::Number(7)), true);
+
+            match out {
+                Value::Number(n) => {
+                    assert_eq!(n.as_u64(), Some(7), "Expected to keep the numeric id");
+                }
+                other => panic!("Expected Value::Number, got {other:?}"),
+            }
+        }
+
+        #[test]
+        fn strict_number_generates_number_when_none() {
+            let out = normalize_stream_id(None, true);
+
+            match out {
+                Value::Number(n) => {
+                    assert!(
+                        n.as_u64().is_some(),
+                        "Expected unsigned integer JSON number, got {n}"
+                    );
+                }
+                other => panic!("Expected Value::Number, got {other:?}"),
+            }
+        }
+
+        #[test]
+        fn strict_number_generates_number_for_invalid_hex_string() {
+            let out = normalize_stream_id(Some(StreamId::Str("nope".to_string())), true);
+
+            match out {
+                Value::Number(n) => {
+                    assert!(
+                        n.as_u64().is_some(),
+                        "Expected unsigned integer JSON number, got {n}"
+                    );
+                }
+                other => panic!("Expected Value::Number, got {other:?}"),
+            }
+        }
+    }
     mod remove_empty_value {
         use crate::common::utils::remove_empty_value;
         use serde_json::{Map, Value};

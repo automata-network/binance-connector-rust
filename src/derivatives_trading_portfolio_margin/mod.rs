@@ -10,13 +10,12 @@ use crate::common::{
         DERIVATIVES_TRADING_PORTFOLIO_MARGIN_WS_STREAMS_PROD_URL,
         DERIVATIVES_TRADING_PORTFOLIO_MARGIN_WS_STREAMS_TESTNET_URL,
     },
-    logger,
     utils::build_user_agent,
 };
 
 /// Represents the `DerivativesTradingPortfolioMargin` REST API client for interacting with the Binance `DerivativesTradingPortfolioMargin` REST API.
 ///
-/// This struct provides methods to create REST API clients for both production and testnet environments.
+/// This struct provides methods to create REST API clients for production  and testnet environments.
 pub struct DerivativesTradingPortfolioMarginRestApi {}
 
 impl DerivativesTradingPortfolioMarginRestApi {
@@ -33,8 +32,6 @@ impl DerivativesTradingPortfolioMarginRestApi {
     /// A new REST API client configured with the provided settings
     #[must_use]
     pub fn from_config(mut config: ConfigurationRestApi) -> rest_api::RestApi {
-        logger::init();
-
         config.user_agent = build_user_agent("derivatives-trading-portfolio-margin");
         if config.base_path.is_none() {
             config.base_path =
@@ -77,7 +74,7 @@ impl DerivativesTradingPortfolioMarginRestApi {
 
 /// Represents the `DerivativesTradingPortfolioMargin` WebSocket Streams client for interacting with the Binance `DerivativesTradingPortfolioMargin` WebSocket Streams.
 ///
-/// This struct provides methods to create WebSocket Streams clients for both production and testnet environments.
+/// This struct provides methods to create WebSocket Streams clients for production  and testnet environments.
 pub struct DerivativesTradingPortfolioMarginWsStreams {}
 
 impl DerivativesTradingPortfolioMarginWsStreams {
@@ -96,8 +93,6 @@ impl DerivativesTradingPortfolioMarginWsStreams {
     pub fn from_config(
         mut config: ConfigurationWebsocketStreams,
     ) -> websocket_streams::WebsocketStreamsHandle {
-        logger::init();
-
         config.user_agent = build_user_agent("derivatives-trading-portfolio-margin");
         if config.ws_url.is_none() {
             config.ws_url =

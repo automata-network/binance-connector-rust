@@ -288,6 +288,7 @@ impl MarketMakerEndpointsApi for MarketMakerEndpointsApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("underlyings".to_string(), json!(underlyings));
 
@@ -300,6 +301,7 @@ impl MarketMakerEndpointsApi for MarketMakerEndpointsApiClient {
             "/eapi/v1/countdownCancelAllHeartBeat",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -320,6 +322,7 @@ impl MarketMakerEndpointsApi for MarketMakerEndpointsApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = underlying {
             query_params.insert("underlying".to_string(), json!(rw));
@@ -334,6 +337,7 @@ impl MarketMakerEndpointsApi for MarketMakerEndpointsApiClient {
             "/eapi/v1/countdownCancelAll",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -354,6 +358,7 @@ impl MarketMakerEndpointsApi for MarketMakerEndpointsApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = underlying {
             query_params.insert("underlying".to_string(), json!(rw));
@@ -368,6 +373,7 @@ impl MarketMakerEndpointsApi for MarketMakerEndpointsApiClient {
             "/eapi/v1/mmp",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -388,6 +394,7 @@ impl MarketMakerEndpointsApi for MarketMakerEndpointsApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = underlying {
             query_params.insert("underlying".to_string(), json!(rw));
@@ -402,6 +409,7 @@ impl MarketMakerEndpointsApi for MarketMakerEndpointsApiClient {
             "/eapi/v1/mmpReset",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -423,6 +431,7 @@ impl MarketMakerEndpointsApi for MarketMakerEndpointsApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("underlying".to_string(), json!(underlying));
 
@@ -437,6 +446,7 @@ impl MarketMakerEndpointsApi for MarketMakerEndpointsApiClient {
             "/eapi/v1/countdownCancelAll",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -461,6 +471,7 @@ impl MarketMakerEndpointsApi for MarketMakerEndpointsApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = underlying {
             query_params.insert("underlying".to_string(), json!(rw));
@@ -491,6 +502,7 @@ impl MarketMakerEndpointsApi for MarketMakerEndpointsApiClient {
             "/eapi/v1/mmpSet",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -539,9 +551,11 @@ mod tests {
             _params: AutoCancelAllOpenOrdersParams,
         ) -> anyhow::Result<RestApiResponse<models::AutoCancelAllOpenOrdersResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value =
@@ -565,9 +579,11 @@ mod tests {
             _params: GetAutoCancelAllOpenOrdersParams,
         ) -> anyhow::Result<RestApiResponse<models::GetAutoCancelAllOpenOrdersResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value =
@@ -592,9 +608,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::GetMarketMakerProtectionConfigResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"underlyingId":2,"underlying":"BTCUSDT","windowTimeInMilliseconds":3000,"frozenTimeInMilliseconds":300000,"qtyLimit":"2","deltaLimit":"2.3","lastTriggerTime":0}"#).unwrap();
@@ -618,9 +636,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::ResetMarketMakerProtectionConfigResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"underlyingId":2,"underlying":"BTCUSDT","windowTimeInMilliseconds":3000,"frozenTimeInMilliseconds":300000,"qtyLimit":"2","deltaLimit":"2.3","lastTriggerTime":0}"#).unwrap();
@@ -643,9 +663,11 @@ mod tests {
             _params: SetAutoCancelAllOpenOrdersParams,
         ) -> anyhow::Result<RestApiResponse<models::SetAutoCancelAllOpenOrdersResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value =
@@ -670,9 +692,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::SetMarketMakerProtectionConfigResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"underlyingId":2,"underlying":"BTCUSDT","windowTimeInMilliseconds":3000,"frozenTimeInMilliseconds":300000,"qtyLimit":"2","deltaLimit":"2.3","lastTriggerTime":0}"#).unwrap();

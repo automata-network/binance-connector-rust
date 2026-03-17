@@ -8,13 +8,12 @@ use crate::common::{
         DERIVATIVES_TRADING_PORTFOLIO_MARGIN_PRO_REST_API_PROD_URL,
         DERIVATIVES_TRADING_PORTFOLIO_MARGIN_PRO_WS_STREAMS_PROD_URL,
     },
-    logger,
     utils::build_user_agent,
 };
 
 /// Represents the `DerivativesTradingPortfolioMarginPro` REST API client for interacting with the Binance `DerivativesTradingPortfolioMarginPro` REST API.
 ///
-/// This struct provides methods to create REST API clients for the production environment.
+/// This struct provides methods to create REST API clients for production  environments.
 pub struct DerivativesTradingPortfolioMarginProRestApi {}
 
 impl DerivativesTradingPortfolioMarginProRestApi {
@@ -31,8 +30,6 @@ impl DerivativesTradingPortfolioMarginProRestApi {
     /// A new REST API client configured with the provided settings
     #[must_use]
     pub fn from_config(mut config: ConfigurationRestApi) -> rest_api::RestApi {
-        logger::init();
-
         config.user_agent = build_user_agent("derivatives-trading-portfolio-margin-pro");
         if config.base_path.is_none() {
             config.base_path =
@@ -60,7 +57,7 @@ impl DerivativesTradingPortfolioMarginProRestApi {
 
 /// Represents the `DerivativesTradingPortfolioMarginPro` WebSocket Streams client for interacting with the Binance `DerivativesTradingPortfolioMarginPro` WebSocket Streams.
 ///
-/// This struct provides methods to create WebSocket Streams clients for the production environment.
+/// This struct provides methods to create WebSocket Streams clients for production  environments.
 pub struct DerivativesTradingPortfolioMarginProWsStreams {}
 
 impl DerivativesTradingPortfolioMarginProWsStreams {
@@ -79,8 +76,6 @@ impl DerivativesTradingPortfolioMarginProWsStreams {
     pub fn from_config(
         mut config: ConfigurationWebsocketStreams,
     ) -> websocket_streams::WebsocketStreamsHandle {
-        logger::init();
-
         config.user_agent = build_user_agent("derivatives-trading-portfolio-margin-pro");
         if config.ws_url.is_none() {
             config.ws_url =

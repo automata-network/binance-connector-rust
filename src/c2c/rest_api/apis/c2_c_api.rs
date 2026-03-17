@@ -55,23 +55,33 @@ impl C2CApiClient {
 #[derive(Clone, Debug, Builder, Default)]
 #[builder(pattern = "owned", build_fn(error = "ParamBuildError"))]
 pub struct GetC2CTradeHistoryParams {
-    ///
-    /// The `start_time` parameter.
-    ///
-    /// This field is **optional.
-    #[builder(setter(into), default)]
-    pub start_time: Option<i64>,
-    ///
-    /// The `end_time` parameter.
+    /// BUY, SELL
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
-    pub end_time: Option<i64>,
+    pub trade_type: Option<String>,
+    ///
+    /// The `start_timestamp` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub start_timestamp: Option<i64>,
+    ///
+    /// The `end_timestamp` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub end_timestamp: Option<i64>,
     /// Default 1
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub page: Option<i64>,
+    /// default 100, max 100
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub rows: Option<i64>,
     ///
     /// The `recv_window` parameter.
     ///
@@ -96,24 +106,35 @@ impl C2CApi for C2CApiClient {
         params: GetC2CTradeHistoryParams,
     ) -> anyhow::Result<RestApiResponse<models::GetC2CTradeHistoryResponse>> {
         let GetC2CTradeHistoryParams {
-            start_time,
-            end_time,
+            trade_type,
+            start_timestamp,
+            end_timestamp,
             page,
+            rows,
             recv_window,
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
-        if let Some(rw) = start_time {
-            query_params.insert("startTime".to_string(), json!(rw));
+        if let Some(rw) = trade_type {
+            query_params.insert("tradeType".to_string(), json!(rw));
         }
 
-        if let Some(rw) = end_time {
-            query_params.insert("endTime".to_string(), json!(rw));
+        if let Some(rw) = start_timestamp {
+            query_params.insert("startTimestamp".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = end_timestamp {
+            query_params.insert("endTimestamp".to_string(), json!(rw));
         }
 
         if let Some(rw) = page {
             query_params.insert("page".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = rows {
+            query_params.insert("rows".to_string(), json!(rw));
         }
 
         if let Some(rw) = recv_window {
@@ -125,6 +146,7 @@ impl C2CApi for C2CApiClient {
             "/sapi/v1/c2c/orderMatch/listUserOrderHistory",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -173,9 +195,11 @@ mod tests {
             _params: GetC2CTradeHistoryParams,
         ) -> anyhow::Result<RestApiResponse<models::GetC2CTradeHistoryResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"code":"000000","message":"success","data":[{"orderNumber":"20219644646554779648","advNo":"11218246497340923904","tradeType":"SELL","asset":"BUSD","fiat":"CNY","fiatSymbol":"￥","amount":"5000.00000000","totalPrice":"33400.00000000","unitPrice":"6.68","orderStatus":"COMPLETED","createTime":1619361369000,"commission":"0","counterPartNickName":"ab***","advertisementRole":"TAKER"}],"total":1,"success":true}"#).unwrap();
@@ -216,7 +240,7 @@ mod tests {
         TOKIO_SHARED_RT.block_on(async {
             let client = MockC2CApiClient { force_error: false };
 
-            let params = GetC2CTradeHistoryParams::builder().start_time(1623319461670).end_time(1641782889000).page(1).recv_window(5000).build().unwrap();
+            let params = GetC2CTradeHistoryParams::builder().trade_type("trade_type_example".to_string()).start_timestamp(789).end_timestamp(789).page(1).rows(100).recv_window(5000).build().unwrap();
 
             let resp_json: Value = serde_json::from_str(r#"{"code":"000000","message":"success","data":[{"orderNumber":"20219644646554779648","advNo":"11218246497340923904","tradeType":"SELL","asset":"BUSD","fiat":"CNY","fiatSymbol":"￥","amount":"5000.00000000","totalPrice":"33400.00000000","unitPrice":"6.68","orderStatus":"COMPLETED","createTime":1619361369000,"commission":"0","counterPartNickName":"ab***","advertisementRole":"TAKER"}],"total":1,"success":true}"#).unwrap();
             let expected_response : models::GetC2CTradeHistoryResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::GetC2CTradeHistoryResponse");

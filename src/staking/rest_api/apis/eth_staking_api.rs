@@ -515,6 +515,7 @@ impl EthStakingApi for EthStakingApiClient {
         let EthStakingAccountParams { recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = recv_window {
             query_params.insert("recvWindow".to_string(), json!(rw));
@@ -525,6 +526,7 @@ impl EthStakingApi for EthStakingApiClient {
             "/sapi/v2/eth-staking/account",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -542,6 +544,7 @@ impl EthStakingApi for EthStakingApiClient {
         let GetCurrentEthStakingQuotaParams { recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = recv_window {
             query_params.insert("recvWindow".to_string(), json!(rw));
@@ -552,6 +555,7 @@ impl EthStakingApi for EthStakingApiClient {
             "/sapi/v1/eth-staking/eth/quota",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -575,6 +579,7 @@ impl EthStakingApi for EthStakingApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = start_time {
             query_params.insert("startTime".to_string(), json!(rw));
@@ -601,6 +606,7 @@ impl EthStakingApi for EthStakingApiClient {
             "/sapi/v1/eth-staking/eth/history/redemptionHistory",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -624,6 +630,7 @@ impl EthStakingApi for EthStakingApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = start_time {
             query_params.insert("startTime".to_string(), json!(rw));
@@ -650,6 +657,7 @@ impl EthStakingApi for EthStakingApiClient {
             "/sapi/v1/eth-staking/eth/history/stakingHistory",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -673,6 +681,7 @@ impl EthStakingApi for EthStakingApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = start_time {
             query_params.insert("startTime".to_string(), json!(rw));
@@ -699,6 +708,7 @@ impl EthStakingApi for EthStakingApiClient {
             "/sapi/v1/eth-staking/eth/history/rateHistory",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -722,6 +732,7 @@ impl EthStakingApi for EthStakingApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = start_time {
             query_params.insert("startTime".to_string(), json!(rw));
@@ -748,6 +759,7 @@ impl EthStakingApi for EthStakingApiClient {
             "/sapi/v1/eth-staking/eth/history/wbethRewardsHistory",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -771,6 +783,7 @@ impl EthStakingApi for EthStakingApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = start_time {
             query_params.insert("startTime".to_string(), json!(rw));
@@ -797,6 +810,7 @@ impl EthStakingApi for EthStakingApiClient {
             "/sapi/v1/eth-staking/wbeth/history/unwrapHistory",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -820,6 +834,7 @@ impl EthStakingApi for EthStakingApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = start_time {
             query_params.insert("startTime".to_string(), json!(rw));
@@ -846,6 +861,7 @@ impl EthStakingApi for EthStakingApiClient {
             "/sapi/v1/eth-staking/wbeth/history/wrapHistory",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -867,6 +883,7 @@ impl EthStakingApi for EthStakingApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("amount".to_string(), json!(amount));
 
@@ -883,6 +900,7 @@ impl EthStakingApi for EthStakingApiClient {
             "/sapi/v1/eth-staking/eth/redeem",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -903,6 +921,7 @@ impl EthStakingApi for EthStakingApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("amount".to_string(), json!(amount));
 
@@ -915,6 +934,7 @@ impl EthStakingApi for EthStakingApiClient {
             "/sapi/v2/eth-staking/eth/stake",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -935,6 +955,7 @@ impl EthStakingApi for EthStakingApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("amount".to_string(), json!(amount));
 
@@ -947,6 +968,7 @@ impl EthStakingApi for EthStakingApiClient {
             "/sapi/v1/eth-staking/wbeth/wrap",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -995,9 +1017,11 @@ mod tests {
             _params: EthStakingAccountParams,
         ) -> anyhow::Result<RestApiResponse<models::EthStakingAccountResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"holdingInETH":"1.22330928","holdings":{"wbethAmount":"1.10928781","bethAmount":"1.90002112"},"thirtyDaysProfitInETH":"0.22330928","profit":{"amountFromWBETH":"0.12330928","amountFromBETH":"0.1"}}"#).unwrap();
@@ -1020,15 +1044,14 @@ mod tests {
             _params: GetCurrentEthStakingQuotaParams,
         ) -> anyhow::Result<RestApiResponse<models::GetCurrentEthStakingQuotaResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
-            let resp_json: Value = serde_json::from_str(
-                r#"{"leftStakingPersonalQuota":"1000","leftRedemptionPersonalQuota":"1000"}"#,
-            )
-            .unwrap();
+            let resp_json: Value = serde_json::from_str(r#"{"leftStakingPersonalQuota":"1000","leftRedemptionPersonalQuota":"1000","minStakeAmount":"0.00010000","minRedeemAmount":"0.00000001","redeemPeriod":20,"stakeable":true,"redeemable":true,"commissionFee":"0.05000000","calculating":false}"#).unwrap();
             let dummy_response: models::GetCurrentEthStakingQuotaResponse =
                 serde_json::from_value(resp_json.clone())
                     .expect("should parse into models::GetCurrentEthStakingQuotaResponse");
@@ -1048,9 +1071,11 @@ mod tests {
             _params: GetEthRedemptionHistoryParams,
         ) -> anyhow::Result<RestApiResponse<models::GetEthRedemptionHistoryResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"rows":[{"time":1575018510000,"arrivalTime":1575018510000,"asset":"WBETH","amount":"21312.23223","distributeAsset":"ETH","distributeAmount":"21338.0699","conversionRatio":"1.00121234","status":"SUCCESS"}],"total":1}"#).unwrap();
@@ -1073,9 +1098,11 @@ mod tests {
             _params: GetEthStakingHistoryParams,
         ) -> anyhow::Result<RestApiResponse<models::GetEthStakingHistoryResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"rows":[{"time":1575018510000,"asset":"ETH","amount":"21312.23223","distributeAsset":"WBETH","distributeAmount":"21286.42584","conversionRatio":"1.00121234","status":"SUCCESS"}],"total":1}"#).unwrap();
@@ -1098,9 +1125,11 @@ mod tests {
             _params: GetWbethRateHistoryParams,
         ) -> anyhow::Result<RestApiResponse<models::GetWbethRateHistoryResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"rows":[{"annualPercentageRate":"0.00006408","exchangeRate":"1.00121234","time":1577233578000}],"total":"1"}"#).unwrap();
@@ -1123,9 +1152,11 @@ mod tests {
             _params: GetWbethRewardsHistoryParams,
         ) -> anyhow::Result<RestApiResponse<models::GetWbethRewardsHistoryResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"estRewardsInETH":"1.23230920","rows":[{"time":1575018510000,"amountInETH":"0.23223","holding":"2.3223","holdingInETH":"2.4231","annualPercentageRate":"0.5"}],"total":1}"#).unwrap();
@@ -1148,9 +1179,11 @@ mod tests {
             _params: GetWbethUnwrapHistoryParams,
         ) -> anyhow::Result<RestApiResponse<models::GetWbethUnwrapHistoryResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"rows":[{"time":1575018510000,"fromAsset":"WBETH","fromAmount":"21312.23223","toAsset":"BETH","toAmount":"21312.23223","exchangeRate":"1.01243253","status":"SUCCESS"}],"total":1}"#).unwrap();
@@ -1173,9 +1206,11 @@ mod tests {
             _params: GetWbethWrapHistoryParams,
         ) -> anyhow::Result<RestApiResponse<models::GetWbethWrapHistoryResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"rows":[{"time":1575018510000,"fromAsset":"BETH","fromAmount":"21312.23223","toAsset":"WBETH","toAmount":"21312.23223","exchangeRate":"1.01243253","status":"SUCCESS"}],"total":1}"#).unwrap();
@@ -1198,9 +1233,11 @@ mod tests {
             _params: RedeemEthParams,
         ) -> anyhow::Result<RestApiResponse<models::RedeemEthResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"success":true,"ethAmount":"0.23092091","conversionRatio":"1.00121234","arrivalTime":1575018510000}"#).unwrap();
@@ -1223,9 +1260,11 @@ mod tests {
             _params: SubscribeEthStakingParams,
         ) -> anyhow::Result<RestApiResponse<models::SubscribeEthStakingResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(
@@ -1251,9 +1290,11 @@ mod tests {
             _params: WrapBethParams,
         ) -> anyhow::Result<RestApiResponse<models::WrapBethResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(
@@ -1332,18 +1373,10 @@ mod tests {
 
             let params = GetCurrentEthStakingQuotaParams::builder().build().unwrap();
 
-            let resp_json: Value = serde_json::from_str(
-                r#"{"leftStakingPersonalQuota":"1000","leftRedemptionPersonalQuota":"1000"}"#,
-            )
-            .unwrap();
-            let expected_response: models::GetCurrentEthStakingQuotaResponse =
-                serde_json::from_value(resp_json.clone())
-                    .expect("should parse into models::GetCurrentEthStakingQuotaResponse");
+            let resp_json: Value = serde_json::from_str(r#"{"leftStakingPersonalQuota":"1000","leftRedemptionPersonalQuota":"1000","minStakeAmount":"0.00010000","minRedeemAmount":"0.00000001","redeemPeriod":20,"stakeable":true,"redeemable":true,"commissionFee":"0.05000000","calculating":false}"#).unwrap();
+            let expected_response : models::GetCurrentEthStakingQuotaResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::GetCurrentEthStakingQuotaResponse");
 
-            let resp = client
-                .get_current_eth_staking_quota(params)
-                .await
-                .expect("Expected a response");
+            let resp = client.get_current_eth_staking_quota(params).await.expect("Expected a response");
             let data_future = resp.data();
             let actual_response = data_future.await.unwrap();
             assert_eq!(actual_response, expected_response);
@@ -1355,23 +1388,12 @@ mod tests {
         TOKIO_SHARED_RT.block_on(async {
             let client = MockEthStakingApiClient { force_error: false };
 
-            let params = GetCurrentEthStakingQuotaParams::builder()
-                .recv_window(5000)
-                .build()
-                .unwrap();
+            let params = GetCurrentEthStakingQuotaParams::builder().recv_window(5000).build().unwrap();
 
-            let resp_json: Value = serde_json::from_str(
-                r#"{"leftStakingPersonalQuota":"1000","leftRedemptionPersonalQuota":"1000"}"#,
-            )
-            .unwrap();
-            let expected_response: models::GetCurrentEthStakingQuotaResponse =
-                serde_json::from_value(resp_json.clone())
-                    .expect("should parse into models::GetCurrentEthStakingQuotaResponse");
+            let resp_json: Value = serde_json::from_str(r#"{"leftStakingPersonalQuota":"1000","leftRedemptionPersonalQuota":"1000","minStakeAmount":"0.00010000","minRedeemAmount":"0.00000001","redeemPeriod":20,"stakeable":true,"redeemable":true,"commissionFee":"0.05000000","calculating":false}"#).unwrap();
+            let expected_response : models::GetCurrentEthStakingQuotaResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::GetCurrentEthStakingQuotaResponse");
 
-            let resp = client
-                .get_current_eth_staking_quota(params)
-                .await
-                .expect("Expected a response");
+            let resp = client.get_current_eth_staking_quota(params).await.expect("Expected a response");
             let data_future = resp.data();
             let actual_response = data_future.await.unwrap();
             assert_eq!(actual_response, expected_response);

@@ -301,6 +301,7 @@ impl MarketDataApi for MarketDataApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("baseToken".to_string(), json!(base_token));
 
@@ -317,6 +318,7 @@ impl MarketDataApi for MarketDataApiClient {
             "/sapi/v1/giftcard/buyCode",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -338,6 +340,7 @@ impl MarketDataApi for MarketDataApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("token".to_string(), json!(token));
 
@@ -352,6 +355,7 @@ impl MarketDataApi for MarketDataApiClient {
             "/sapi/v1/giftcard/createCode",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -369,6 +373,7 @@ impl MarketDataApi for MarketDataApiClient {
         let FetchRsaPublicKeyParams { recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = recv_window {
             query_params.insert("recvWindow".to_string(), json!(rw));
@@ -379,6 +384,7 @@ impl MarketDataApi for MarketDataApiClient {
             "/sapi/v1/giftcard/cryptography/rsa-public-key",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -399,6 +405,7 @@ impl MarketDataApi for MarketDataApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("baseToken".to_string(), json!(base_token));
 
@@ -411,6 +418,7 @@ impl MarketDataApi for MarketDataApiClient {
             "/sapi/v1/giftcard/buyCode/token-limit",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -432,6 +440,7 @@ impl MarketDataApi for MarketDataApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("code".to_string(), json!(code));
 
@@ -448,6 +457,7 @@ impl MarketDataApi for MarketDataApiClient {
             "/sapi/v1/giftcard/redeemCode",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -469,6 +479,7 @@ impl MarketDataApi for MarketDataApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("referenceNo".to_string(), json!(reference_no));
 
@@ -481,6 +492,7 @@ impl MarketDataApi for MarketDataApiClient {
             "/sapi/v1/giftcard/verify",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -529,9 +541,11 @@ mod tests {
             _params: CreateADualTokenGiftCardParams,
         ) -> anyhow::Result<RestApiResponse<models::CreateADualTokenGiftCardResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"code":"000000","message":"success","data":{"referenceNo":"0033002144060553","code":"6H9EKF5ECCWFBHGE","expiredTime":1727417154000},"success":true}"#).unwrap();
@@ -554,9 +568,11 @@ mod tests {
             _params: CreateASingleTokenGiftCardParams,
         ) -> anyhow::Result<RestApiResponse<models::CreateASingleTokenGiftCardResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"code":"000000","message":"success","data":{"referenceNo":"0033002144060553","code":"6H9EKF5ECCWFBHGE","expiredTime":1727417154000},"success":true}"#).unwrap();
@@ -579,9 +595,11 @@ mod tests {
             _params: FetchRsaPublicKeyParams,
         ) -> anyhow::Result<RestApiResponse<models::FetchRsaPublicKeyResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"code":"000000","message":"success","data":"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCXBBVKLAc1GQ5FsIFFqOHrPTox5noBONIKr+IAedTR9FkVxq6e65updEbfdhRNkMOeYIO2i0UylrjGC0X8YSoIszmrVHeV0l06Zh1oJuZos1+7N+WLuz9JvlPaawof3GUakTxYWWCa9+8KIbLKsoKMdfS96VT+8iOXO3quMGKUmQIDAQAB","success":true}"#).unwrap();
@@ -604,9 +622,11 @@ mod tests {
             _params: FetchTokenLimitParams,
         ) -> anyhow::Result<RestApiResponse<models::FetchTokenLimitResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"code":"000000","message":"success","data":[{"coin":"BNB","fromMin":"0.01","fromMax":"1"}],"success":true}"#).unwrap();
@@ -629,9 +649,11 @@ mod tests {
             _params: RedeemABinanceGiftCardParams,
         ) -> anyhow::Result<RestApiResponse<models::RedeemABinanceGiftCardResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"code":"000000","message":"success","data":{"referenceNo":"0033002328060227","identityNo":"10317392647411060736","token":"BNB","amount":"0.00000001"},"success":true}"#).unwrap();
@@ -655,9 +677,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::VerifyBinanceGiftCardByGiftCardNumberResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"code":"000000","message":"success","data":{"valid":true,"token":"BNB","amount":"0.00000001"},"success":true}"#).unwrap();

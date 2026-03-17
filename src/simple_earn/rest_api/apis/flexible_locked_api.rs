@@ -165,18 +165,17 @@ pub struct GetCollateralRecordParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub end_time: Option<i64>,
-    /// Currently querying the page. Start from 1. Default:1
+    /// Currently querying page. Starts from 1. Default: 1
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub current: Option<i64>,
-    /// Default:10, Max:100
+    /// Number of results per page. Default: 10, Max: 100
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub size: Option<i64>,
-    ///
-    /// The `recv_window` parameter.
+    /// The value cannot be greater than 60000 (ms)
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -204,8 +203,7 @@ pub struct GetFlexiblePersonalLeftQuotaParams {
     /// This field is **required.
     #[builder(setter(into))]
     pub product_id: String,
-    ///
-    /// The `recv_window` parameter.
+    /// The value cannot be greater than 60000 (ms)
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -242,18 +240,17 @@ pub struct GetFlexibleProductPositionParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub product_id: Option<String>,
-    /// Currently querying the page. Start from 1. Default:1
+    /// Currently querying page. Starts from 1. Default: 1
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub current: Option<i64>,
-    /// Default:10, Max:100
+    /// Number of results per page. Default: 10, Max: 100
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub size: Option<i64>,
-    ///
-    /// The `recv_window` parameter.
+    /// The value cannot be greater than 60000 (ms)
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -304,18 +301,17 @@ pub struct GetFlexibleRedemptionRecordParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub end_time: Option<i64>,
-    /// Currently querying the page. Start from 1. Default:1
+    /// Currently querying page. Starts from 1. Default: 1
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub current: Option<i64>,
-    /// Default:10, Max:100
+    /// Number of results per page. Default: 10, Max: 100
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub size: Option<i64>,
-    ///
-    /// The `recv_window` parameter.
+    /// The value cannot be greater than 60000 (ms)
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -365,18 +361,17 @@ pub struct GetFlexibleRewardsHistoryParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub end_time: Option<i64>,
-    /// Currently querying the page. Start from 1. Default:1
+    /// Currently querying page. Starts from 1. Default: 1
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub current: Option<i64>,
-    /// Default:10, Max:100
+    /// Number of results per page. Default: 10, Max: 100
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub size: Option<i64>,
-    ///
-    /// The `recv_window` parameter.
+    /// The value cannot be greater than 60000 (ms)
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -413,8 +408,7 @@ pub struct GetFlexibleSubscriptionPreviewParams {
     /// This field is **required.
     #[builder(setter(into))]
     pub amount: rust_decimal::Decimal,
-    ///
-    /// The `recv_window` parameter.
+    /// The value cannot be greater than 60000 (ms)
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -475,18 +469,17 @@ pub struct GetFlexibleSubscriptionRecordParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub end_time: Option<i64>,
-    /// Currently querying the page. Start from 1. Default:1
+    /// Currently querying page. Starts from 1. Default: 1
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub current: Option<i64>,
-    /// Default:10, Max:100
+    /// Number of results per page. Default: 10, Max: 100
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub size: Option<i64>,
-    ///
-    /// The `recv_window` parameter.
+    /// The value cannot be greater than 60000 (ms)
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -514,8 +507,7 @@ pub struct GetLockedPersonalLeftQuotaParams {
     /// This field is **required.
     #[builder(setter(into))]
     pub project_id: String,
-    ///
-    /// The `recv_window` parameter.
+    /// The value cannot be greater than 60000 (ms)
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -558,18 +550,17 @@ pub struct GetLockedProductPositionParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub project_id: Option<String>,
-    /// Currently querying the page. Start from 1. Default:1
+    /// Currently querying page. Starts from 1. Default: 1
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub current: Option<i64>,
-    /// Default:10, Max:100
+    /// Number of results per page. Default: 10, Max: 100
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub size: Option<i64>,
-    ///
-    /// The `recv_window` parameter.
+    /// The value cannot be greater than 60000 (ms)
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -620,18 +611,17 @@ pub struct GetLockedRedemptionRecordParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub end_time: Option<i64>,
-    /// Currently querying the page. Start from 1. Default:1
+    /// Currently querying page. Starts from 1. Default: 1
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub current: Option<i64>,
-    /// Default:10, Max:100
+    /// Number of results per page. Default: 10, Max: 100
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub size: Option<i64>,
-    ///
-    /// The `recv_window` parameter.
+    /// The value cannot be greater than 60000 (ms)
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -676,18 +666,17 @@ pub struct GetLockedRewardsHistoryParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub end_time: Option<i64>,
-    /// Currently querying the page. Start from 1. Default:1
+    /// Currently querying page. Starts from 1. Default: 1
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub current: Option<i64>,
-    /// Default:10, Max:100
+    /// Number of results per page. Default: 10, Max: 100
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub size: Option<i64>,
-    ///
-    /// The `recv_window` parameter.
+    /// The value cannot be greater than 60000 (ms)
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -725,8 +714,7 @@ pub struct GetLockedSubscriptionPreviewParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub auto_subscribe: Option<bool>,
-    ///
-    /// The `recv_window` parameter.
+    /// The value cannot be greater than 60000 (ms)
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -781,18 +769,17 @@ pub struct GetLockedSubscriptionRecordParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub end_time: Option<i64>,
-    /// Currently querying the page. Start from 1. Default:1
+    /// Currently querying page. Starts from 1. Default: 1
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub current: Option<i64>,
-    /// Default:10, Max:100
+    /// Number of results per page. Default: 10, Max: 100
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub size: Option<i64>,
-    ///
-    /// The `recv_window` parameter.
+    /// The value cannot be greater than 60000 (ms)
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -837,18 +824,17 @@ pub struct GetRateHistoryParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub end_time: Option<i64>,
-    /// Currently querying the page. Start from 1. Default:1
+    /// Currently querying page. Starts from 1. Default: 1
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub current: Option<i64>,
-    /// Default:10, Max:100
+    /// Number of results per page. Default: 10, Max: 100
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub size: Option<i64>,
-    ///
-    /// The `recv_window` parameter.
+    /// The value cannot be greater than 60000 (ms)
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -879,18 +865,17 @@ pub struct GetSimpleEarnFlexibleProductListParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub asset: Option<String>,
-    /// Currently querying the page. Start from 1. Default:1
+    /// Currently querying page. Starts from 1. Default: 1
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub current: Option<i64>,
-    /// Default:10, Max:100
+    /// Number of results per page. Default: 10, Max: 100
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub size: Option<i64>,
-    ///
-    /// The `recv_window` parameter.
+    /// The value cannot be greater than 60000 (ms)
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -917,18 +902,17 @@ pub struct GetSimpleEarnLockedProductListParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub asset: Option<String>,
-    /// Currently querying the page. Start from 1. Default:1
+    /// Currently querying page. Starts from 1. Default: 1
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub current: Option<i64>,
-    /// Default:10, Max:100
+    /// Number of results per page. Default: 10, Max: 100
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub size: Option<i64>,
-    ///
-    /// The `recv_window` parameter.
+    /// The value cannot be greater than 60000 (ms)
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -971,8 +955,7 @@ pub struct RedeemFlexibleProductParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub dest_account: Option<String>,
-    ///
-    /// The `recv_window` parameter.
+    /// The value cannot be greater than 60000 (ms)
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -1004,8 +987,7 @@ pub struct RedeemLockedProductParams {
     /// This field is **required.
     #[builder(setter(into))]
     pub position_id: String,
-    ///
-    /// The `recv_window` parameter.
+    /// The value cannot be greater than 60000 (ms)
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -1042,8 +1024,7 @@ pub struct SetFlexibleAutoSubscribeParams {
     /// This field is **required.
     #[builder(setter(into))]
     pub auto_subscribe: bool,
-    ///
-    /// The `recv_window` parameter.
+    /// The value cannot be greater than 60000 (ms)
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -1086,8 +1067,7 @@ pub struct SetLockedAutoSubscribeParams {
     /// This field is **required.
     #[builder(setter(into))]
     pub auto_subscribe: bool,
-    ///
-    /// The `recv_window` parameter.
+    /// The value cannot be greater than 60000 (ms)
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -1130,8 +1110,7 @@ pub struct SetLockedProductRedeemOptionParams {
     /// This field is **required.
     #[builder(setter(into))]
     pub redeem_to: String,
-    ///
-    /// The `recv_window` parameter.
+    /// The value cannot be greater than 60000 (ms)
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -1163,8 +1142,7 @@ impl SetLockedProductRedeemOptionParams {
 #[derive(Clone, Debug, Builder, Default)]
 #[builder(pattern = "owned", build_fn(error = "ParamBuildError"))]
 pub struct SimpleAccountParams {
-    ///
-    /// The `recv_window` parameter.
+    /// The value cannot be greater than 60000 (ms)
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -1207,8 +1185,7 @@ pub struct SubscribeFlexibleProductParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub source_account: Option<String>,
-    ///
-    /// The `recv_window` parameter.
+    /// The value cannot be greater than 60000 (ms)
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -1261,13 +1238,12 @@ pub struct SubscribeLockedProductParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub source_account: Option<String>,
-    /// `SPOT`,`FLEXIBLE`, default `FLEXIBLE`
+    /// `SPOT`,`FLEXIBLE`, default `SPOT`
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub redeem_to: Option<String>,
-    ///
-    /// The `recv_window` parameter.
+    /// The value cannot be greater than 60000 (ms)
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -1309,6 +1285,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = product_id {
             query_params.insert("productId".to_string(), json!(rw));
@@ -1339,6 +1316,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
             "/sapi/v1/simple-earn/flexible/history/collateralRecord",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1359,6 +1337,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("productId".to_string(), json!(product_id));
 
@@ -1371,6 +1350,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
             "/sapi/v1/simple-earn/flexible/personalLeftQuota",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1394,6 +1374,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = asset {
             query_params.insert("asset".to_string(), json!(rw));
@@ -1420,6 +1401,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
             "/sapi/v1/simple-earn/flexible/position",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1446,6 +1428,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = product_id {
             query_params.insert("productId".to_string(), json!(rw));
@@ -1484,6 +1467,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
             "/sapi/v1/simple-earn/flexible/history/redemptionRecord",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1510,8 +1494,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
-
-        query_params.insert("type".to_string(), json!(r#type));
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = product_id {
             query_params.insert("productId".to_string(), json!(rw));
@@ -1528,6 +1511,8 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
         if let Some(rw) = end_time {
             query_params.insert("endTime".to_string(), json!(rw));
         }
+
+        query_params.insert("type".to_string(), json!(r#type));
 
         if let Some(rw) = current {
             query_params.insert("current".to_string(), json!(rw));
@@ -1546,6 +1531,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
             "/sapi/v1/simple-earn/flexible/history/rewardsRecord",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1567,6 +1553,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("productId".to_string(), json!(product_id));
 
@@ -1581,6 +1568,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
             "/sapi/v1/simple-earn/flexible/subscriptionPreview",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1607,6 +1595,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = product_id {
             query_params.insert("productId".to_string(), json!(rw));
@@ -1645,6 +1634,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
             "/sapi/v1/simple-earn/flexible/history/subscriptionRecord",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1665,6 +1655,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("projectId".to_string(), json!(project_id));
 
@@ -1677,6 +1668,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
             "/sapi/v1/simple-earn/locked/personalLeftQuota",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1701,6 +1693,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = asset {
             query_params.insert("asset".to_string(), json!(rw));
@@ -1731,6 +1724,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
             "/sapi/v1/simple-earn/locked/position",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1757,6 +1751,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = position_id {
             query_params.insert("positionId".to_string(), json!(rw));
@@ -1795,6 +1790,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
             "/sapi/v1/simple-earn/locked/history/redemptionRecord",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1820,6 +1816,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = position_id {
             query_params.insert("positionId".to_string(), json!(rw));
@@ -1854,6 +1851,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
             "/sapi/v1/simple-earn/locked/history/rewardsRecord",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1877,6 +1875,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("projectId".to_string(), json!(project_id));
 
@@ -1895,6 +1894,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
             "/sapi/v1/simple-earn/locked/subscriptionPreview",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1920,6 +1920,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = purchase_id {
             query_params.insert("purchaseId".to_string(), json!(rw));
@@ -1954,6 +1955,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
             "/sapi/v1/simple-earn/locked/history/subscriptionRecord",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1979,6 +1981,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("productId".to_string(), json!(product_id));
 
@@ -2011,6 +2014,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
             "/sapi/v1/simple-earn/flexible/history/rateHistory",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2033,6 +2037,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = asset {
             query_params.insert("asset".to_string(), json!(rw));
@@ -2055,6 +2060,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
             "/sapi/v1/simple-earn/flexible/list",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2077,6 +2083,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = asset {
             query_params.insert("asset".to_string(), json!(rw));
@@ -2099,6 +2106,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
             "/sapi/v1/simple-earn/locked/list",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2122,6 +2130,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("productId".to_string(), json!(product_id));
 
@@ -2146,6 +2155,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
             "/sapi/v1/simple-earn/flexible/redeem",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2166,6 +2176,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("positionId".to_string(), json!(position_id));
 
@@ -2178,6 +2189,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
             "/sapi/v1/simple-earn/locked/redeem",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2199,6 +2211,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("productId".to_string(), json!(product_id));
 
@@ -2213,6 +2226,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
             "/sapi/v1/simple-earn/flexible/setAutoSubscribe",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2234,6 +2248,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("positionId".to_string(), json!(position_id));
 
@@ -2248,6 +2263,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
             "/sapi/v1/simple-earn/locked/setAutoSubscribe",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2269,6 +2285,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("positionId".to_string(), json!(position_id));
 
@@ -2283,6 +2300,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
             "/sapi/v1/simple-earn/locked/setRedeemOption",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2300,6 +2318,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
         let SimpleAccountParams { recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = recv_window {
             query_params.insert("recvWindow".to_string(), json!(rw));
@@ -2310,6 +2329,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
             "/sapi/v1/simple-earn/account",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2333,6 +2353,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("productId".to_string(), json!(product_id));
 
@@ -2355,6 +2376,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
             "/sapi/v1/simple-earn/flexible/subscribe",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2379,6 +2401,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("projectId".to_string(), json!(project_id));
 
@@ -2405,6 +2428,7 @@ impl FlexibleLockedApi for FlexibleLockedApiClient {
             "/sapi/v1/simple-earn/locked/subscribe",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2453,9 +2477,11 @@ mod tests {
             _params: GetCollateralRecordParams,
         ) -> anyhow::Result<RestApiResponse<models::GetCollateralRecordResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"rows":[{"amount":"100.00000000","productId":"BUSD001","asset":"USDT","createTime":1575018510000,"type":"REPAY","productName":"USDT","orderId":26055}],"total":"1"}"#).unwrap();
@@ -2478,9 +2504,11 @@ mod tests {
             _params: GetFlexiblePersonalLeftQuotaParams,
         ) -> anyhow::Result<RestApiResponse<models::GetFlexiblePersonalLeftQuotaResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"leftPersonalQuota":"1000"}"#).unwrap();
@@ -2503,9 +2531,11 @@ mod tests {
             _params: GetFlexibleProductPositionParams,
         ) -> anyhow::Result<RestApiResponse<models::GetFlexibleProductPositionResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"rows":[{"totalAmount":"75.46000000","tierAnnualPercentageRate":{"0-5BTC":0.05,"5-10BTC":0.03},"latestAnnualPercentageRate":"0.02599895","yesterdayAirdropPercentageRate":"0.02599895","asset":"USDT","airDropAsset":"BETH","canRedeem":true,"collateralAmount":"232.23123213","productId":"USDT001","yesterdayRealTimeRewards":"0.10293829","cumulativeBonusRewards":"0.22759183","cumulativeRealTimeRewards":"0.22759183","cumulativeTotalRewards":"0.45459183","autoSubscribe":true}],"total":1}"#).unwrap();
@@ -2528,9 +2558,11 @@ mod tests {
             _params: GetFlexibleRedemptionRecordParams,
         ) -> anyhow::Result<RestApiResponse<models::GetFlexibleRedemptionRecordResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"rows":[{"amount":"10.54000000","asset":"USDT","time":1577257222000,"projectId":"USDT001","redeemId":40607,"destAccount":"SPOT","status":"PAID"}],"total":1}"#).unwrap();
@@ -2553,9 +2585,11 @@ mod tests {
             _params: GetFlexibleRewardsHistoryParams,
         ) -> anyhow::Result<RestApiResponse<models::GetFlexibleRewardsHistoryResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"rows":[{"asset":"BUSD","rewards":"0.00006408","projectId":"USDT001","type":"BONUS","time":1577233578000},{"asset":"USDT","rewards":"0.00687654","projectId":"USDT001","type":"REALTIME","time":1577233562000}],"total":2}"#).unwrap();
@@ -2579,9 +2613,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::GetFlexibleSubscriptionPreviewResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"totalAmount":"1232.32230982","rewardAsset":"BUSD","airDropAsset":"BETH","estDailyBonusRewards":"0.22759183","estDailyRealTimeRewards":"0.22759183","estDailyAirdropRewards":"0.22759183"}"#).unwrap();
@@ -2605,9 +2641,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::GetFlexibleSubscriptionRecordResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"rows":[{"amount":"100.00000000","asset":"USDT","time":1575018510000,"purchaseId":26055,"productId":"USDT001","type":"AUTO","sourceAccount":"SPOT","amtFromSpot":"30","amtFromFunding":"70","status":"SUCCESS"}],"total":1}"#).unwrap();
@@ -2630,9 +2668,11 @@ mod tests {
             _params: GetLockedPersonalLeftQuotaParams,
         ) -> anyhow::Result<RestApiResponse<models::GetLockedPersonalLeftQuotaResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"leftPersonalQuota":"1000"}"#).unwrap();
@@ -2655,9 +2695,11 @@ mod tests {
             _params: GetLockedProductPositionParams,
         ) -> anyhow::Result<RestApiResponse<models::GetLockedProductPositionResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"rows":[{"positionId":123123,"parentPositionId":123122,"projectId":"Axs*90","asset":"AXS","amount":"122.09202928","purchaseTime":"1646182276000","duration":"60","accrualDays":"4","rewardAsset":"AXS","APY":"0.2032","rewardAmt":"5.17181528","extraRewardAsset":"BNB","extraRewardAPR":"0.0203","estExtraRewardAmt":"5.17181528","boostRewardAsset":"AXS","boostApr":"0.0121","totalBoostRewardAmt":"3.98201829","nextPay":"1.29295383","nextPayDate":"1646697600000","payPeriod":"1","redeemAmountEarly":"2802.24068892","rewardsEndDate":"1651449600000","deliverDate":"1651536000000","redeemPeriod":"1","redeemingAmt":"232.2323","redeemTo":"FLEXIBLE","partialAmtDeliverDate":"1651536000000","canRedeemEarly":true,"canFastRedemption":true,"autoSubscribe":true,"type":"AUTO","status":"HOLDING","canReStake":true}],"total":1}"#).unwrap();
@@ -2680,9 +2722,11 @@ mod tests {
             _params: GetLockedRedemptionRecordParams,
         ) -> anyhow::Result<RestApiResponse<models::GetLockedRedemptionRecordResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"rows":[{"positionId":123123,"redeemId":40607,"time":1575018510000,"asset":"BNB","lockPeriod":"30","amount":"21312.23223","originalAmount":"21312.23223","type":"MATURE","deliverDate":"1575018510000","lossAmount":"0.00001232","isComplete":true,"rewardAsset":"AXS","rewardAmt":"5.17181528","extraRewardAsset":"BNB","estExtraRewardAmt":"5.17181528","status":"PAID"}],"total":1}"#).unwrap();
@@ -2705,9 +2749,11 @@ mod tests {
             _params: GetLockedRewardsHistoryParams,
         ) -> anyhow::Result<RestApiResponse<models::GetLockedRewardsHistoryResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"rows":[{"positionId":123123,"time":1575018510000,"asset":"BNB","lockPeriod":"30","amount":"21312.23223","type":"Locked Rewards"},{"positionId":123123,"time":1575018510000,"asset":"BNB","amount":"1.23223","type":"Boost Rewards"}],"total":1}"#).unwrap();
@@ -2731,9 +2777,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<Vec<models::GetLockedSubscriptionPreviewResponseInner>>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"rewardAsset":"AXS","totalRewardAmt":"5.17181528","extraRewardAsset":"BNB","estTotalExtraRewardAmt":"5.17181528","boostRewardAsset":"AXS","estDailyRewardAmt":"1.20928901","nextPay":"1.29295383","nextPayDate":"1646697600000","valueDate":"1646697600000","rewardsEndDate":"1651449600000","deliverDate":"1651536000000","nextSubscriptionDate":"1651536000000"}]"#).unwrap();
@@ -2757,9 +2805,11 @@ mod tests {
             _params: GetLockedSubscriptionRecordParams,
         ) -> anyhow::Result<RestApiResponse<models::GetLockedSubscriptionRecordResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"rows":[{"positionId":123123,"purchaseId":"26055","projectId":"Axs*90","time":1575018510000,"asset":"BNB","amount":"21312.23223","lockPeriod":"30","type":"AUTO","sourceAccount":"SPOT","amtFromSpot":"30","amtFromFunding":"70","status":"SUCCESS"}],"total":1}"#).unwrap();
@@ -2782,9 +2832,11 @@ mod tests {
             _params: GetRateHistoryParams,
         ) -> anyhow::Result<RestApiResponse<models::GetRateHistoryResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"rows":[{"productId":"BUSD001","asset":"BUSD","annualPercentageRate":"0.00006408","time":1577233578000}],"total":"1"}"#).unwrap();
@@ -2808,9 +2860,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::GetSimpleEarnFlexibleProductListResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"rows":[{"asset":"BTC","latestAnnualPercentageRate":"0.05000000","tierAnnualPercentageRate":{"0-5BTC":0.05,"5-10BTC":0.03},"airDropPercentageRate":"0.05000000","canPurchase":true,"canRedeem":true,"isSoldOut":true,"hot":true,"minPurchaseAmount":"0.01000000","productId":"BTC001","subscriptionStartTime":1646182276000,"status":"PURCHASING"}],"total":1}"#).unwrap();
@@ -2834,9 +2888,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::GetSimpleEarnLockedProductListResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"rows":[{"projectId":"Axs*90","detail":{"asset":"AXS","rewardAsset":"AXS","duration":90,"renewable":true,"isSoldOut":true,"apr":"1.2069","status":"CREATED","subscriptionStartTime":1646182276000,"extraRewardAsset":"BNB","extraRewardAPR":"0.23","boostRewardAsset":"AXS","boostApr":"0.0121","boostEndTime":1646182276000},"quota":{"totalPersonalQuota":"2","minimum":"0.001"}}],"total":1}"#).unwrap();
@@ -2859,9 +2915,11 @@ mod tests {
             _params: RedeemFlexibleProductParams,
         ) -> anyhow::Result<RestApiResponse<models::RedeemFlexibleProductResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value =
@@ -2885,9 +2943,11 @@ mod tests {
             _params: RedeemLockedProductParams,
         ) -> anyhow::Result<RestApiResponse<models::RedeemLockedProductResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value =
@@ -2911,9 +2971,11 @@ mod tests {
             _params: SetFlexibleAutoSubscribeParams,
         ) -> anyhow::Result<RestApiResponse<models::SetFlexibleAutoSubscribeResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"success":true}"#).unwrap();
@@ -2936,9 +2998,11 @@ mod tests {
             _params: SetLockedAutoSubscribeParams,
         ) -> anyhow::Result<RestApiResponse<models::SetLockedAutoSubscribeResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"success":true}"#).unwrap();
@@ -2961,9 +3025,11 @@ mod tests {
             _params: SetLockedProductRedeemOptionParams,
         ) -> anyhow::Result<RestApiResponse<models::SetLockedProductRedeemOptionResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"success":true}"#).unwrap();
@@ -2986,9 +3052,11 @@ mod tests {
             _params: SimpleAccountParams,
         ) -> anyhow::Result<RestApiResponse<models::SimpleAccountResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"totalAmountInBTC":"0.01067982","totalAmountInUSDT":"77.13289230","totalFlexibleAmountInBTC":"0.00000000","totalFlexibleAmountInUSDT":"0.00000000","totalLockedInBTC":"0.01067982","totalLockedInUSDT":"77.13289230"}"#).unwrap();
@@ -3011,9 +3079,11 @@ mod tests {
             _params: SubscribeFlexibleProductParams,
         ) -> anyhow::Result<RestApiResponse<models::SubscribeFlexibleProductResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value =
@@ -3037,9 +3107,11 @@ mod tests {
             _params: SubscribeLockedProductParams,
         ) -> anyhow::Result<RestApiResponse<models::SubscribeLockedProductResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value =
@@ -4418,7 +4490,7 @@ mod tests {
             let params = SubscribeLockedProductParams::builder("1".to_string(), dec!(1.0))
                 .auto_subscribe(true)
                 .source_account("SPOT".to_string())
-                .redeem_to(String::new())
+                .redeem_to("SPOT".to_string())
                 .recv_window(5000)
                 .build()
                 .unwrap();

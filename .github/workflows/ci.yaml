@@ -13,7 +13,7 @@ jobs:
       modified_targets: ${{ steps.filter.outputs.modified_targets }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
         with:
           fetch-depth: 2 
 
@@ -44,8 +44,7 @@ jobs:
           MODIFIED_TARGETS_JSON=$(printf '%s\n' "${MODIFIED_TARGETS[@]}" | jq -R -s -c 'split("\n") | map(select(. != ""))')
 
           echo "Detected modified targets: $MODIFIED_TARGETS_JSON"
-          echo "modified_targets=$MODIFIED_TARGETS_JSON" >> $GITHUB_ENV
-          echo "::set-output name=modified_targets::$MODIFIED_TARGETS_JSON"
+          echo "modified_targets=$MODIFIED_TARGETS_JSON" >> $GITHUB_OUTPUT
 
   build-target:
     runs-on: ubuntu-latest
@@ -54,11 +53,11 @@ jobs:
     strategy:
       matrix:
         target: ${{ fromJson(needs.detect-targets.outputs.modified_targets) }}
-        rust-version: [1.86.0]
+        rust-version: [1.90.0]
       max-parallel: 1
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
 
       - name: Set up Rust ${{ matrix.rust-version }}
         uses: actions-rust-lang/setup-rust-toolchain@v1
@@ -88,7 +87,23 @@ jobs:
           fi
       
       - name: Lint Check
-        run: cargo clippy --all-targets $( [ "${{ matrix.target }}" = "common" ] || echo "--features ${{ matrix.target }}" )
+        run: |
+          TARGET="${{ matrix.target }}"
+          if [ "$TARGET" = "common" ]; then
+            cargo clippy --all-targets --no-default-features --features "openssl-tls"
+            cargo clippy --all-targets --no-default-features --features "rustls-tls"
+          else
+            cargo clippy --all-targets --no-default-features --features "openssl-tls,$TARGET"
+            cargo clippy --all-targets --no-default-features --features "rustls-tls,$TARGET"
+          fi
 
       - name: Test
-        run: cargo test $( [ "${{ matrix.target }}" = "common" ] || echo "--features ${{ matrix.target }} ${{ matrix.target }}" )
+        run: |
+          TARGET="${{ matrix.target }}"
+          if [ "$TARGET" = "common" ]; then
+            cargo test --no-default-features --features "openssl-tls"
+            cargo test --no-default-features --features "rustls-tls"
+          else
+            cargo test --no-default-features --features "openssl-tls,$TARGET" "$TARGET"
+            cargo test --no-default-features --features "rustls-tls,$TARGET" "$TARGET"
+          fi

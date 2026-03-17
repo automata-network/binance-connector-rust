@@ -56,7 +56,8 @@ impl RestApi {
     ///
     /// * `endpoint` - The API endpoint to send the request to
     /// * `method` - The HTTP method to use for the request
-    /// * `params` - A map of parameters to send with the request
+    /// * `query_params` - A map of query parameters to send with the request
+    /// * `body_params` - A map of body parameters to send with the request
     ///
     /// # Returns
     ///
@@ -69,9 +70,19 @@ impl RestApi {
         &self,
         endpoint: &str,
         method: Method,
-        params: BTreeMap<String, Value>,
+        query_params: BTreeMap<String, Value>,
+        body_params: BTreeMap<String, Value>,
     ) -> anyhow::Result<RestApiResponse<R>> {
-        send_request::<R>(&self.configuration, endpoint, method, params, None, false).await
+        send_request::<R>(
+            &self.configuration,
+            endpoint,
+            method,
+            query_params,
+            body_params,
+            None,
+            false,
+        )
+        .await
     }
 
     /// Send a signed request to the API
@@ -80,7 +91,8 @@ impl RestApi {
     ///
     /// * `endpoint` - The API endpoint to send the request to
     /// * `method` - The HTTP method to use for the request
-    /// * `params` - A map of parameters to send with the request
+    /// * `query_params` - A map of query parameters to send with the request
+    /// * `body_params` - A map of body parameters to send with the request
     ///
     /// # Returns
     ///
@@ -93,9 +105,19 @@ impl RestApi {
         &self,
         endpoint: &str,
         method: Method,
-        params: BTreeMap<String, Value>,
+        query_params: BTreeMap<String, Value>,
+        body_params: BTreeMap<String, Value>,
     ) -> anyhow::Result<RestApiResponse<R>> {
-        send_request::<R>(&self.configuration, endpoint, method, params, None, true).await
+        send_request::<R>(
+            &self.configuration,
+            endpoint,
+            method,
+            query_params,
+            body_params,
+            None,
+            true,
+        )
+        .await
     }
 
     /// Account `Balance(USER_DATA)`
@@ -4023,7 +4045,7 @@ impl RestApi {
     ///
     /// # Returns
     ///
-    /// [`RestApiResponse<models::QueryCurrentCmOpenOrderResponse>`] on success.
+    /// [`RestApiResponse<Vec<models::QueryAllCmOrdersResponseInner>>`] on success.
     ///
     /// # Errors
     ///
@@ -4049,7 +4071,7 @@ impl RestApi {
     pub async fn query_current_cm_open_order(
         &self,
         params: QueryCurrentCmOpenOrderParams,
-    ) -> anyhow::Result<RestApiResponse<models::QueryCurrentCmOpenOrderResponse>> {
+    ) -> anyhow::Result<RestApiResponse<Vec<models::QueryAllCmOrdersResponseInner>>> {
         self.trade_api_client
             .query_current_cm_open_order(params)
             .await
@@ -4106,7 +4128,7 @@ impl RestApi {
     /// Query Current UM Open Conditional Order
     ///
     /// * Either `strategyId` or `newClientStrategyId` must be sent.
-    /// * If the queried order has been `CANCELED`, `TRIGGERED`或`EXPIRED`, the error message "Order does not exist" will be returned.
+    /// * If the queried order has been `CANCELED`, `TRIGGERED` or `EXPIRED`, the error message "Order does not exist" will be returned.
     ///
     /// Weight: 1
     ///

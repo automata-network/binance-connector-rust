@@ -18,7 +18,7 @@
 
 #![allow(unused_imports)]
 use serde_json::Value;
-use std::sync::Arc;
+use std::sync::{Arc, atomic::Ordering};
 use tokio::spawn;
 
 use crate::common::config::ConfigurationWebsocketStreams;
@@ -26,7 +26,7 @@ use crate::common::websocket::{
     Subscription, WebsocketBase, WebsocketStream, WebsocketStreams as WebsocketStreamsBase,
     create_stream_handler,
 };
-use crate::models::{WebsocketEvent, WebsocketMode};
+use crate::models::{StreamId, WebsocketEvent, WebsocketMode};
 
 mod apis;
 mod handle;
@@ -58,7 +58,8 @@ impl WebsocketStreams {
             cfg.time_unit = None;
         }
 
-        let websocket_streams_base = WebsocketStreamsBase::new(cfg, vec![]);
+        let websocket_streams_base = WebsocketStreamsBase::new(cfg, vec![], vec![]);
+
         websocket_streams_base.clone().connect(streams).await?;
 
         Ok(Self {
@@ -185,7 +186,7 @@ impl WebsocketStreams {
     /// The subscription is performed in a separate task using `spawn`.
     pub fn subscribe(&self, streams: Vec<String>, id: Option<String>) {
         let base = Arc::clone(&self.websocket_streams_base);
-        spawn(async move { base.subscribe(streams, id).await });
+        spawn(async move { base.subscribe(streams, id.map(StreamId::from), None).await });
     }
 
     /// Unsubscribes from specified WebSocket streams.
@@ -205,7 +206,10 @@ impl WebsocketStreams {
     /// The unsubscription is performed in a separate task using `spawn`.
     pub fn unsubscribe(&self, streams: Vec<String>, id: Option<String>) {
         let base = Arc::clone(&self.websocket_streams_base);
-        spawn(async move { base.unsubscribe(streams, id).await });
+        spawn(async move {
+            base.unsubscribe(streams, id.map(StreamId::from), None)
+                .await;
+        });
     }
 
     /// Checks if the current WebSocket stream is subscribed to a specific stream.
@@ -314,33 +318,6 @@ impl WebsocketStreams {
         self.web_socket_streams_api_client
             .all_mini_ticker(params)
             .await
-    }
-
-    /// WebSocket All Market Tickers Stream
-    ///
-    /// 24hr rolling window ticker statistics for all symbols that changed in an array. These are NOT the statistics of the UTC day, but a 24hr rolling window for the previous 24hrs. Note that only tickers that have changed will be present in the array.
-    ///
-    /// # Arguments
-    ///
-    /// - `params`: [`AllTickerParams`]
-    ///   The parameters for this operation.
-    ///
-    /// # Returns
-    ///
-    /// [`Arc<WebsocketStream<Vec<models::AllTickerResponseInner>>>`] on success.
-    ///
-    /// # Errors
-    ///
-    /// Returns an [`anyhow::Error`] if the stream request fails, if parameters are invalid, or if parsing the response fails.
-    ///
-    ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/binance-spot-api-docs/web-socket-streams#all-market-tickers-stream).
-    ///
-    pub async fn all_ticker(
-        &self,
-        params: AllTickerParams,
-    ) -> anyhow::Result<Arc<WebsocketStream<Vec<models::AllTickerResponseInner>>>> {
-        self.web_socket_streams_api_client.all_ticker(params).await
     }
 
     /// WebSocket Average Price
@@ -538,6 +515,35 @@ impl WebsocketStreams {
     ) -> anyhow::Result<Arc<WebsocketStream<models::PartialBookDepthResponse>>> {
         self.web_socket_streams_api_client
             .partial_book_depth(params)
+            .await
+    }
+
+    /// WebSocket Reference Price Streams
+    ///
+    ///
+    ///
+    /// # Arguments
+    ///
+    /// - `params`: [`ReferencePriceParams`]
+    ///   The parameters for this operation.
+    ///
+    /// # Returns
+    ///
+    /// [`Arc<WebsocketStream<models::ReferencePriceResponse>>`] on success.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`anyhow::Error`] if the stream request fails, if parameters are invalid, or if parsing the response fails.
+    ///
+    ///
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/binance-spot-api-docs/web-socket-streams#reference-price-streams).
+    ///
+    pub async fn reference_price(
+        &self,
+        params: ReferencePriceParams,
+    ) -> anyhow::Result<Arc<WebsocketStream<models::ReferencePriceResponse>>> {
+        self.web_socket_streams_api_client
+            .reference_price(params)
             .await
     }
 

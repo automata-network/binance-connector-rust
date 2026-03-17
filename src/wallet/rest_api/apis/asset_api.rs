@@ -39,6 +39,14 @@ pub trait AssetApi: Send + Sync {
         &self,
         params: AssetDividendRecordParams,
     ) -> anyhow::Result<RestApiResponse<models::AssetDividendRecordResponse>>;
+    async fn dust_convert(
+        &self,
+        params: DustConvertParams,
+    ) -> anyhow::Result<RestApiResponse<models::DustConvertResponse>>;
+    async fn dust_convertible_assets(
+        &self,
+        params: DustConvertibleAssetsParams,
+    ) -> anyhow::Result<RestApiResponse<models::DustConvertibleAssetsResponse>>;
     async fn dust_transfer(
         &self,
         params: DustTransferParams,
@@ -110,6 +118,11 @@ impl AssetApiClient {
 #[derive(Clone, Debug, Builder, Default)]
 #[builder(pattern = "owned", build_fn(error = "ParamBuildError"))]
 pub struct AssetDetailParams {
+    /// If asset is blank, then query all positive assets user have.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub asset: Option<String>,
     ///
     /// The `recv_window` parameter.
     ///
@@ -171,6 +184,89 @@ impl AssetDividendRecordParams {
         AssetDividendRecordParamsBuilder::default()
     }
 }
+/// Request parameters for the [`dust_convert`] operation.
+///
+/// This struct holds all of the inputs you can pass when calling
+/// [`dust_convert`](#method.dust_convert).
+#[derive(Clone, Debug, Builder)]
+#[builder(pattern = "owned", build_fn(error = "ParamBuildError"))]
+pub struct DustConvertParams {
+    ///
+    /// The `asset` parameter.
+    ///
+    /// This field is **required.
+    #[builder(setter(into))]
+    pub asset: String,
+    /// A unique id for the request
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub client_id: Option<String>,
+    ///
+    /// The `target_asset` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub target_asset: Option<String>,
+    ///
+    /// The `third_party_client_id` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub third_party_client_id: Option<String>,
+    ///
+    /// The `dust_quota_asset_to_target_asset_price` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub dust_quota_asset_to_target_asset_price: Option<rust_decimal::Decimal>,
+}
+
+impl DustConvertParams {
+    /// Create a builder for [`dust_convert`].
+    ///
+    /// Required parameters:
+    ///
+    /// * `asset` — String
+    ///
+    #[must_use]
+    pub fn builder(asset: String) -> DustConvertParamsBuilder {
+        DustConvertParamsBuilder::default().asset(asset)
+    }
+}
+/// Request parameters for the [`dust_convertible_assets`] operation.
+///
+/// This struct holds all of the inputs you can pass when calling
+/// [`dust_convertible_assets`](#method.dust_convertible_assets).
+#[derive(Clone, Debug, Builder)]
+#[builder(pattern = "owned", build_fn(error = "ParamBuildError"))]
+pub struct DustConvertibleAssetsParams {
+    ///
+    /// The `target_asset` parameter.
+    ///
+    /// This field is **required.
+    #[builder(setter(into))]
+    pub target_asset: String,
+    ///
+    /// The `dust_quota_asset_to_target_asset_price` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub dust_quota_asset_to_target_asset_price: Option<rust_decimal::Decimal>,
+}
+
+impl DustConvertibleAssetsParams {
+    /// Create a builder for [`dust_convertible_assets`].
+    ///
+    /// Required parameters:
+    ///
+    /// * `target_asset` — String
+    ///
+    #[must_use]
+    pub fn builder(target_asset: String) -> DustConvertibleAssetsParamsBuilder {
+        DustConvertibleAssetsParamsBuilder::default().target_asset(target_asset)
+    }
+}
 /// Request parameters for the [`dust_transfer`] operation.
 ///
 /// This struct holds all of the inputs you can pass when calling
@@ -216,6 +312,11 @@ impl DustTransferParams {
 #[derive(Clone, Debug, Builder, Default)]
 #[builder(pattern = "owned", build_fn(error = "ParamBuildError"))]
 pub struct DustlogParams {
+    /// `SPOT` or `MARGIN`,default `SPOT`
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub account_type: Option<String>,
     ///
     /// The `start_time` parameter.
     ///
@@ -706,9 +807,14 @@ impl AssetApi for AssetApiClient {
         &self,
         params: AssetDetailParams,
     ) -> anyhow::Result<RestApiResponse<models::AssetDetailResponse>> {
-        let AssetDetailParams { recv_window } = params;
+        let AssetDetailParams { asset, recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
+
+        if let Some(rw) = asset {
+            query_params.insert("asset".to_string(), json!(rw));
+        }
 
         if let Some(rw) = recv_window {
             query_params.insert("recvWindow".to_string(), json!(rw));
@@ -719,6 +825,7 @@ impl AssetApi for AssetApiClient {
             "/sapi/v1/asset/assetDetail",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -742,6 +849,7 @@ impl AssetApi for AssetApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = asset {
             query_params.insert("asset".to_string(), json!(rw));
@@ -768,6 +876,90 @@ impl AssetApi for AssetApiClient {
             "/sapi/v1/asset/assetDividend",
             reqwest::Method::GET,
             query_params,
+            body_params,
+            if HAS_TIME_UNIT {
+                self.configuration.time_unit
+            } else {
+                None
+            },
+            true,
+        )
+        .await
+    }
+
+    async fn dust_convert(
+        &self,
+        params: DustConvertParams,
+    ) -> anyhow::Result<RestApiResponse<models::DustConvertResponse>> {
+        let DustConvertParams {
+            asset,
+            client_id,
+            target_asset,
+            third_party_client_id,
+            dust_quota_asset_to_target_asset_price,
+        } = params;
+
+        let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
+
+        query_params.insert("asset".to_string(), json!(asset));
+
+        if let Some(rw) = client_id {
+            query_params.insert("clientId".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = target_asset {
+            query_params.insert("targetAsset".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = third_party_client_id {
+            query_params.insert("thirdPartyClientId".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = dust_quota_asset_to_target_asset_price {
+            query_params.insert("dustQuotaAssetToTargetAssetPrice".to_string(), json!(rw));
+        }
+
+        send_request::<models::DustConvertResponse>(
+            &self.configuration,
+            "/sapi/v1/asset/dust-convert/convert",
+            reqwest::Method::POST,
+            query_params,
+            body_params,
+            if HAS_TIME_UNIT {
+                self.configuration.time_unit
+            } else {
+                None
+            },
+            true,
+        )
+        .await
+    }
+
+    async fn dust_convertible_assets(
+        &self,
+        params: DustConvertibleAssetsParams,
+    ) -> anyhow::Result<RestApiResponse<models::DustConvertibleAssetsResponse>> {
+        let DustConvertibleAssetsParams {
+            target_asset,
+            dust_quota_asset_to_target_asset_price,
+        } = params;
+
+        let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
+
+        query_params.insert("targetAsset".to_string(), json!(target_asset));
+
+        if let Some(rw) = dust_quota_asset_to_target_asset_price {
+            query_params.insert("dustQuotaAssetToTargetAssetPrice".to_string(), json!(rw));
+        }
+
+        send_request::<models::DustConvertibleAssetsResponse>(
+            &self.configuration,
+            "/sapi/v1/asset/dust-convert/query-convertible-assets",
+            reqwest::Method::POST,
+            query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -789,6 +981,7 @@ impl AssetApi for AssetApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("asset".to_string(), json!(asset));
 
@@ -805,6 +998,7 @@ impl AssetApi for AssetApiClient {
             "/sapi/v1/asset/dust",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -820,12 +1014,18 @@ impl AssetApi for AssetApiClient {
         params: DustlogParams,
     ) -> anyhow::Result<RestApiResponse<models::DustlogResponse>> {
         let DustlogParams {
+            account_type,
             start_time,
             end_time,
             recv_window,
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
+
+        if let Some(rw) = account_type {
+            query_params.insert("accountType".to_string(), json!(rw));
+        }
 
         if let Some(rw) = start_time {
             query_params.insert("startTime".to_string(), json!(rw));
@@ -844,6 +1044,7 @@ impl AssetApi for AssetApiClient {
             "/sapi/v1/asset/dribblet",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -865,6 +1066,7 @@ impl AssetApi for AssetApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = asset {
             query_params.insert("asset".to_string(), json!(rw));
@@ -883,6 +1085,7 @@ impl AssetApi for AssetApiClient {
             "/sapi/v1/asset/get-funding-asset",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -903,6 +1106,7 @@ impl AssetApi for AssetApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = account_type {
             query_params.insert("accountType".to_string(), json!(rw));
@@ -917,6 +1121,7 @@ impl AssetApi for AssetApiClient {
             "/sapi/v1/asset/dust-btc",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -943,10 +1148,7 @@ impl AssetApi for AssetApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
-
-        query_params.insert("startTime".to_string(), json!(start_time));
-
-        query_params.insert("endTime".to_string(), json!(end_time));
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = tran_id {
             query_params.insert("tranId".to_string(), json!(rw));
@@ -959,6 +1161,10 @@ impl AssetApi for AssetApiClient {
         if let Some(rw) = asset {
             query_params.insert("asset".to_string(), json!(rw));
         }
+
+        query_params.insert("startTime".to_string(), json!(start_time));
+
+        query_params.insert("endTime".to_string(), json!(end_time));
 
         if let Some(rw) = current {
             query_params.insert("current".to_string(), json!(rw));
@@ -973,6 +1179,7 @@ impl AssetApi for AssetApiClient {
             "/sapi/v1/asset/ledger-transfer/cloud-mining/queryByPage",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -987,12 +1194,14 @@ impl AssetApi for AssetApiClient {
         &self,
     ) -> anyhow::Result<RestApiResponse<Vec<models::GetOpenSymbolListResponseInner>>> {
         let query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         send_request::<Vec<models::GetOpenSymbolListResponseInner>>(
             &self.configuration,
             "/sapi/v1/spot/open-symbol-list",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1019,6 +1228,7 @@ impl AssetApi for AssetApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("email".to_string(), json!(email));
 
@@ -1051,6 +1261,7 @@ impl AssetApi for AssetApiClient {
             "/sapi/v1/asset/custody/transfer-history",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1077,6 +1288,7 @@ impl AssetApi for AssetApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("type".to_string(), json!(r#type));
 
@@ -1113,6 +1325,7 @@ impl AssetApi for AssetApiClient {
             "/sapi/v1/asset/transfer",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1133,6 +1346,7 @@ impl AssetApi for AssetApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = quote_asset {
             query_params.insert("quoteAsset".to_string(), json!(rw));
@@ -1147,6 +1361,7 @@ impl AssetApi for AssetApiClient {
             "/sapi/v1/asset/wallet/balance",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1169,6 +1384,7 @@ impl AssetApi for AssetApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = spot_bnb_burn {
             query_params.insert("spotBNBBurn".to_string(), json!(rw));
@@ -1187,6 +1403,7 @@ impl AssetApi for AssetApiClient {
             "/sapi/v1/bnbBurn",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1207,6 +1424,7 @@ impl AssetApi for AssetApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = symbol {
             query_params.insert("symbol".to_string(), json!(rw));
@@ -1221,6 +1439,7 @@ impl AssetApi for AssetApiClient {
             "/sapi/v1/asset/tradeFee",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1242,6 +1461,7 @@ impl AssetApi for AssetApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = asset {
             query_params.insert("asset".to_string(), json!(rw));
@@ -1260,6 +1480,7 @@ impl AssetApi for AssetApiClient {
             "/sapi/v3/asset/getUserAsset",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1284,6 +1505,7 @@ impl AssetApi for AssetApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("type".to_string(), json!(r#type));
 
@@ -1308,6 +1530,7 @@ impl AssetApi for AssetApiClient {
             "/sapi/v1/asset/transfer",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1356,9 +1579,11 @@ mod tests {
             _params: AssetDetailParams,
         ) -> anyhow::Result<RestApiResponse<models::AssetDetailResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"CTR":{"minWithdrawAmount":"70.00000000","depositStatus":false,"withdrawFee":35,"withdrawStatus":true,"depositTip":"Delisted, Deposit Suspended"},"SKY":{"minWithdrawAmount":"0.02000000","depositStatus":true,"withdrawFee":0.01,"withdrawStatus":true}}"#).unwrap();
@@ -1381,15 +1606,71 @@ mod tests {
             _params: AssetDividendRecordParams,
         ) -> anyhow::Result<RestApiResponse<models::AssetDividendRecordResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
-            let resp_json: Value = serde_json::from_str(r#"{"rows":[{"id":1637366104,"amount":"10.00000000","asset":"BHFT","divTime":1563189166000,"enInfo":"BHFT distribution","tranId":2968885920},{"id":1631750237,"amount":"10.00000000","asset":"BHFT","divTime":1563189165000,"enInfo":"BHFT distribution","tranId":2968885920}],"total":2}"#).unwrap();
+            let resp_json: Value = serde_json::from_str(r#"{"rows":[{"id":1637366104,"amount":"10.00000000","asset":"BHFT","divTime":1563189166000,"enInfo":"BHFT distribution","tranId":2968885920,"direction":1},{"id":1631750237,"amount":"10.00000000","asset":"BHFT","divTime":1563189165000,"enInfo":"BHFT distribution","tranId":2968885920,"direction":1}],"total":2}"#).unwrap();
             let dummy_response: models::AssetDividendRecordResponse =
                 serde_json::from_value(resp_json.clone())
                     .expect("should parse into models::AssetDividendRecordResponse");
+
+            let dummy = DummyRestApiResponse {
+                inner: Box::new(move || Box::pin(async move { Ok(dummy_response) })),
+                status: 200,
+                headers: HashMap::new(),
+                rate_limits: None,
+            };
+
+            Ok(dummy.into())
+        }
+
+        async fn dust_convert(
+            &self,
+            _params: DustConvertParams,
+        ) -> anyhow::Result<RestApiResponse<models::DustConvertResponse>> {
+            if self.force_error {
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
+            }
+
+            let resp_json: Value = serde_json::from_str(r#"{"totalTransfered":"3.5971223","totalServiceCharge":"0.0794964","transferResult":[{"tranId":2987331510,"fromAsset":"USDT","amount":"1","transferedAmount":"3.5971223","serviceChargeAmount":"0.0794964","operateTime":1765212029749}]}"#).unwrap();
+            let dummy_response: models::DustConvertResponse =
+                serde_json::from_value(resp_json.clone())
+                    .expect("should parse into models::DustConvertResponse");
+
+            let dummy = DummyRestApiResponse {
+                inner: Box::new(move || Box::pin(async move { Ok(dummy_response) })),
+                status: 200,
+                headers: HashMap::new(),
+                rate_limits: None,
+            };
+
+            Ok(dummy.into())
+        }
+
+        async fn dust_convertible_assets(
+            &self,
+            _params: DustConvertibleAssetsParams,
+        ) -> anyhow::Result<RestApiResponse<models::DustConvertibleAssetsResponse>> {
+            if self.force_error {
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
+            }
+
+            let resp_json: Value = serde_json::from_str(r#"{"dribbletPercentage":"0.02","totalTransferQuotaAssetAmount":"0.7899968","totalTransferTargetAssetAmount":"0.7899968","dribbletBase":"10","details":[{"asset":"AR","assetFullName":"AR","amountFree":"0.00856","exchange":"0.00073616","toQuotaAssetAmount":"0.036808","toTargetAssetAmount":"0.036808","toTargetAssetOffExchange":"0.03607184"},{"asset":"BNB","assetFullName":"BNB","amountFree":"0.00082768","exchange":"0.01506378","toQuotaAssetAmount":"0.7531888","toTargetAssetAmount":"0.7531888","toTargetAssetOffExchange":"0.73812502"}]}"#).unwrap();
+            let dummy_response: models::DustConvertibleAssetsResponse =
+                serde_json::from_value(resp_json.clone())
+                    .expect("should parse into models::DustConvertibleAssetsResponse");
 
             let dummy = DummyRestApiResponse {
                 inner: Box::new(move || Box::pin(async move { Ok(dummy_response) })),
@@ -1406,9 +1687,11 @@ mod tests {
             _params: DustTransferParams,
         ) -> anyhow::Result<RestApiResponse<models::DustTransferResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"totalServiceCharge":"0.02102542","totalTransfered":"1.05127099","transferResult":[{"amount":"0.03000000","fromAsset":"ETH","operateTime":1563368549307,"serviceChargeAmount":"0.00500000","tranId":2970932918,"transferedAmount":"0.25000000"},{"amount":"0.09000000","fromAsset":"LTC","operateTime":1563368549404,"serviceChargeAmount":"0.01548000","tranId":2970932918,"transferedAmount":"0.77400000"},{"amount":"248.61878453","fromAsset":"TRX","operateTime":1563368549489,"serviceChargeAmount":"0.00054542","tranId":2970932918,"transferedAmount":"0.02727099"}]}"#).unwrap();
@@ -1431,9 +1714,11 @@ mod tests {
             _params: DustlogParams,
         ) -> anyhow::Result<RestApiResponse<models::DustlogResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"total":8,"userAssetDribblets":[{"operateTime":1615985535000,"totalTransferedAmount":"0.00132256","totalServiceChargeAmount":"0.00002699","transId":45178372831,"userAssetDribbletDetails":[{"transId":4359321,"serviceChargeAmount":"0.000009","amount":"0.0009","operateTime":1615985535000,"transferedAmount":"0.000441","fromAsset":"USDT"},{"transId":4359321,"serviceChargeAmount":"0.00001799","amount":"0.0009","operateTime":1615985535000,"transferedAmount":"0.00088156","fromAsset":"ETH"}]},{"operateTime":1616203180000,"totalTransferedAmount":"0.00058795","totalServiceChargeAmount":"0.000012","transId":4357015,"userAssetDribbletDetails":[{"transId":4357015,"serviceChargeAmount":"0.00001","amount":"0.001","operateTime":1616203180000,"transferedAmount":"0.00049","fromAsset":"USDT"},{"transId":4357015,"serviceChargeAmount":"0.000002","amount":"0.0001","operateTime":1616203180000,"transferedAmount":"0.00009795","fromAsset":"ETH"}]}]}"#).unwrap();
@@ -1455,9 +1740,11 @@ mod tests {
             _params: FundingWalletParams,
         ) -> anyhow::Result<RestApiResponse<Vec<models::FundingWalletResponseInner>>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"asset":"USDT","free":"1","locked":"0","freeze":"0","withdrawing":"0","btcValuation":"0.00000091"}]"#).unwrap();
@@ -1481,9 +1768,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::GetAssetsThatCanBeConvertedIntoBnbResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"details":[{"asset":"ADA","assetFullName":"ADA","amountFree":"6.21","toBTC":"0.00016848","toBNB":"0.01777302","toBNBOffExchange":"0.01741756","exchange":"0.00035546"}],"totalTransferBtc":"0.00016848","totalTransferBNB":"0.01777302","dribbletPercentage":"0.02"}"#).unwrap();
@@ -1507,9 +1796,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::GetCloudMiningPaymentAndRefundHistoryResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"total":5,"rows":[{"createTime":1667880112000,"tranId":121230610120,"type":248,"asset":"USDT","amount":"25.0068","status":"S"},{"createTime":1666776366000,"tranId":119991507468,"type":249,"asset":"USDT","amount":"0.027","status":"S"},{"createTime":1666764505000,"tranId":119977966327,"type":248,"asset":"USDT","amount":"0.027","status":"S"},{"createTime":1666758189000,"tranId":119973601721,"type":248,"asset":"USDT","amount":"0.018","status":"S"},{"createTime":1666757278000,"tranId":119973028551,"type":248,"asset":"USDT","amount":"0.018","status":"S"}]}"#).unwrap();
@@ -1532,9 +1823,11 @@ mod tests {
             &self,
         ) -> anyhow::Result<RestApiResponse<Vec<models::GetOpenSymbolListResponseInner>>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"openTime":1686161202000,"symbols":["BNBBTC","BNBETH"]},{"openTime":1686222232000,"symbols":["BTCUSDT"]}]"#).unwrap();
@@ -1557,9 +1850,11 @@ mod tests {
             _params: QueryUserDelegationHistoryParams,
         ) -> anyhow::Result<RestApiResponse<models::QueryUserDelegationHistoryResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"total":3316,"rows":[{"clientTranId":"293915932290879488","transferType":"Undelegate","asset":"ETH","amount":"1","time":1695205406000},{"clientTranId":"293915892281413632","transferType":"Delegate","asset":"ETH","amount":"1","time":1695205396000}]}"#).unwrap();
@@ -1583,9 +1878,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::QueryUserUniversalTransferHistoryResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"total":2,"rows":[{"asset":"USDT","amount":"1","type":"MAIN_UMFUTURE","status":"CONFIRMED","tranId":11415955596,"timestamp":1544433328000},{"asset":"USDT","amount":"2","type":"MAIN_UMFUTURE","status":"CONFIRMED","tranId":11366865406,"timestamp":1544433328000}]}"#).unwrap();
@@ -1609,9 +1906,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<Vec<models::QueryUserWalletBalanceResponseInner>>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"activate":true,"balance":"0","walletName":"Spot"},{"activate":true,"balance":"0","walletName":"Funding"},{"activate":true,"balance":"0","walletName":"Cross Margin"},{"activate":true,"balance":"0","walletName":"Isolated Margin"},{"activate":true,"balance":"0.71842752","walletName":"USDⓈ-M Futures"},{"activate":true,"balance":"0","walletName":"COIN-M Futures"},{"activate":true,"balance":"0","walletName":"Earn"},{"activate":false,"balance":"0","walletName":"Options"},{"activate":true,"balance":"0","walletName":"Trading Bots"},{"activate":true,"balance":"0","walletName":"Copy Trading"}]"#).unwrap();
@@ -1636,9 +1935,11 @@ mod tests {
             RestApiResponse<models::ToggleBnbBurnOnSpotTradeAndMarginInterestResponse>,
         > {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value =
@@ -1663,9 +1964,11 @@ mod tests {
             _params: TradeFeeParams,
         ) -> anyhow::Result<RestApiResponse<Vec<models::TradeFeeResponseInner>>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"symbol":"ADABNB","makerCommission":"0.001","takerCommission":"0.001"},{"symbol":"BNBBTC","makerCommission":"0.001","takerCommission":"0.001"}]"#).unwrap();
@@ -1688,9 +1991,11 @@ mod tests {
             _params: UserAssetParams,
         ) -> anyhow::Result<RestApiResponse<Vec<models::UserAssetResponseInner>>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"asset":"AVAX","free":"1","locked":"0","freeze":"0","withdrawing":"0","ipoable":"0","btcValuation":"0"},{"asset":"BCH","free":"0.9","locked":"0","freeze":"0","withdrawing":"0","ipoable":"0","btcValuation":"0"},{"asset":"BNB","free":"887.47061626","locked":"0","freeze":"10.52","withdrawing":"0.1","ipoable":"0","btcValuation":"0"},{"asset":"BUSD","free":"9999.7","locked":"0","freeze":"0","withdrawing":"0","ipoable":"0","btcValuation":"0"},{"asset":"SHIB","free":"532.32","locked":"0","freeze":"0","withdrawing":"0","ipoable":"0","btcValuation":"0"},{"asset":"USDT","free":"50300000001.44911105","locked":"0","freeze":"0","withdrawing":"0","ipoable":"0","btcValuation":"0"},{"asset":"WRZ","free":"1","locked":"0","freeze":"0","withdrawing":"0","ipoable":"0","btcValuation":"0"}]"#).unwrap();
@@ -1713,9 +2018,11 @@ mod tests {
             _params: UserUniversalTransferParams,
         ) -> anyhow::Result<RestApiResponse<models::UserUniversalTransferResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"tranId":13526853623}"#).unwrap();
@@ -1756,7 +2063,7 @@ mod tests {
         TOKIO_SHARED_RT.block_on(async {
             let client = MockAssetApiClient { force_error: false };
 
-            let params = AssetDetailParams::builder().recv_window(5000).build().unwrap();
+            let params = AssetDetailParams::builder().asset("asset_example".to_string()).recv_window(5000).build().unwrap();
 
             let resp_json: Value = serde_json::from_str(r#"{"CTR":{"minWithdrawAmount":"70.00000000","depositStatus":false,"withdrawFee":35,"withdrawStatus":true,"depositTip":"Delisted, Deposit Suspended"},"SKY":{"minWithdrawAmount":"0.02000000","depositStatus":true,"withdrawFee":0.01,"withdrawStatus":true}}"#).unwrap();
             let expected_response : models::AssetDetailResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::AssetDetailResponse");
@@ -1791,7 +2098,7 @@ mod tests {
 
             let params = AssetDividendRecordParams::builder().build().unwrap();
 
-            let resp_json: Value = serde_json::from_str(r#"{"rows":[{"id":1637366104,"amount":"10.00000000","asset":"BHFT","divTime":1563189166000,"enInfo":"BHFT distribution","tranId":2968885920},{"id":1631750237,"amount":"10.00000000","asset":"BHFT","divTime":1563189165000,"enInfo":"BHFT distribution","tranId":2968885920}],"total":2}"#).unwrap();
+            let resp_json: Value = serde_json::from_str(r#"{"rows":[{"id":1637366104,"amount":"10.00000000","asset":"BHFT","divTime":1563189166000,"enInfo":"BHFT distribution","tranId":2968885920,"direction":1},{"id":1631750237,"amount":"10.00000000","asset":"BHFT","divTime":1563189165000,"enInfo":"BHFT distribution","tranId":2968885920,"direction":1}],"total":2}"#).unwrap();
             let expected_response : models::AssetDividendRecordResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::AssetDividendRecordResponse");
 
             let resp = client.asset_dividend_record(params).await.expect("Expected a response");
@@ -1808,7 +2115,7 @@ mod tests {
 
             let params = AssetDividendRecordParams::builder().asset("asset_example".to_string()).start_time(1623319461670).end_time(1641782889000).limit(7).recv_window(5000).build().unwrap();
 
-            let resp_json: Value = serde_json::from_str(r#"{"rows":[{"id":1637366104,"amount":"10.00000000","asset":"BHFT","divTime":1563189166000,"enInfo":"BHFT distribution","tranId":2968885920},{"id":1631750237,"amount":"10.00000000","asset":"BHFT","divTime":1563189165000,"enInfo":"BHFT distribution","tranId":2968885920}],"total":2}"#).unwrap();
+            let resp_json: Value = serde_json::from_str(r#"{"rows":[{"id":1637366104,"amount":"10.00000000","asset":"BHFT","divTime":1563189166000,"enInfo":"BHFT distribution","tranId":2968885920,"direction":1},{"id":1631750237,"amount":"10.00000000","asset":"BHFT","divTime":1563189165000,"enInfo":"BHFT distribution","tranId":2968885920,"direction":1}],"total":2}"#).unwrap();
             let expected_response : models::AssetDividendRecordResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::AssetDividendRecordResponse");
 
             let resp = client.asset_dividend_record(params).await.expect("Expected a response");
@@ -1826,6 +2133,110 @@ mod tests {
             let params = AssetDividendRecordParams::builder().build().unwrap();
 
             match client.asset_dividend_record(params).await {
+                Ok(_) => panic!("Expected an error"),
+                Err(err) => {
+                    assert_eq!(err.to_string(), "Connector client error: ResponseError");
+                }
+            }
+        });
+    }
+
+    #[test]
+    fn dust_convert_required_params_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockAssetApiClient { force_error: false };
+
+            let params = DustConvertParams::builder("asset_example".to_string(),).build().unwrap();
+
+            let resp_json: Value = serde_json::from_str(r#"{"totalTransfered":"3.5971223","totalServiceCharge":"0.0794964","transferResult":[{"tranId":2987331510,"fromAsset":"USDT","amount":"1","transferedAmount":"3.5971223","serviceChargeAmount":"0.0794964","operateTime":1765212029749}]}"#).unwrap();
+            let expected_response : models::DustConvertResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::DustConvertResponse");
+
+            let resp = client.dust_convert(params).await.expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn dust_convert_optional_params_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockAssetApiClient { force_error: false };
+
+            let params = DustConvertParams::builder("asset_example".to_string(),).client_id("1".to_string()).target_asset("target_asset_example".to_string()).third_party_client_id("1".to_string()).dust_quota_asset_to_target_asset_price(dec!(1.0)).build().unwrap();
+
+            let resp_json: Value = serde_json::from_str(r#"{"totalTransfered":"3.5971223","totalServiceCharge":"0.0794964","transferResult":[{"tranId":2987331510,"fromAsset":"USDT","amount":"1","transferedAmount":"3.5971223","serviceChargeAmount":"0.0794964","operateTime":1765212029749}]}"#).unwrap();
+            let expected_response : models::DustConvertResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::DustConvertResponse");
+
+            let resp = client.dust_convert(params).await.expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn dust_convert_response_error() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockAssetApiClient { force_error: true };
+
+            let params = DustConvertParams::builder("asset_example".to_string())
+                .build()
+                .unwrap();
+
+            match client.dust_convert(params).await {
+                Ok(_) => panic!("Expected an error"),
+                Err(err) => {
+                    assert_eq!(err.to_string(), "Connector client error: ResponseError");
+                }
+            }
+        });
+    }
+
+    #[test]
+    fn dust_convertible_assets_required_params_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockAssetApiClient { force_error: false };
+
+            let params = DustConvertibleAssetsParams::builder("target_asset_example".to_string(),).build().unwrap();
+
+            let resp_json: Value = serde_json::from_str(r#"{"dribbletPercentage":"0.02","totalTransferQuotaAssetAmount":"0.7899968","totalTransferTargetAssetAmount":"0.7899968","dribbletBase":"10","details":[{"asset":"AR","assetFullName":"AR","amountFree":"0.00856","exchange":"0.00073616","toQuotaAssetAmount":"0.036808","toTargetAssetAmount":"0.036808","toTargetAssetOffExchange":"0.03607184"},{"asset":"BNB","assetFullName":"BNB","amountFree":"0.00082768","exchange":"0.01506378","toQuotaAssetAmount":"0.7531888","toTargetAssetAmount":"0.7531888","toTargetAssetOffExchange":"0.73812502"}]}"#).unwrap();
+            let expected_response : models::DustConvertibleAssetsResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::DustConvertibleAssetsResponse");
+
+            let resp = client.dust_convertible_assets(params).await.expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn dust_convertible_assets_optional_params_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockAssetApiClient { force_error: false };
+
+            let params = DustConvertibleAssetsParams::builder("target_asset_example".to_string(),).dust_quota_asset_to_target_asset_price(dec!(1.0)).build().unwrap();
+
+            let resp_json: Value = serde_json::from_str(r#"{"dribbletPercentage":"0.02","totalTransferQuotaAssetAmount":"0.7899968","totalTransferTargetAssetAmount":"0.7899968","dribbletBase":"10","details":[{"asset":"AR","assetFullName":"AR","amountFree":"0.00856","exchange":"0.00073616","toQuotaAssetAmount":"0.036808","toTargetAssetAmount":"0.036808","toTargetAssetOffExchange":"0.03607184"},{"asset":"BNB","assetFullName":"BNB","amountFree":"0.00082768","exchange":"0.01506378","toQuotaAssetAmount":"0.7531888","toTargetAssetAmount":"0.7531888","toTargetAssetOffExchange":"0.73812502"}]}"#).unwrap();
+            let expected_response : models::DustConvertibleAssetsResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::DustConvertibleAssetsResponse");
+
+            let resp = client.dust_convertible_assets(params).await.expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn dust_convertible_assets_response_error() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockAssetApiClient { force_error: true };
+
+            let params = DustConvertibleAssetsParams::builder("target_asset_example".to_string())
+                .build()
+                .unwrap();
+
+            match client.dust_convertible_assets(params).await {
                 Ok(_) => panic!("Expected an error"),
                 Err(err) => {
                     assert_eq!(err.to_string(), "Connector client error: ResponseError");
@@ -1908,7 +2319,7 @@ mod tests {
         TOKIO_SHARED_RT.block_on(async {
             let client = MockAssetApiClient { force_error: false };
 
-            let params = DustlogParams::builder().start_time(1623319461670).end_time(1641782889000).recv_window(5000).build().unwrap();
+            let params = DustlogParams::builder().account_type("SPOT".to_string()).start_time(1623319461670).end_time(1641782889000).recv_window(5000).build().unwrap();
 
             let resp_json: Value = serde_json::from_str(r#"{"total":8,"userAssetDribblets":[{"operateTime":1615985535000,"totalTransferedAmount":"0.00132256","totalServiceChargeAmount":"0.00002699","transId":45178372831,"userAssetDribbletDetails":[{"transId":4359321,"serviceChargeAmount":"0.000009","amount":"0.0009","operateTime":1615985535000,"transferedAmount":"0.000441","fromAsset":"USDT"},{"transId":4359321,"serviceChargeAmount":"0.00001799","amount":"0.0009","operateTime":1615985535000,"transferedAmount":"0.00088156","fromAsset":"ETH"}]},{"operateTime":1616203180000,"totalTransferedAmount":"0.00058795","totalServiceChargeAmount":"0.000012","transId":4357015,"userAssetDribbletDetails":[{"transId":4357015,"serviceChargeAmount":"0.00001","amount":"0.001","operateTime":1616203180000,"transferedAmount":"0.00049","fromAsset":"USDT"},{"transId":4357015,"serviceChargeAmount":"0.000002","amount":"0.0001","operateTime":1616203180000,"transferedAmount":"0.00009795","fromAsset":"ETH"}]}]}"#).unwrap();
             let expected_response : models::DustlogResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::DustlogResponse");

@@ -1,4 +1,3 @@
-// Class name: websocket_market_streams_api
 use anyhow::{Context, Result};
 use tokio::time::{Duration, sleep};
 use tracing::info;
@@ -7,9 +6,13 @@ use binance_sdk::config::ConfigurationWebsocketStreams;
 use binance_sdk::derivatives_trading_options::{
     DerivativesTradingOptionsWsStreams, websocket_streams::OpenInterestParams,
 };
+use binance_sdk::logger;
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    // Initialise logging
+    logger::init();
+
     // Build WebSocket Streams config
     let ws_streams_conf = ConfigurationWebsocketStreams::builder().build()?;
 
@@ -23,7 +26,7 @@ async fn main() -> Result<()> {
         .context("Failed to connect to WebSocket Streams")?;
 
     // Setup the stream parameters
-    let params = OpenInterestParams::builder("ETH".to_string(), "220930".to_string()).build()?;
+    let params = OpenInterestParams::builder("220930".to_string()).build()?;
 
     // Subscribe to the stream
     let stream = connection

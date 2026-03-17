@@ -3,10 +3,14 @@ use std::env;
 use tracing::info;
 
 use binance_sdk::config::ConfigurationRestApi;
+use binance_sdk::logger;
 use binance_sdk::wallet::{WalletRestApi, rest_api::SubmitDepositQuestionnaireParams};
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    // Initialise logging
+    logger::init();
+
     // Load credentials from env
     let api_key = env::var("API_KEY").context("API_KEY must be set")?;
     let api_secret = env::var("API_SECRET").context("API_SECRET must be set")?;
@@ -23,7 +27,7 @@ async fn main() -> Result<()> {
     // Setup the API parameters
     let params = SubmitDepositQuestionnaireParams::builder(
         "1".to_string(),
-        "1".to_string(),
+        1,
         "questionnaire_example".to_string(),
         "beneficiary_pii_example".to_string(),
         "signature_example".to_string(),

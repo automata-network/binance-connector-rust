@@ -1,16 +1,18 @@
 use anyhow::{Context, Result};
-use rust_decimal::prelude::*;
 use std::env;
 use tracing::info;
 
 use binance_sdk::config::ConfigurationRestApi;
 use binance_sdk::derivatives_trading_options::{
-    DerivativesTradingOptionsRestApi,
-    rest_api::{NewBlockTradeOrderParams, NewBlockTradeOrderSideEnum},
+    DerivativesTradingOptionsRestApi, rest_api::NewBlockTradeOrderParams,
 };
+use binance_sdk::logger;
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    // Initialise logging
+    logger::init();
+
     // Load credentials from env
     let api_key = env::var("API_KEY").context("API_KEY must be set")?;
     let api_secret = env::var("API_SECRET").context("API_SECRET must be set")?;
@@ -25,15 +27,8 @@ async fn main() -> Result<()> {
     let rest_client = DerivativesTradingOptionsRestApi::production(rest_conf);
 
     // Setup the API parameters
-    let params = NewBlockTradeOrderParams::builder(
-        "liquidity_example".to_string(),
-        [].to_vec(),
-        "symbol_example".to_string(),
-        NewBlockTradeOrderSideEnum::Buy,
-        dec!(1.0),
-        dec!(1.0),
-    )
-    .build()?;
+    let params =
+        NewBlockTradeOrderParams::builder("liquidity_example".to_string(), [].to_vec()).build()?;
 
     // Make the API call
     let response = rest_client

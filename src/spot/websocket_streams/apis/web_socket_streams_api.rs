@@ -28,6 +28,7 @@ use crate::common::{
     utils::replace_websocket_streams_placeholders,
     websocket::{WebsocketBase, WebsocketStream, WebsocketStreams, create_stream_handler},
 };
+use crate::models::StreamId;
 use crate::spot::websocket_streams::models;
 
 #[async_trait]
@@ -44,10 +45,6 @@ pub trait WebSocketStreamsApi: Send + Sync {
         &self,
         params: AllMiniTickerParams,
     ) -> anyhow::Result<Arc<WebsocketStream<Vec<models::AllMiniTickerResponseInner>>>>;
-    async fn all_ticker(
-        &self,
-        params: AllTickerParams,
-    ) -> anyhow::Result<Arc<WebsocketStream<Vec<models::AllTickerResponseInner>>>>;
     async fn avg_price(
         &self,
         params: AvgPriceParams,
@@ -76,6 +73,10 @@ pub trait WebSocketStreamsApi: Send + Sync {
         &self,
         params: PartialBookDepthParams,
     ) -> anyhow::Result<Arc<WebsocketStream<models::PartialBookDepthResponse>>>;
+    async fn reference_price(
+        &self,
+        params: ReferencePriceParams,
+    ) -> anyhow::Result<Arc<WebsocketStream<models::ReferencePriceResponse>>>;
     async fn rolling_window_ticker(
         &self,
         params: RollingWindowTickerParams,
@@ -472,28 +473,6 @@ impl AllMiniTickerParams {
         AllMiniTickerParamsBuilder::default()
     }
 }
-/// Request parameters for the [`all_ticker`] operation.
-///
-/// This struct holds all of the inputs you can pass when calling
-/// [`all_ticker`](#method.all_ticker).
-#[derive(Clone, Debug, Builder, Default)]
-#[builder(pattern = "owned", build_fn(error = "ParamBuildError"))]
-pub struct AllTickerParams {
-    /// Unique WebSocket request ID.
-    ///
-    /// This field is **optional.
-    #[builder(setter(into), default)]
-    pub id: Option<String>,
-}
-
-impl AllTickerParams {
-    /// Create a builder for [`all_ticker`].
-    ///
-    #[must_use]
-    pub fn builder() -> AllTickerParamsBuilder {
-        AllTickerParamsBuilder::default()
-    }
-}
 /// Request parameters for the [`avg_price`] operation.
 ///
 /// This struct holds all of the inputs you can pass when calling
@@ -751,6 +730,37 @@ impl PartialBookDepthParams {
             .levels(levels)
     }
 }
+/// Request parameters for the [`reference_price`] operation.
+///
+/// This struct holds all of the inputs you can pass when calling
+/// [`reference_price`](#method.reference_price).
+#[derive(Clone, Debug, Builder)]
+#[builder(pattern = "owned", build_fn(error = "ParamBuildError"))]
+pub struct ReferencePriceParams {
+    /// Symbol to query
+    ///
+    /// This field is **required.
+    #[builder(setter(into))]
+    pub symbol: String,
+    /// Unique WebSocket request ID.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub id: Option<String>,
+}
+
+impl ReferencePriceParams {
+    /// Create a builder for [`reference_price`].
+    ///
+    /// Required parameters:
+    ///
+    /// * `symbol` — Symbol to query
+    ///
+    #[must_use]
+    pub fn builder(symbol: String) -> ReferencePriceParamsBuilder {
+        ReferencePriceParamsBuilder::default().symbol(symbol)
+    }
+}
 /// Request parameters for the [`rolling_window_ticker`] operation.
 ///
 /// This struct holds all of the inputs you can pass when calling
@@ -880,7 +890,15 @@ impl WebSocketStreamsApi for WebSocketStreamsApiClient {
         Ok(create_stream_handler::<models::AggTradeResponse>(
             WebsocketBase::WebsocketStreams(Arc::clone(&self.websocket_streams_base)),
             stream,
-            id_opt,
+            id_opt.map(|s| {
+                if !s.is_empty() && s.bytes().all(|b| b.is_ascii_digit()) {
+                    if let Ok(n) = s.parse::<u32>() {
+                        return StreamId::Number(n);
+                    }
+                }
+                StreamId::Str(s)
+            }),
+            None,
         )
         .await)
     }
@@ -910,7 +928,15 @@ impl WebSocketStreamsApi for WebSocketStreamsApiClient {
             create_stream_handler::<Vec<models::AllMarketRollingWindowTickerResponseInner>>(
                 WebsocketBase::WebsocketStreams(Arc::clone(&self.websocket_streams_base)),
                 stream,
-                id_opt,
+                id_opt.map(|s| {
+                    if !s.is_empty() && s.bytes().all(|b| b.is_ascii_digit()) {
+                        if let Ok(n) = s.parse::<u32>() {
+                            return StreamId::Number(n);
+                        }
+                    }
+                    StreamId::Str(s)
+                }),
+                None,
             )
             .await,
         )
@@ -937,34 +963,15 @@ impl WebSocketStreamsApi for WebSocketStreamsApiClient {
             create_stream_handler::<Vec<models::AllMiniTickerResponseInner>>(
                 WebsocketBase::WebsocketStreams(Arc::clone(&self.websocket_streams_base)),
                 stream,
-                id_opt,
-            )
-            .await,
-        )
-    }
-
-    async fn all_ticker(
-        &self,
-        params: AllTickerParams,
-    ) -> anyhow::Result<Arc<WebsocketStream<Vec<models::AllTickerResponseInner>>>> {
-        let AllTickerParams { id } = params;
-
-        let pairs: &[(&str, Option<String>)] = &[("id", id.clone())];
-
-        let vars: HashMap<_, _> = pairs
-            .iter()
-            .filter_map(|&(k, ref v)| v.clone().map(|v| (k, v)))
-            .collect();
-
-        let id_opt: Option<String> = vars.get("id").map(std::string::ToString::to_string);
-
-        let stream = replace_websocket_streams_placeholders("/!ticker@arr", &vars);
-
-        Ok(
-            create_stream_handler::<Vec<models::AllTickerResponseInner>>(
-                WebsocketBase::WebsocketStreams(Arc::clone(&self.websocket_streams_base)),
-                stream,
-                id_opt,
+                id_opt.map(|s| {
+                    if !s.is_empty() && s.bytes().all(|b| b.is_ascii_digit()) {
+                        if let Ok(n) = s.parse::<u32>() {
+                            return StreamId::Number(n);
+                        }
+                    }
+                    StreamId::Str(s)
+                }),
+                None,
             )
             .await,
         )
@@ -991,7 +998,15 @@ impl WebSocketStreamsApi for WebSocketStreamsApiClient {
         Ok(create_stream_handler::<models::AvgPriceResponse>(
             WebsocketBase::WebsocketStreams(Arc::clone(&self.websocket_streams_base)),
             stream,
-            id_opt,
+            id_opt.map(|s| {
+                if !s.is_empty() && s.bytes().all(|b| b.is_ascii_digit()) {
+                    if let Ok(n) = s.parse::<u32>() {
+                        return StreamId::Number(n);
+                    }
+                }
+                StreamId::Str(s)
+            }),
+            None,
         )
         .await)
     }
@@ -1017,7 +1032,15 @@ impl WebSocketStreamsApi for WebSocketStreamsApiClient {
         Ok(create_stream_handler::<models::BookTickerResponse>(
             WebsocketBase::WebsocketStreams(Arc::clone(&self.websocket_streams_base)),
             stream,
-            id_opt,
+            id_opt.map(|s| {
+                if !s.is_empty() && s.bytes().all(|b| b.is_ascii_digit()) {
+                    if let Ok(n) = s.parse::<u32>() {
+                        return StreamId::Number(n);
+                    }
+                }
+                StreamId::Str(s)
+            }),
+            None,
         )
         .await)
     }
@@ -1050,7 +1073,15 @@ impl WebSocketStreamsApi for WebSocketStreamsApiClient {
         Ok(create_stream_handler::<models::DiffBookDepthResponse>(
             WebsocketBase::WebsocketStreams(Arc::clone(&self.websocket_streams_base)),
             stream,
-            id_opt,
+            id_opt.map(|s| {
+                if !s.is_empty() && s.bytes().all(|b| b.is_ascii_digit()) {
+                    if let Ok(n) = s.parse::<u32>() {
+                        return StreamId::Number(n);
+                    }
+                }
+                StreamId::Str(s)
+            }),
+            None,
         )
         .await)
     }
@@ -1083,7 +1114,15 @@ impl WebSocketStreamsApi for WebSocketStreamsApiClient {
         Ok(create_stream_handler::<models::KlineResponse>(
             WebsocketBase::WebsocketStreams(Arc::clone(&self.websocket_streams_base)),
             stream,
-            id_opt,
+            id_opt.map(|s| {
+                if !s.is_empty() && s.bytes().all(|b| b.is_ascii_digit()) {
+                    if let Ok(n) = s.parse::<u32>() {
+                        return StreamId::Number(n);
+                    }
+                }
+                StreamId::Str(s)
+            }),
+            None,
         )
         .await)
     }
@@ -1117,7 +1156,15 @@ impl WebSocketStreamsApi for WebSocketStreamsApiClient {
         Ok(create_stream_handler::<models::KlineOffsetResponse>(
             WebsocketBase::WebsocketStreams(Arc::clone(&self.websocket_streams_base)),
             stream,
-            id_opt,
+            id_opt.map(|s| {
+                if !s.is_empty() && s.bytes().all(|b| b.is_ascii_digit()) {
+                    if let Ok(n) = s.parse::<u32>() {
+                        return StreamId::Number(n);
+                    }
+                }
+                StreamId::Str(s)
+            }),
+            None,
         )
         .await)
     }
@@ -1143,7 +1190,15 @@ impl WebSocketStreamsApi for WebSocketStreamsApiClient {
         Ok(create_stream_handler::<models::MiniTickerResponse>(
             WebsocketBase::WebsocketStreams(Arc::clone(&self.websocket_streams_base)),
             stream,
-            id_opt,
+            id_opt.map(|s| {
+                if !s.is_empty() && s.bytes().all(|b| b.is_ascii_digit()) {
+                    if let Ok(n) = s.parse::<u32>() {
+                        return StreamId::Number(n);
+                    }
+                }
+                StreamId::Str(s)
+            }),
+            None,
         )
         .await)
     }
@@ -1179,7 +1234,49 @@ impl WebSocketStreamsApi for WebSocketStreamsApiClient {
         Ok(create_stream_handler::<models::PartialBookDepthResponse>(
             WebsocketBase::WebsocketStreams(Arc::clone(&self.websocket_streams_base)),
             stream,
-            id_opt,
+            id_opt.map(|s| {
+                if !s.is_empty() && s.bytes().all(|b| b.is_ascii_digit()) {
+                    if let Ok(n) = s.parse::<u32>() {
+                        return StreamId::Number(n);
+                    }
+                }
+                StreamId::Str(s)
+            }),
+            None,
+        )
+        .await)
+    }
+
+    async fn reference_price(
+        &self,
+        params: ReferencePriceParams,
+    ) -> anyhow::Result<Arc<WebsocketStream<models::ReferencePriceResponse>>> {
+        let ReferencePriceParams { symbol, id } = params;
+
+        let pairs: &[(&str, Option<String>)] =
+            &[("symbol", Some(symbol.clone())), ("id", id.clone())];
+
+        let vars: HashMap<_, _> = pairs
+            .iter()
+            .filter_map(|&(k, ref v)| v.clone().map(|v| (k, v)))
+            .collect();
+
+        let id_opt: Option<String> = vars.get("id").map(std::string::ToString::to_string);
+
+        let stream = replace_websocket_streams_placeholders("/<symbol>@referencePrice", &vars);
+
+        Ok(create_stream_handler::<models::ReferencePriceResponse>(
+            WebsocketBase::WebsocketStreams(Arc::clone(&self.websocket_streams_base)),
+            stream,
+            id_opt.map(|s| {
+                if !s.is_empty() && s.bytes().all(|b| b.is_ascii_digit()) {
+                    if let Ok(n) = s.parse::<u32>() {
+                        return StreamId::Number(n);
+                    }
+                }
+                StreamId::Str(s)
+            }),
+            None,
         )
         .await)
     }
@@ -1213,7 +1310,15 @@ impl WebSocketStreamsApi for WebSocketStreamsApiClient {
             create_stream_handler::<models::RollingWindowTickerResponse>(
                 WebsocketBase::WebsocketStreams(Arc::clone(&self.websocket_streams_base)),
                 stream,
-                id_opt,
+                id_opt.map(|s| {
+                    if !s.is_empty() && s.bytes().all(|b| b.is_ascii_digit()) {
+                        if let Ok(n) = s.parse::<u32>() {
+                            return StreamId::Number(n);
+                        }
+                    }
+                    StreamId::Str(s)
+                }),
+                None,
             )
             .await,
         )
@@ -1240,7 +1345,15 @@ impl WebSocketStreamsApi for WebSocketStreamsApiClient {
         Ok(create_stream_handler::<models::TickerResponse>(
             WebsocketBase::WebsocketStreams(Arc::clone(&self.websocket_streams_base)),
             stream,
-            id_opt,
+            id_opt.map(|s| {
+                if !s.is_empty() && s.bytes().all(|b| b.is_ascii_digit()) {
+                    if let Ok(n) = s.parse::<u32>() {
+                        return StreamId::Number(n);
+                    }
+                }
+                StreamId::Str(s)
+            }),
+            None,
         )
         .await)
     }
@@ -1266,7 +1379,15 @@ impl WebSocketStreamsApi for WebSocketStreamsApiClient {
         Ok(create_stream_handler::<models::TradeResponse>(
             WebsocketBase::WebsocketStreams(Arc::clone(&self.websocket_streams_base)),
             stream,
-            id_opt,
+            id_opt.map(|s| {
+                if !s.is_empty() && s.bytes().all(|b| b.is_ascii_digit()) {
+                    if let Ok(n) = s.parse::<u32>() {
+                        return StreamId::Number(n);
+                    }
+                }
+                StreamId::Str(s)
+            }),
+            None,
         )
         .await)
     }
@@ -1289,7 +1410,7 @@ mod tests {
         let config = ConfigurationWebsocketStreams::builder()
             .build()
             .expect("Failed to build configuration");
-        let streams_base = WebsocketStreams::new(config, vec![conn.clone()]);
+        let streams_base = WebsocketStreams::new(config, vec![conn.clone()], vec![]);
         conn.set_handler(streams_base.clone() as Arc<dyn WebsocketHandler>)
             .await;
         (streams_base, conn)
@@ -1327,7 +1448,7 @@ mod tests {
                 streams_base.is_subscribed(&stream).await,
                 "expected stream '{stream}' to be subscribed"
             );
-            assert_eq!(ws_stream.id.as_deref(), Some("test-id-123"));
+            assert_eq!(ws_stream.id, Some(StreamId::Str("test-id-123".to_string())));
         });
     }
 
@@ -1472,7 +1593,7 @@ mod tests {
                 streams_base.is_subscribed(&stream).await,
                 "expected stream '{stream}' to be subscribed"
             );
-            assert_eq!(ws_stream.id.as_deref(), Some("test-id-123"));
+            assert_eq!(ws_stream.id, Some(StreamId::Str("test-id-123".to_string())));
         });
     }
 
@@ -1612,7 +1733,7 @@ mod tests {
                 streams_base.is_subscribed(&stream).await,
                 "expected stream '{stream}' to be subscribed"
             );
-            assert_eq!(ws_stream.id.as_deref(), Some("test-id-123"));
+            assert_eq!(ws_stream.id, Some(StreamId::Str("test-id-123".to_string())));
         });
     }
 
@@ -1716,140 +1837,6 @@ mod tests {
     }
 
     #[test]
-    fn all_ticker_should_execute_successfully() {
-        TOKIO_SHARED_RT.block_on(async {
-            let (streams_base, _) = make_streams_base().await;
-            let api = WebSocketStreamsApiClient::new(streams_base.clone());
-
-            let id = "test-id-123".to_string();
-
-            let params = AllTickerParams::builder()
-                .id(Some(id.clone()))
-                .build()
-                .unwrap();
-
-            let AllTickerParams { id } = params.clone();
-
-            let pairs: &[(&str, Option<String>)] = &[("id", id.clone())];
-
-            let vars: HashMap<_, _> = pairs
-                .iter()
-                .filter_map(|&(k, ref v)| v.clone().map(|v| (k, v)))
-                .collect();
-            let stream = replace_websocket_streams_placeholders("/!ticker@arr", &vars);
-            let ws_stream = api
-                .all_ticker(params)
-                .await
-                .expect("all_ticker should return a WebsocketStream");
-
-            assert!(
-                streams_base.is_subscribed(&stream).await,
-                "expected stream '{stream}' to be subscribed"
-            );
-            assert_eq!(ws_stream.id.as_deref(), Some("test-id-123"));
-        });
-    }
-
-    #[test]
-    fn all_ticker_should_handle_incoming_message() {
-        TOKIO_SHARED_RT.block_on(async {
-            let (streams_base, conn) = make_streams_base().await;
-            let api = WebSocketStreamsApiClient::new(streams_base.clone());
-
-            let id = "test-id-123".to_string();
-
-            let params = AllTickerParams::builder().id(Some(id.clone())).build().unwrap();
-
-            let AllTickerParams {
-                id,
-            } = params.clone();
-
-            let pairs: &[(&str, Option<String>)] = &[
-                ("id",
-                        id.clone()
-                ),
-            ];
-
-            let vars: HashMap<_, _> = pairs
-                .iter()
-                .filter_map(|&(k, ref v)| v.clone().map(|v| (k, v)))
-                .collect();
-            let stream = replace_websocket_streams_placeholders("/!ticker@arr", &vars);
-
-            let ws_stream = api.all_ticker(params).await.unwrap();
-
-            let called = Arc::new(AtomicBool::new(false));
-            let called_with_message = called.clone();
-            ws_stream.on_message(move |_payload: Vec<models::AllTickerResponseInner>| {
-                called_with_message.store(true, Ordering::SeqCst);
-            });
-
-            let payload: Value = serde_json::from_str(r#"[{"e":"24hrTicker","E":1672515782136,"s":"BNBBTC","p":"0.0015","P":"250.00","w":"0.0018","x":"0.0009","c":"0.0025","Q":"10","b":"0.0024","B":"10","a":"0.0026","A":"100","o":"0.0010","h":"0.0025","l":"0.0010","v":"10000","q":"18","O":0,"C":86400000,"F":0,"L":18150,"n":18151}]"#).unwrap();
-            let msg = json!({
-                "stream": stream,
-                "data": payload,
-            });
-
-            streams_base.on_message(msg.to_string(), conn.clone()).await;
-            yield_now().await;
-
-            assert!(called.load(Ordering::SeqCst), "expected our callback to have been invoked");
-        });
-    }
-
-    #[test]
-    fn all_ticker_should_not_fire_after_unsubscribe() {
-        TOKIO_SHARED_RT.block_on(async {
-            let (streams_base, conn) = make_streams_base().await;
-            let api = WebSocketStreamsApiClient::new(streams_base.clone());
-
-            let id = "test-id-123".to_string();
-
-            let params = AllTickerParams::builder().id(Some(id.clone())).build().unwrap();
-
-            let AllTickerParams {
-                id,
-            } = params.clone();
-
-            let pairs: &[(&str, Option<String>)] = &[
-                ("id",
-                        id.clone()
-                ),
-            ];
-
-            let vars: HashMap<_, _> = pairs
-                .iter()
-                .filter_map(|&(k, ref v)| v.clone().map(|v| (k, v)))
-                .collect();
-            let stream = replace_websocket_streams_placeholders("/!ticker@arr", &vars);
-
-            let ws_stream = api.all_ticker(params).await.unwrap();
-
-            let called = Arc::new(AtomicBool::new(false));
-            let called_clone = called.clone();
-            ws_stream.on_message(move |_payload: Vec<models::AllTickerResponseInner>| {
-                called_clone.store(true, Ordering::SeqCst);
-            });
-
-            assert!(streams_base.is_subscribed(&stream).await, "should be subscribed before unsubscribe");
-
-            ws_stream.unsubscribe().await;
-
-            let payload: Value = serde_json::from_str(r#"[{"e":"24hrTicker","E":1672515782136,"s":"BNBBTC","p":"0.0015","P":"250.00","w":"0.0018","x":"0.0009","c":"0.0025","Q":"10","b":"0.0024","B":"10","a":"0.0026","A":"100","o":"0.0010","h":"0.0025","l":"0.0010","v":"10000","q":"18","O":0,"C":86400000,"F":0,"L":18150,"n":18151}]"#).unwrap();
-            let msg = json!({
-                "stream": stream,
-                "data": payload,
-            });
-
-            streams_base.on_message(msg.to_string(), conn.clone()).await;
-
-            yield_now().await;
-
-            assert!(!called.load(Ordering::SeqCst), "callback should not be invoked after unsubscribe");
-        });
-    }
-
-    #[test]
     fn avg_price_should_execute_successfully() {
         TOKIO_SHARED_RT.block_on(async {
             let (streams_base, _) = make_streams_base().await;
@@ -1881,7 +1868,7 @@ mod tests {
                 streams_base.is_subscribed(&stream).await,
                 "expected stream '{stream}' to be subscribed"
             );
-            assert_eq!(ws_stream.id.as_deref(), Some("test-id-123"));
+            assert_eq!(ws_stream.id, Some(StreamId::Str("test-id-123".to_string())));
         });
     }
 
@@ -2022,7 +2009,7 @@ mod tests {
                 streams_base.is_subscribed(&stream).await,
                 "expected stream '{stream}' to be subscribed"
             );
-            assert_eq!(ws_stream.id.as_deref(), Some("test-id-123"));
+            assert_eq!(ws_stream.id, Some(StreamId::Str("test-id-123".to_string())));
         });
     }
 
@@ -2171,7 +2158,7 @@ mod tests {
                 streams_base.is_subscribed(&stream).await,
                 "expected stream '{stream}' to be subscribed"
             );
-            assert_eq!(ws_stream.id.as_deref(), Some("test-id-123"));
+            assert_eq!(ws_stream.id, Some(StreamId::Str("test-id-123".to_string())));
         });
     }
 
@@ -2326,7 +2313,7 @@ mod tests {
                 streams_base.is_subscribed(&stream).await,
                 "expected stream '{stream}' to be subscribed"
             );
-            assert_eq!(ws_stream.id.as_deref(), Some("test-id-123"));
+            assert_eq!(ws_stream.id, Some(StreamId::Str("test-id-123".to_string())));
         });
     }
 
@@ -2484,7 +2471,7 @@ mod tests {
                 streams_base.is_subscribed(&stream).await,
                 "expected stream '{stream}' to be subscribed"
             );
-            assert_eq!(ws_stream.id.as_deref(), Some("test-id-123"));
+            assert_eq!(ws_stream.id, Some(StreamId::Str("test-id-123".to_string())));
         });
     }
 
@@ -2631,7 +2618,7 @@ mod tests {
                 streams_base.is_subscribed(&stream).await,
                 "expected stream '{stream}' to be subscribed"
             );
-            assert_eq!(ws_stream.id.as_deref(), Some("test-id-123"));
+            assert_eq!(ws_stream.id, Some(StreamId::Str("test-id-123".to_string())));
         });
     }
 
@@ -2787,7 +2774,7 @@ mod tests {
                 streams_base.is_subscribed(&stream).await,
                 "expected stream '{stream}' to be subscribed"
             );
-            assert_eq!(ws_stream.id.as_deref(), Some("test-id-123"));
+            assert_eq!(ws_stream.id, Some(StreamId::Str("test-id-123".to_string())));
         });
     }
 
@@ -2932,6 +2919,152 @@ mod tests {
     }
 
     #[test]
+    fn reference_price_should_execute_successfully() {
+        TOKIO_SHARED_RT.block_on(async {
+            let (streams_base, _) = make_streams_base().await;
+            let api = WebSocketStreamsApiClient::new(streams_base.clone());
+
+            let id = "test-id-123".to_string();
+
+            let params = ReferencePriceParams::builder("bnbusdt".to_string())
+                .id(Some(id.clone()))
+                .build()
+                .unwrap();
+
+            let ReferencePriceParams { symbol, id } = params.clone();
+
+            let pairs: &[(&str, Option<String>)] =
+                &[("symbol", Some(symbol.clone())), ("id", id.clone())];
+
+            let vars: HashMap<_, _> = pairs
+                .iter()
+                .filter_map(|&(k, ref v)| v.clone().map(|v| (k, v)))
+                .collect();
+            let stream = replace_websocket_streams_placeholders("/<symbol>@referencePrice", &vars);
+            let ws_stream = api
+                .reference_price(params)
+                .await
+                .expect("reference_price should return a WebsocketStream");
+
+            assert!(
+                streams_base.is_subscribed(&stream).await,
+                "expected stream '{stream}' to be subscribed"
+            );
+            assert_eq!(ws_stream.id, Some(StreamId::Str("test-id-123".to_string())));
+        });
+    }
+
+    #[test]
+    fn reference_price_should_handle_incoming_message() {
+        TOKIO_SHARED_RT.block_on(async {
+            let (streams_base, conn) = make_streams_base().await;
+            let api = WebSocketStreamsApiClient::new(streams_base.clone());
+
+            let id = "test-id-123".to_string();
+
+            let params = ReferencePriceParams::builder("bnbusdt".to_string())
+                .id(Some(id.clone()))
+                .build()
+                .unwrap();
+
+            let ReferencePriceParams { symbol, id } = params.clone();
+
+            let pairs: &[(&str, Option<String>)] =
+                &[("symbol", Some(symbol.clone())), ("id", id.clone())];
+
+            let vars: HashMap<_, _> = pairs
+                .iter()
+                .filter_map(|&(k, ref v)| v.clone().map(|v| (k, v)))
+                .collect();
+            let stream = replace_websocket_streams_placeholders("/<symbol>@referencePrice", &vars);
+
+            let ws_stream = api.reference_price(params).await.unwrap();
+
+            let called = Arc::new(AtomicBool::new(false));
+            let called_with_message = called.clone();
+            ws_stream.on_message(move |_payload: models::ReferencePriceResponse| {
+                called_with_message.store(true, Ordering::SeqCst);
+            });
+
+            let payload: Value = serde_json::from_str(
+                r#"{"e":"referencePrice","s":"BAZUSD","r":"1.00","t":1770313263917}"#,
+            )
+            .unwrap();
+            let msg = json!({
+                "stream": stream,
+                "data": payload,
+            });
+
+            streams_base.on_message(msg.to_string(), conn.clone()).await;
+            yield_now().await;
+
+            assert!(
+                called.load(Ordering::SeqCst),
+                "expected our callback to have been invoked"
+            );
+        });
+    }
+
+    #[test]
+    fn reference_price_should_not_fire_after_unsubscribe() {
+        TOKIO_SHARED_RT.block_on(async {
+            let (streams_base, conn) = make_streams_base().await;
+            let api = WebSocketStreamsApiClient::new(streams_base.clone());
+
+            let id = "test-id-123".to_string();
+
+            let params = ReferencePriceParams::builder("bnbusdt".to_string())
+                .id(Some(id.clone()))
+                .build()
+                .unwrap();
+
+            let ReferencePriceParams { symbol, id } = params.clone();
+
+            let pairs: &[(&str, Option<String>)] =
+                &[("symbol", Some(symbol.clone())), ("id", id.clone())];
+
+            let vars: HashMap<_, _> = pairs
+                .iter()
+                .filter_map(|&(k, ref v)| v.clone().map(|v| (k, v)))
+                .collect();
+            let stream = replace_websocket_streams_placeholders("/<symbol>@referencePrice", &vars);
+
+            let ws_stream = api.reference_price(params).await.unwrap();
+
+            let called = Arc::new(AtomicBool::new(false));
+            let called_clone = called.clone();
+            ws_stream.on_message(move |_payload: models::ReferencePriceResponse| {
+                called_clone.store(true, Ordering::SeqCst);
+            });
+
+            assert!(
+                streams_base.is_subscribed(&stream).await,
+                "should be subscribed before unsubscribe"
+            );
+
+            ws_stream.unsubscribe().await;
+
+            let payload: Value = serde_json::from_str(
+                r#"{"e":"referencePrice","s":"BAZUSD","r":"1.00","t":1770313263917}"#,
+            )
+            .unwrap();
+            let msg = json!({
+                "stream": stream,
+                "data": payload,
+            });
+
+            streams_base.on_message(msg.to_string(), conn.clone()).await;
+
+            yield_now().await;
+
+            assert!(
+                !called.load(Ordering::SeqCst),
+                "callback should not be invoked after unsubscribe"
+            );
+        });
+    }
+
+    #[test]
     fn rolling_window_ticker_should_execute_successfully() {
         TOKIO_SHARED_RT.block_on(async {
             let (streams_base, _) = make_streams_base().await;
@@ -2974,7 +3107,7 @@ mod tests {
                 streams_base.is_subscribed(&stream).await,
                 "expected stream '{stream}' to be subscribed"
             );
-            assert_eq!(ws_stream.id.as_deref(), Some("test-id-123"));
+            assert_eq!(ws_stream.id, Some(StreamId::Str("test-id-123".to_string())));
         });
     }
 
@@ -3121,7 +3254,7 @@ mod tests {
                 streams_base.is_subscribed(&stream).await,
                 "expected stream '{stream}' to be subscribed"
             );
-            assert_eq!(ws_stream.id.as_deref(), Some("test-id-123"));
+            assert_eq!(ws_stream.id, Some(StreamId::Str("test-id-123".to_string())));
         });
     }
 
@@ -3262,7 +3395,7 @@ mod tests {
                 streams_base.is_subscribed(&stream).await,
                 "expected stream '{stream}' to be subscribed"
             );
-            assert_eq!(ws_stream.id.as_deref(), Some("test-id-123"));
+            assert_eq!(ws_stream.id, Some(StreamId::Str("test-id-123".to_string())));
         });
     }
 

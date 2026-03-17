@@ -677,6 +677,7 @@ impl OnChainYieldsApi for OnChainYieldsApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("projectId".to_string(), json!(project_id));
 
@@ -689,6 +690,7 @@ impl OnChainYieldsApi for OnChainYieldsApiClient {
             "/sapi/v1/onchain-yields/locked/personalLeftQuota",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -711,6 +713,7 @@ impl OnChainYieldsApi for OnChainYieldsApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = asset {
             query_params.insert("asset".to_string(), json!(rw));
@@ -733,6 +736,7 @@ impl OnChainYieldsApi for OnChainYieldsApiClient {
             "/sapi/v1/onchain-yields/locked/list",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -758,6 +762,7 @@ impl OnChainYieldsApi for OnChainYieldsApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = asset {
             query_params.insert("asset".to_string(), json!(rw));
@@ -788,6 +793,7 @@ impl OnChainYieldsApi for OnChainYieldsApiClient {
             "/sapi/v1/onchain-yields/locked/position",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -815,6 +821,7 @@ impl OnChainYieldsApi for OnChainYieldsApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = position_id {
             query_params.insert("positionId".to_string(), json!(rw));
@@ -853,6 +860,7 @@ impl OnChainYieldsApi for OnChainYieldsApiClient {
             "/sapi/v1/onchain-yields/locked/history/redemptionRecord",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -878,6 +886,7 @@ impl OnChainYieldsApi for OnChainYieldsApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = position_id {
             query_params.insert("positionId".to_string(), json!(rw));
@@ -912,6 +921,7 @@ impl OnChainYieldsApi for OnChainYieldsApiClient {
             "/sapi/v1/onchain-yields/locked/history/rewardsRecord",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -935,6 +945,7 @@ impl OnChainYieldsApi for OnChainYieldsApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("projectId".to_string(), json!(project_id));
 
@@ -953,6 +964,7 @@ impl OnChainYieldsApi for OnChainYieldsApiClient {
             "/sapi/v1/onchain-yields/locked/subscriptionPreview",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -980,6 +992,7 @@ impl OnChainYieldsApi for OnChainYieldsApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = purchase_id {
             query_params.insert("purchaseId".to_string(), json!(rw));
@@ -1018,6 +1031,7 @@ impl OnChainYieldsApi for OnChainYieldsApiClient {
             "/sapi/v1/onchain-yields/locked/history/subscriptionRecord",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1035,6 +1049,7 @@ impl OnChainYieldsApi for OnChainYieldsApiClient {
         let OnChainYieldsAccountParams { recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = recv_window {
             query_params.insert("recvWindow".to_string(), json!(rw));
@@ -1045,6 +1060,7 @@ impl OnChainYieldsApi for OnChainYieldsApiClient {
             "/sapi/v1/onchain-yields/account",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1066,6 +1082,7 @@ impl OnChainYieldsApi for OnChainYieldsApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("positionId".to_string(), json!(position_id));
 
@@ -1082,6 +1099,7 @@ impl OnChainYieldsApi for OnChainYieldsApiClient {
             "/sapi/v1/onchain-yields/locked/redeem",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1103,6 +1121,7 @@ impl OnChainYieldsApi for OnChainYieldsApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("positionId".to_string(), json!(position_id));
 
@@ -1117,6 +1136,7 @@ impl OnChainYieldsApi for OnChainYieldsApiClient {
             "/sapi/v1/onchain-yields/locked/setAutoSubscribe",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1139,6 +1159,7 @@ impl OnChainYieldsApi for OnChainYieldsApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("positionId".to_string(), json!(position_id));
 
@@ -1153,6 +1174,7 @@ impl OnChainYieldsApi for OnChainYieldsApiClient {
             "/sapi/v1/onchain-yields/locked/setRedeemOption",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1179,6 +1201,7 @@ impl OnChainYieldsApi for OnChainYieldsApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("projectId".to_string(), json!(project_id));
 
@@ -1213,6 +1236,7 @@ impl OnChainYieldsApi for OnChainYieldsApiClient {
             "/sapi/v1/onchain-yields/locked/subscribe",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1262,9 +1286,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::GetOnChainYieldsLockedPersonalLeftQuotaResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"leftPersonalQuota":"1000"}"#).unwrap();
@@ -1289,9 +1315,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::GetOnChainYieldsLockedProductListResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"rows":[{"projectId":"Solv-60d","detail":{"asset":"BTC","rewardAsset":"SOLV","duration":60,"renewable":true,"isSoldOut":true,"apr":"0.039","status":"PREHEATING","subscriptionStartTime":1646182276000,"canRedeemToFlex":true},"quota":{"totalPersonalQuota":"2","minimum":"0.001"}}],"total":1}"#).unwrap();
@@ -1315,9 +1343,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::GetOnChainYieldsLockedProductPositionResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"rows":[{"positionId":"123123","projectId":"Solv-60d","asset":"BTC","amount":"122.09202928","purchaseTime":"1646182276000","duration":"60","accrualDays":"4","rewardAsset":"SOLV","APY":"0.039","rewardAmt":"5.17181528","nextPay":"1.29295383","nextPayDate":"1646697600000","payPeriod":"1","rewardsPayDate":"1646697600000","rewardsEndDate":"1651449600000","deliverDate":"1651536000000","nextSubscriptionDate":"1651536000000","redeemingAmt":"232.2323","redeemTo":"FLEXIBLE","canRedeemEarly":true,"autoSubscribe":true,"type":"AUTO","status":"HOLDING"}],"total":1}"#).unwrap();
@@ -1342,9 +1372,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::GetOnChainYieldsLockedRedemptionRecordResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"rows":[{"positionId":"123123","redeemId":40607,"time":1575018510000,"asset":"BTC","lockPeriod":"30","amount":"21312.23223","originalAmount":"21312.23223","type":"NORMAL","deliverDate":"1575018510000","lossAmount":"0.00001232","isComplete":true,"rewardAsset":"SOLV","rewardAmt":"5.17181528","status":"PAID"}],"total":1}"#).unwrap();
@@ -1369,9 +1401,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::GetOnChainYieldsLockedRewardsHistoryResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"rows":[{"positionId":"123123","time":1575018510000,"asset":"BNB","lockPeriod":"30","amount":"21312.23223"}],"total":1}"#).unwrap();
@@ -1397,9 +1431,11 @@ mod tests {
             RestApiResponse<models::GetOnChainYieldsLockedSubscriptionPreviewResponse>,
         > {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"rewardAsset":"SOLV","totalRewardAmt":"5.17181528","nextPay":"1.29295383","nextPayDate":"1646697600000","rewardsPayDate":"1646697600000","valueDate":"1646697600000","rewardsEndDate":"1651449600000","deliverDate":"1651536000000","nextSubscriptionDate":"1651536000000"}"#).unwrap();
@@ -1424,9 +1460,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::GetOnChainYieldsLockedSubscriptionRecordResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"rows":[{"positionId":"123123","purchaseId":"26055","projectId":"Solv-60d","clientId":"ABC","time":1575018510000,"asset":"BTC","amount":"21312.23223","lockPeriod":"30","type":"AUTO","sourceAccount":"SPOT","amtFromSpot":"30","amtFromFunding":"70","status":"SUCCESS"}],"total":1}"#).unwrap();
@@ -1450,9 +1488,11 @@ mod tests {
             _params: OnChainYieldsAccountParams,
         ) -> anyhow::Result<RestApiResponse<models::OnChainYieldsAccountResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"totalAmountInBTC":"0.01067982","totalAmountInUSDT":"77.13289230","totalFlexibleAmountInBTC":"0.00000000","totalFlexibleAmountInUSDT":"0.00000000","totalLockedInBTC":"0.01067982","totalLockedInUSDT":"77.13289230"}"#).unwrap();
@@ -1476,9 +1516,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::RedeemOnChainYieldsLockedProductResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value =
@@ -1503,9 +1545,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::SetOnChainYieldsLockedAutoSubscribeResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"success":true}"#).unwrap();
@@ -1531,9 +1575,11 @@ mod tests {
             RestApiResponse<models::SetOnChainYieldsLockedProductRedeemOptionResponse>,
         > {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"success":true}"#).unwrap();
@@ -1558,9 +1604,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::SubscribeOnChainYieldsLockedProductResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"purchaseId":40607,"positionId":"12345","amount":"75.46000000","success":true}"#).unwrap();

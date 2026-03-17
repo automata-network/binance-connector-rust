@@ -53,7 +53,8 @@ impl RestApi {
     ///
     /// * `endpoint` - The API endpoint to send the request to
     /// * `method` - The HTTP method to use for the request
-    /// * `params` - A map of parameters to send with the request
+    /// * `query_params` - A map of query parameters to send with the request
+    /// * `body_params` - A map of body parameters to send with the request
     ///
     /// # Returns
     ///
@@ -66,9 +67,19 @@ impl RestApi {
         &self,
         endpoint: &str,
         method: Method,
-        params: BTreeMap<String, Value>,
+        query_params: BTreeMap<String, Value>,
+        body_params: BTreeMap<String, Value>,
     ) -> anyhow::Result<RestApiResponse<R>> {
-        send_request::<R>(&self.configuration, endpoint, method, params, None, false).await
+        send_request::<R>(
+            &self.configuration,
+            endpoint,
+            method,
+            query_params,
+            body_params,
+            None,
+            false,
+        )
+        .await
     }
 
     /// Send a signed request to the API
@@ -77,7 +88,8 @@ impl RestApi {
     ///
     /// * `endpoint` - The API endpoint to send the request to
     /// * `method` - The HTTP method to use for the request
-    /// * `params` - A map of parameters to send with the request
+    /// * `query_params` - A map of query parameters to send with the request
+    /// * `body_params` - A map of body parameters to send with the request
     ///
     /// # Returns
     ///
@@ -90,9 +102,19 @@ impl RestApi {
         &self,
         endpoint: &str,
         method: Method,
-        params: BTreeMap<String, Value>,
+        query_params: BTreeMap<String, Value>,
+        body_params: BTreeMap<String, Value>,
     ) -> anyhow::Result<RestApiResponse<R>> {
-        send_request::<R>(&self.configuration, endpoint, method, params, None, true).await
+        send_request::<R>(
+            &self.configuration,
+            endpoint,
+            method,
+            query_params,
+            body_params,
+            None,
+            true,
+        )
+        .await
     }
 
     /// Get Borrow Interest `Rate(USER_DATA)`
@@ -227,6 +249,55 @@ impl RestApi {
     ) -> anyhow::Result<RestApiResponse<models::GetLoanableAssetsDataResponse>> {
         self.market_data_api_client
             .get_loanable_assets_data(params)
+            .await
+    }
+
+    /// Get VIP Loan Interest Rate History (`USER_DATA`)
+    ///
+    /// Check VIP Loan flexible interest rate history
+    ///
+    /// * If startTime and endTime are not sent, the recent 90-day data will be returned
+    /// * The max interval between startTime and end Time is 180 days.
+    /// * Time based on UTC+0.
+    ///
+    /// Weight: 400
+    ///
+    /// # Arguments
+    ///
+    /// - `params`: [`GetVipLoanInterestRateHistoryParams`]
+    ///   The parameters for this operation.
+    ///
+    /// # Returns
+    ///
+    /// [`RestApiResponse<models::GetVipLoanInterestRateHistoryResponse>`] on success.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an [`anyhow::Error`] if:
+    /// - the HTTP request fails
+    /// - any parameter is invalid
+    /// - the response cannot be parsed
+    /// - or one of the following occurs:
+    ///   - `RequiredError`
+    ///   - `ConnectorClientError`
+    ///   - `UnauthorizedError`
+    ///   - `ForbiddenError`
+    ///   - `TooManyRequestsError`
+    ///   - `RateLimitBanError`
+    ///   - `ServerError`
+    ///   - `NotFoundError`
+    ///   - `NetworkError`
+    ///   - `BadRequestError`
+    ///
+    ///
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/vip_loan/market-data/Get-VIP-Loan-Interest-Rate-History).
+    ///
+    pub async fn get_vip_loan_interest_rate_history(
+        &self,
+        params: GetVipLoanInterestRateHistoryParams,
+    ) -> anyhow::Result<RestApiResponse<models::GetVipLoanInterestRateHistoryResponse>> {
+        self.market_data_api_client
+            .get_vip_loan_interest_rate_history(params)
             .await
     }
 
@@ -409,6 +480,54 @@ impl RestApi {
     ) -> anyhow::Result<RestApiResponse<models::CheckVipLoanCollateralAccountResponse>> {
         self.user_information_api_client
             .check_vip_loan_collateral_account(params)
+            .await
+    }
+
+    /// Get VIP Loan Accrued Interest (`USER_DATA`)
+    ///
+    /// Check VIP Loan interest record
+    ///
+    /// * If startTime and endTime are not sent, the recent 90-day data will be returned.
+    /// * The max interval between startTime and endTime is 90 days.
+    ///
+    /// Weight: 400
+    ///
+    /// # Arguments
+    ///
+    /// - `params`: [`GetVipLoanAccruedInterestParams`]
+    ///   The parameters for this operation.
+    ///
+    /// # Returns
+    ///
+    /// [`RestApiResponse<models::GetVipLoanAccruedInterestResponse>`] on success.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an [`anyhow::Error`] if:
+    /// - the HTTP request fails
+    /// - any parameter is invalid
+    /// - the response cannot be parsed
+    /// - or one of the following occurs:
+    ///   - `RequiredError`
+    ///   - `ConnectorClientError`
+    ///   - `UnauthorizedError`
+    ///   - `ForbiddenError`
+    ///   - `TooManyRequestsError`
+    ///   - `RateLimitBanError`
+    ///   - `ServerError`
+    ///   - `NotFoundError`
+    ///   - `NetworkError`
+    ///   - `BadRequestError`
+    ///
+    ///
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/vip_loan/user-information/Get-VIP-Loan-Accrued-Interest).
+    ///
+    pub async fn get_vip_loan_accrued_interest(
+        &self,
+        params: GetVipLoanAccruedInterestParams,
+    ) -> anyhow::Result<RestApiResponse<models::GetVipLoanAccruedInterestResponse>> {
+        self.user_information_api_client
+            .get_vip_loan_accrued_interest(params)
             .await
     }
 

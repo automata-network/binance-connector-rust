@@ -63,15 +63,6 @@ pub struct QueryOrderResponse {
     pub working_type: Option<String>,
     #[serde(rename = "priceProtect", skip_serializing_if = "Option::is_none")]
     pub price_protect: Option<bool>,
-    #[serde(rename = "priceMatch", skip_serializing_if = "Option::is_none")]
-    pub price_match: Option<String>,
-    #[serde(
-        rename = "selfTradePreventionMode",
-        skip_serializing_if = "Option::is_none"
-    )]
-    pub self_trade_prevention_mode: Option<String>,
-    #[serde(rename = "goodTillDate", skip_serializing_if = "Option::is_none")]
-    pub good_till_date: Option<i64>,
 }
 
 impl QueryOrderResponse {
@@ -101,9 +92,6 @@ impl QueryOrderResponse {
             update_time: None,
             working_type: None,
             price_protect: None,
-            price_match: None,
-            self_trade_prevention_mode: None,
-            good_till_date: None,
         }
     }
 }

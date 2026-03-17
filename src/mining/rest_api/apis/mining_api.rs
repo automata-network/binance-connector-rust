@@ -319,11 +319,6 @@ pub struct HashrateResaleDetailParams {
     /// This field is **required.
     #[builder(setter(into))]
     pub config_id: i64,
-    /// Mining account test
-    ///
-    /// This field is **required.
-    #[builder(setter(into))]
-    pub user_name: String,
     /// Page number, empty default first page, starting from 1
     ///
     /// This field is **optional.
@@ -348,13 +343,10 @@ impl HashrateResaleDetailParams {
     /// Required parameters:
     ///
     /// * `config_id` — Mining ID 168
-    /// * `user_name` — Mining account test
     ///
     #[must_use]
-    pub fn builder(config_id: i64, user_name: String) -> HashrateResaleDetailParamsBuilder {
-        HashrateResaleDetailParamsBuilder::default()
-            .config_id(config_id)
-            .user_name(user_name)
+    pub fn builder(config_id: i64) -> HashrateResaleDetailParamsBuilder {
+        HashrateResaleDetailParamsBuilder::default().config_id(config_id)
     }
 }
 /// Request parameters for the [`hashrate_resale_list`] operation.
@@ -682,6 +674,7 @@ impl MiningApi for MiningApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("algo".to_string(), json!(algo));
 
@@ -696,6 +689,7 @@ impl MiningApi for MiningApiClient {
             "/sapi/v1/mining/statistics/user/list",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -710,12 +704,14 @@ impl MiningApi for MiningApiClient {
         &self,
     ) -> anyhow::Result<RestApiResponse<models::AcquiringAlgorithmResponse>> {
         let query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         send_request::<models::AcquiringAlgorithmResponse>(
             &self.configuration,
             "/sapi/v1/mining/pub/algoList",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -730,12 +726,14 @@ impl MiningApi for MiningApiClient {
         &self,
     ) -> anyhow::Result<RestApiResponse<models::AcquiringCoinnameResponse>> {
         let query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         send_request::<models::AcquiringCoinnameResponse>(
             &self.configuration,
             "/sapi/v1/mining/pub/coinList",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -757,6 +755,7 @@ impl MiningApi for MiningApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("configId".to_string(), json!(config_id));
 
@@ -771,6 +770,7 @@ impl MiningApi for MiningApiClient {
             "/sapi/v1/mining/hash-transfer/config/cancel",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -797,6 +797,7 @@ impl MiningApi for MiningApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("algo".to_string(), json!(algo));
 
@@ -831,6 +832,7 @@ impl MiningApi for MiningApiClient {
             "/sapi/v1/mining/payment/list",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -857,6 +859,7 @@ impl MiningApi for MiningApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("algo".to_string(), json!(algo));
 
@@ -891,6 +894,7 @@ impl MiningApi for MiningApiClient {
             "/sapi/v1/mining/payment/other",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -907,17 +911,15 @@ impl MiningApi for MiningApiClient {
     ) -> anyhow::Result<RestApiResponse<models::HashrateResaleDetailResponse>> {
         let HashrateResaleDetailParams {
             config_id,
-            user_name,
             page_index,
             page_size,
             recv_window,
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("configId".to_string(), json!(config_id));
-
-        query_params.insert("userName".to_string(), json!(user_name));
 
         if let Some(rw) = page_index {
             query_params.insert("pageIndex".to_string(), json!(rw));
@@ -936,6 +938,7 @@ impl MiningApi for MiningApiClient {
             "/sapi/v1/mining/hash-transfer/profit/details",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -957,6 +960,7 @@ impl MiningApi for MiningApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = page_index {
             query_params.insert("pageIndex".to_string(), json!(rw));
@@ -975,6 +979,7 @@ impl MiningApi for MiningApiClient {
             "/sapi/v1/mining/hash-transfer/config/details/list",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1000,6 +1005,7 @@ impl MiningApi for MiningApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("userName".to_string(), json!(user_name));
 
@@ -1022,6 +1028,7 @@ impl MiningApi for MiningApiClient {
             "/sapi/v1/mining/hash-transfer/config",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1046,6 +1053,7 @@ impl MiningApi for MiningApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("algo".to_string(), json!(algo));
 
@@ -1074,6 +1082,7 @@ impl MiningApi for MiningApiClient {
             "/sapi/v1/mining/payment/uid",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1096,6 +1105,7 @@ impl MiningApi for MiningApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("algo".to_string(), json!(algo));
 
@@ -1112,6 +1122,7 @@ impl MiningApi for MiningApiClient {
             "/sapi/v1/mining/worker/detail",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1137,6 +1148,7 @@ impl MiningApi for MiningApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("algo".to_string(), json!(algo));
 
@@ -1167,6 +1179,7 @@ impl MiningApi for MiningApiClient {
             "/sapi/v1/mining/worker/list",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1188,6 +1201,7 @@ impl MiningApi for MiningApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("algo".to_string(), json!(algo));
 
@@ -1202,6 +1216,7 @@ impl MiningApi for MiningApiClient {
             "/sapi/v1/mining/statistics/user/status",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1250,9 +1265,11 @@ mod tests {
             _params: AccountListParams,
         ) -> anyhow::Result<RestApiResponse<models::AccountListResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"code":0,"msg":"","data":[{"type":"H_hashrate","userName":"test","list":[{"time":1585267200000,"hashrate":"0.00000000","reject":"0.00000000"},{"time":1585353600000,"hashrate":"0.00000000","reject":"0.00000000"}]},{"type":"D_hashrate","userName":"test","list":[{"time":1587906000000,"hashrate":"0.00000000","reject":"0.00000000"},{"time":1587909600000,"hashrate":"0.00000000","reject":"0.00000000"}]}]}"#).unwrap();
@@ -1274,9 +1291,11 @@ mod tests {
             &self,
         ) -> anyhow::Result<RestApiResponse<models::AcquiringAlgorithmResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"code":0,"msg":"","data":[{"algoName":"sha256","algoId":1,"poolIndex":0,"unit":"h/s"}]}"#).unwrap();
@@ -1298,9 +1317,11 @@ mod tests {
             &self,
         ) -> anyhow::Result<RestApiResponse<models::AcquiringCoinnameResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"code":0,"msg":"","data":[{"coinName":"BTC","coinId":1,"poolIndex":0,"algoId":1,"algoName":"sha256"}]}"#).unwrap();
@@ -1324,9 +1345,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::CancelHashrateResaleConfigurationResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value =
@@ -1350,9 +1373,11 @@ mod tests {
             _params: EarningsListParams,
         ) -> anyhow::Result<RestApiResponse<models::EarningsListResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"code":0,"msg":"","data":{"accountProfits":[{"time":1586188800000,"type":31,"hashTransfer":null,"transferAmount":null,"dayHashRate":129129903378244,"profitAmount":8.6083060304,"coinName":"BTC","status":2},{"time":1607529600000,"coinName":"BTC","type":0,"dayHashRate":9942053925926,"profitAmount":0.85426469,"hashTransfer":200000000000,"transferAmount":0.02180958,"status":2},{"time":1607443200000,"coinName":"BTC","type":31,"dayHashRate":200000000000,"profitAmount":0.02905916,"hashTransfer":null,"transferAmount":null,"status":2}],"totalNum":3,"pageSize":20}}"#).unwrap();
@@ -1375,9 +1400,11 @@ mod tests {
             _params: ExtraBonusListParams,
         ) -> anyhow::Result<RestApiResponse<models::ExtraBonusListResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"code":0,"msg":"","data":{"otherProfits":[{"time":1607443200000,"coinName":"BTC","type":4,"profitAmount":0.0011859,"status":2}],"totalNum":3,"pageSize":20}}"#).unwrap();
@@ -1400,9 +1427,11 @@ mod tests {
             _params: HashrateResaleDetailParams,
         ) -> anyhow::Result<RestApiResponse<models::HashrateResaleDetailResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"code":0,"msg":"","data":{"profitTransferDetails":[{"poolUsername":"test4001","toPoolUsername":"pop","algoName":"sha256","hashRate":200000000000,"day":20201213,"amount":0.2256872,"coinName":"BTC"},{"poolUsername":"test4001","toPoolUsername":"pop","algoName":"sha256","hashRate":200000000000,"day":20201213,"amount":0.2256872,"coinName":"BTC"}],"totalNum":8,"pageSize":200}}"#).unwrap();
@@ -1425,12 +1454,14 @@ mod tests {
             _params: HashrateResaleListParams,
         ) -> anyhow::Result<RestApiResponse<models::HashrateResaleListResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
-            let resp_json: Value = serde_json::from_str(r#"{"code":0,"msg":"","data":{"configDetails":[{"configId":168,"poolUsername":"123","toPoolUsername":"user1","algoName":"Ethash","hashRate":5000000,"startDay":20201210,"endDay":20210405,"status":1},{"configId":166,"poolUsername":"pop","toPoolUsername":"111111","algoName":"Ethash","hashRate":3320000,"startDay":20201226,"endDay":20201227,"status":0}],"totalNum":21,"pageSize":200}}"#).unwrap();
+            let resp_json: Value = serde_json::from_str(r#"{"code":0,"msg":"","data":{"configDetails":[{"configId":168,"poolUsername":"123","toPoolUsername":"user1","algoName":"Ethash","hashRate":5000000,"startDay":20201210,"endDay":20210405,"status":1,"type":0},{"configId":166,"poolUsername":"pop","toPoolUsername":"111111","algoName":"Ethash","hashRate":3320000,"startDay":20201226,"endDay":20201227,"status":0,"type":0}],"totalNum":21,"pageSize":200}}"#).unwrap();
             let dummy_response: models::HashrateResaleListResponse =
                 serde_json::from_value(resp_json.clone())
                     .expect("should parse into models::HashrateResaleListResponse");
@@ -1450,9 +1481,11 @@ mod tests {
             _params: HashrateResaleRequestParams,
         ) -> anyhow::Result<RestApiResponse<models::HashrateResaleRequestResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value =
@@ -1476,9 +1509,11 @@ mod tests {
             _params: MiningAccountEarningParams,
         ) -> anyhow::Result<RestApiResponse<models::MiningAccountEarningResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"code":0,"msg":"","data":{"accountProfits":[{"time":1607443200000,"coinName":"BTC","type":2,"puid":59985472,"subName":"vdvaghani","amount":0.09186957}],"totalNum":3,"pageSize":20}}"#).unwrap();
@@ -1501,9 +1536,11 @@ mod tests {
             _params: RequestForDetailMinerListParams,
         ) -> anyhow::Result<RestApiResponse<models::RequestForDetailMinerListResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"code":0,"msg":"","data":[{"workerName":"bhdc1.16A10404B","type":"H_hashrate","hashrateDatas":[{"time":1587902400000,"hashrate":"0","reject":0},{"time":1587906000000,"hashrate":"0","reject":0}]},{"workerName":"bhdc1.16A10404B","type":"D_hashrate","hashrateDatas":[{"time":1587902400000,"hashrate":"0","reject":0},{"time":1587906000000,"hashrate":"0","reject":0}]}]}"#).unwrap();
@@ -1526,9 +1563,11 @@ mod tests {
             _params: RequestForMinerListParams,
         ) -> anyhow::Result<RestApiResponse<models::RequestForMinerListResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"code":0,"msg":"","data":{"workerDatas":[{"workerId":"1420554439452400131","workerName":"2X73","status":3,"hashRate":0,"dayHashRate":0,"rejectRate":0,"lastShareTime":1587712919000},{"workerId":"7893926126382807951","workerName":"AZDC1.1A10101","status":2,"hashRate":29711247541680,"dayHashRate":1.269778129801366E13,"rejectRate":0,"lastShareTime":1587969727000}],"totalNum":18530,"pageSize":20}}"#).unwrap();
@@ -1551,9 +1590,11 @@ mod tests {
             _params: StatisticListParams,
         ) -> anyhow::Result<RestApiResponse<models::StatisticListResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"code":0,"msg":"","data":{"fifteenMinHashRate":"457835490067496409.00000000","dayHashRate":"214289268068874127.65000000","validNum":0,"invalidNum":17562,"profitToday":{"BTC":"0.00314332","BSV":"56.17055953","BCH":"106.61586001"},"profitYesterday":{"BTC":"0.00314332","BSV":"56.17055953","BCH":"106.61586001"},"userName":"test","unit":"h/s","algo":"sha256"}}"#).unwrap();
@@ -1912,7 +1953,7 @@ mod tests {
         TOKIO_SHARED_RT.block_on(async {
             let client = MockMiningApiClient { force_error: false };
 
-            let params = HashrateResaleDetailParams::builder(1,"user_name_example".to_string(),).build().unwrap();
+            let params = HashrateResaleDetailParams::builder(1,).build().unwrap();
 
             let resp_json: Value = serde_json::from_str(r#"{"code":0,"msg":"","data":{"profitTransferDetails":[{"poolUsername":"test4001","toPoolUsername":"pop","algoName":"sha256","hashRate":200000000000,"day":20201213,"amount":0.2256872,"coinName":"BTC"},{"poolUsername":"test4001","toPoolUsername":"pop","algoName":"sha256","hashRate":200000000000,"day":20201213,"amount":0.2256872,"coinName":"BTC"}],"totalNum":8,"pageSize":200}}"#).unwrap();
             let expected_response : models::HashrateResaleDetailResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::HashrateResaleDetailResponse");
@@ -1929,7 +1970,7 @@ mod tests {
         TOKIO_SHARED_RT.block_on(async {
             let client = MockMiningApiClient { force_error: false };
 
-            let params = HashrateResaleDetailParams::builder(1,"user_name_example".to_string(),).page_index(1).page_size(789).recv_window(5000).build().unwrap();
+            let params = HashrateResaleDetailParams::builder(1,).page_index(1).page_size(789).recv_window(5000).build().unwrap();
 
             let resp_json: Value = serde_json::from_str(r#"{"code":0,"msg":"","data":{"profitTransferDetails":[{"poolUsername":"test4001","toPoolUsername":"pop","algoName":"sha256","hashRate":200000000000,"day":20201213,"amount":0.2256872,"coinName":"BTC"},{"poolUsername":"test4001","toPoolUsername":"pop","algoName":"sha256","hashRate":200000000000,"day":20201213,"amount":0.2256872,"coinName":"BTC"}],"totalNum":8,"pageSize":200}}"#).unwrap();
             let expected_response : models::HashrateResaleDetailResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::HashrateResaleDetailResponse");
@@ -1946,9 +1987,7 @@ mod tests {
         TOKIO_SHARED_RT.block_on(async {
             let client = MockMiningApiClient { force_error: true };
 
-            let params = HashrateResaleDetailParams::builder(1, "user_name_example".to_string())
-                .build()
-                .unwrap();
+            let params = HashrateResaleDetailParams::builder(1).build().unwrap();
 
             match client.hashrate_resale_detail(params).await {
                 Ok(_) => panic!("Expected an error"),
@@ -1966,7 +2005,7 @@ mod tests {
 
             let params = HashrateResaleListParams::builder().build().unwrap();
 
-            let resp_json: Value = serde_json::from_str(r#"{"code":0,"msg":"","data":{"configDetails":[{"configId":168,"poolUsername":"123","toPoolUsername":"user1","algoName":"Ethash","hashRate":5000000,"startDay":20201210,"endDay":20210405,"status":1},{"configId":166,"poolUsername":"pop","toPoolUsername":"111111","algoName":"Ethash","hashRate":3320000,"startDay":20201226,"endDay":20201227,"status":0}],"totalNum":21,"pageSize":200}}"#).unwrap();
+            let resp_json: Value = serde_json::from_str(r#"{"code":0,"msg":"","data":{"configDetails":[{"configId":168,"poolUsername":"123","toPoolUsername":"user1","algoName":"Ethash","hashRate":5000000,"startDay":20201210,"endDay":20210405,"status":1,"type":0},{"configId":166,"poolUsername":"pop","toPoolUsername":"111111","algoName":"Ethash","hashRate":3320000,"startDay":20201226,"endDay":20201227,"status":0,"type":0}],"totalNum":21,"pageSize":200}}"#).unwrap();
             let expected_response : models::HashrateResaleListResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::HashrateResaleListResponse");
 
             let resp = client.hashrate_resale_list(params).await.expect("Expected a response");
@@ -1983,7 +2022,7 @@ mod tests {
 
             let params = HashrateResaleListParams::builder().page_index(1).page_size(789).recv_window(5000).build().unwrap();
 
-            let resp_json: Value = serde_json::from_str(r#"{"code":0,"msg":"","data":{"configDetails":[{"configId":168,"poolUsername":"123","toPoolUsername":"user1","algoName":"Ethash","hashRate":5000000,"startDay":20201210,"endDay":20210405,"status":1},{"configId":166,"poolUsername":"pop","toPoolUsername":"111111","algoName":"Ethash","hashRate":3320000,"startDay":20201226,"endDay":20201227,"status":0}],"totalNum":21,"pageSize":200}}"#).unwrap();
+            let resp_json: Value = serde_json::from_str(r#"{"code":0,"msg":"","data":{"configDetails":[{"configId":168,"poolUsername":"123","toPoolUsername":"user1","algoName":"Ethash","hashRate":5000000,"startDay":20201210,"endDay":20210405,"status":1,"type":0},{"configId":166,"poolUsername":"pop","toPoolUsername":"111111","algoName":"Ethash","hashRate":3320000,"startDay":20201226,"endDay":20201227,"status":0,"type":0}],"totalNum":21,"pageSize":200}}"#).unwrap();
             let expected_response : models::HashrateResaleListResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::HashrateResaleListResponse");
 
             let resp = client.hashrate_resale_list(params).await.expect("Expected a response");

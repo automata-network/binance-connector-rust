@@ -64,7 +64,8 @@ impl RestApi {
     ///
     /// * `endpoint` - The API endpoint to send the request to
     /// * `method` - The HTTP method to use for the request
-    /// * `params` - A map of parameters to send with the request
+    /// * `query_params` - A map of query parameters to send with the request
+    /// * `body_params` - A map of body parameters to send with the request
     ///
     /// # Returns
     ///
@@ -77,9 +78,19 @@ impl RestApi {
         &self,
         endpoint: &str,
         method: Method,
-        params: BTreeMap<String, Value>,
+        query_params: BTreeMap<String, Value>,
+        body_params: BTreeMap<String, Value>,
     ) -> anyhow::Result<RestApiResponse<R>> {
-        send_request::<R>(&self.configuration, endpoint, method, params, None, false).await
+        send_request::<R>(
+            &self.configuration,
+            endpoint,
+            method,
+            query_params,
+            body_params,
+            None,
+            false,
+        )
+        .await
     }
 
     /// Send a signed request to the API
@@ -88,7 +99,8 @@ impl RestApi {
     ///
     /// * `endpoint` - The API endpoint to send the request to
     /// * `method` - The HTTP method to use for the request
-    /// * `params` - A map of parameters to send with the request
+    /// * `query_params` - A map of query parameters to send with the request
+    /// * `body_params` - A map of body parameters to send with the request
     ///
     /// # Returns
     ///
@@ -101,9 +113,19 @@ impl RestApi {
         &self,
         endpoint: &str,
         method: Method,
-        params: BTreeMap<String, Value>,
+        query_params: BTreeMap<String, Value>,
+        body_params: BTreeMap<String, Value>,
     ) -> anyhow::Result<RestApiResponse<R>> {
-        send_request::<R>(&self.configuration, endpoint, method, params, None, true).await
+        send_request::<R>(
+            &self.configuration,
+            endpoint,
+            method,
+            query_params,
+            body_params,
+            None,
+            true,
+        )
+        .await
     }
 
     /// Account Funding Flow (`USER_DATA`)
@@ -140,155 +162,13 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/account/Account-Funding-Flow).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/account/Account-Funding-Flow).
     ///
     pub async fn account_funding_flow(
         &self,
         params: AccountFundingFlowParams,
     ) -> anyhow::Result<RestApiResponse<Vec<models::AccountFundingFlowResponseInner>>> {
         self.account_api_client.account_funding_flow(params).await
-    }
-
-    /// Get Download Id For Option Transaction History (`USER_DATA`)
-    ///
-    /// Get download id for option transaction history
-    ///
-    /// * Request Limitation is 5 times per month, shared by > front end download page and rest api
-    /// * The time between `startTime` and `endTime` can not be longer than 1 year
-    ///
-    /// Weight: 5
-    ///
-    /// # Arguments
-    ///
-    /// - `params`: [`GetDownloadIdForOptionTransactionHistoryParams`]
-    ///   The parameters for this operation.
-    ///
-    /// # Returns
-    ///
-    /// [`RestApiResponse<models::GetDownloadIdForOptionTransactionHistoryResponse>`] on success.
-    ///
-    /// # Errors
-    ///
-    /// This function will return an [`anyhow::Error`] if:
-    /// - the HTTP request fails
-    /// - any parameter is invalid
-    /// - the response cannot be parsed
-    /// - or one of the following occurs:
-    ///   - `RequiredError`
-    ///   - `ConnectorClientError`
-    ///   - `UnauthorizedError`
-    ///   - `ForbiddenError`
-    ///   - `TooManyRequestsError`
-    ///   - `RateLimitBanError`
-    ///   - `ServerError`
-    ///   - `NotFoundError`
-    ///   - `NetworkError`
-    ///   - `BadRequestError`
-    ///
-    ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/account/Get-Download-Id-For-Option-Transaction-History).
-    ///
-    pub async fn get_download_id_for_option_transaction_history(
-        &self,
-        params: GetDownloadIdForOptionTransactionHistoryParams,
-    ) -> anyhow::Result<RestApiResponse<models::GetDownloadIdForOptionTransactionHistoryResponse>>
-    {
-        self.account_api_client
-            .get_download_id_for_option_transaction_history(params)
-            .await
-    }
-
-    /// Get Option Transaction History Download Link by Id (`USER_DATA`)
-    ///
-    /// Get option transaction history download Link by Id
-    ///
-    /// * Download link expiration: 24h
-    ///
-    /// Weight: 5
-    ///
-    /// # Arguments
-    ///
-    /// - `params`: [`GetOptionTransactionHistoryDownloadLinkByIdParams`]
-    ///   The parameters for this operation.
-    ///
-    /// # Returns
-    ///
-    /// [`RestApiResponse<models::GetOptionTransactionHistoryDownloadLinkByIdResponse>`] on success.
-    ///
-    /// # Errors
-    ///
-    /// This function will return an [`anyhow::Error`] if:
-    /// - the HTTP request fails
-    /// - any parameter is invalid
-    /// - the response cannot be parsed
-    /// - or one of the following occurs:
-    ///   - `RequiredError`
-    ///   - `ConnectorClientError`
-    ///   - `UnauthorizedError`
-    ///   - `ForbiddenError`
-    ///   - `TooManyRequestsError`
-    ///   - `RateLimitBanError`
-    ///   - `ServerError`
-    ///   - `NotFoundError`
-    ///   - `NetworkError`
-    ///   - `BadRequestError`
-    ///
-    ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/account/Get-Option-Transaction-History-Download-Link-by-Id).
-    ///
-    pub async fn get_option_transaction_history_download_link_by_id(
-        &self,
-        params: GetOptionTransactionHistoryDownloadLinkByIdParams,
-    ) -> anyhow::Result<RestApiResponse<models::GetOptionTransactionHistoryDownloadLinkByIdResponse>>
-    {
-        self.account_api_client
-            .get_option_transaction_history_download_link_by_id(params)
-            .await
-    }
-
-    /// Option Account Information(TRADE)
-    ///
-    /// Get current account information.
-    ///
-    /// Weight: 3
-    ///
-    /// # Arguments
-    ///
-    /// - `params`: [`OptionAccountInformationParams`]
-    ///   The parameters for this operation.
-    ///
-    /// # Returns
-    ///
-    /// [`RestApiResponse<models::OptionAccountInformationResponse>`] on success.
-    ///
-    /// # Errors
-    ///
-    /// This function will return an [`anyhow::Error`] if:
-    /// - the HTTP request fails
-    /// - any parameter is invalid
-    /// - the response cannot be parsed
-    /// - or one of the following occurs:
-    ///   - `RequiredError`
-    ///   - `ConnectorClientError`
-    ///   - `UnauthorizedError`
-    ///   - `ForbiddenError`
-    ///   - `TooManyRequestsError`
-    ///   - `RateLimitBanError`
-    ///   - `ServerError`
-    ///   - `NotFoundError`
-    ///   - `NetworkError`
-    ///   - `BadRequestError`
-    ///
-    ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/account/Option-Account-Information).
-    ///
-    pub async fn option_account_information(
-        &self,
-        params: OptionAccountInformationParams,
-    ) -> anyhow::Result<RestApiResponse<models::OptionAccountInformationResponse>> {
-        self.account_api_client
-            .option_account_information(params)
-            .await
     }
 
     /// Option Margin Account Information (`USER_DATA`)
@@ -325,7 +205,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/account/Option-Margin-Account-Information).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/account/Option-Margin-Account-Information).
     ///
     pub async fn option_margin_account_information(
         &self,
@@ -370,7 +250,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/market-data/Check-Server-Time).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/market-data/Check-Server-Time).
     ///
     pub async fn check_server_time(
         &self,
@@ -412,7 +292,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/market-data/Exchange-Information).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/market-data/Exchange-Information).
     ///
     pub async fn exchange_information(
         &self,
@@ -456,7 +336,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/market-data/Historical-Exercise-Records).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/market-data/Historical-Exercise-Records).
     ///
     pub async fn historical_exercise_records(
         &self,
@@ -465,6 +345,49 @@ impl RestApi {
         self.market_data_api_client
             .historical_exercise_records(params)
             .await
+    }
+
+    /// Index Price
+    ///
+    /// Get spot index price for option underlying.
+    ///
+    /// Weight: 1
+    ///
+    /// # Arguments
+    ///
+    /// - `params`: [`IndexPriceParams`]
+    ///   The parameters for this operation.
+    ///
+    /// # Returns
+    ///
+    /// [`RestApiResponse<models::IndexPriceResponse>`] on success.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an [`anyhow::Error`] if:
+    /// - the HTTP request fails
+    /// - any parameter is invalid
+    /// - the response cannot be parsed
+    /// - or one of the following occurs:
+    ///   - `RequiredError`
+    ///   - `ConnectorClientError`
+    ///   - `UnauthorizedError`
+    ///   - `ForbiddenError`
+    ///   - `TooManyRequestsError`
+    ///   - `RateLimitBanError`
+    ///   - `ServerError`
+    ///   - `NotFoundError`
+    ///   - `NetworkError`
+    ///   - `BadRequestError`
+    ///
+    ///
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/market-data/Symbol-Price-Ticker).
+    ///
+    pub async fn index_price(
+        &self,
+        params: IndexPriceParams,
+    ) -> anyhow::Result<RestApiResponse<models::IndexPriceResponse>> {
+        self.market_data_api_client.index_price(params).await
     }
 
     /// Kline/Candlestick Data
@@ -483,7 +406,7 @@ impl RestApi {
     ///
     /// # Returns
     ///
-    /// [`RestApiResponse<Vec<models::KlineCandlestickDataResponseInner>>`] on success.
+    /// [`RestApiResponse<Vec<Vec<models::KlineCandlestickDataResponseItemInner>>>`] on success.
     ///
     /// # Errors
     ///
@@ -504,58 +427,16 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/market-data/Kline-Candlestick-Data).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/market-data/Kline-Candlestick-Data).
     ///
     pub async fn kline_candlestick_data(
         &self,
         params: KlineCandlestickDataParams,
-    ) -> anyhow::Result<RestApiResponse<Vec<models::KlineCandlestickDataResponseInner>>> {
+    ) -> anyhow::Result<RestApiResponse<Vec<Vec<models::KlineCandlestickDataResponseItemInner>>>>
+    {
         self.market_data_api_client
             .kline_candlestick_data(params)
             .await
-    }
-
-    /// Old Trades Lookup (`MARKET_DATA`)
-    ///
-    /// Get older market historical trades.
-    ///
-    /// Weight: 20
-    ///
-    /// # Arguments
-    ///
-    /// - `params`: [`OldTradesLookupParams`]
-    ///   The parameters for this operation.
-    ///
-    /// # Returns
-    ///
-    /// [`RestApiResponse<Vec<models::OldTradesLookupResponseInner>>`] on success.
-    ///
-    /// # Errors
-    ///
-    /// This function will return an [`anyhow::Error`] if:
-    /// - the HTTP request fails
-    /// - any parameter is invalid
-    /// - the response cannot be parsed
-    /// - or one of the following occurs:
-    ///   - `RequiredError`
-    ///   - `ConnectorClientError`
-    ///   - `UnauthorizedError`
-    ///   - `ForbiddenError`
-    ///   - `TooManyRequestsError`
-    ///   - `RateLimitBanError`
-    ///   - `ServerError`
-    ///   - `NotFoundError`
-    ///   - `NetworkError`
-    ///   - `BadRequestError`
-    ///
-    ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/market-data/Old-Trades-Lookup).
-    ///
-    pub async fn old_trades_lookup(
-        &self,
-        params: OldTradesLookupParams,
-    ) -> anyhow::Result<RestApiResponse<Vec<models::OldTradesLookupResponseInner>>> {
-        self.market_data_api_client.old_trades_lookup(params).await
     }
 
     /// Open Interest
@@ -592,7 +473,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/market-data/Open-Interest).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/market-data/Open-Interest).
     ///
     pub async fn open_interest(
         &self,
@@ -635,7 +516,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/market-data/Option-Mark-Price).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/market-data/Option-Mark-Price).
     ///
     pub async fn option_mark_price(
         &self,
@@ -650,7 +531,7 @@ impl RestApi {
     ///
     /// Weight: limit         | weight
     /// ------------  | ------------
-    /// 5, 10, 20, 50 | 2
+    /// 5, 10, 20, 50 | 1
     /// 100           | 5
     /// 500           | 10
     /// 1000          | 20
@@ -683,7 +564,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/market-data/Order-Book).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/market-data/Order-Book).
     ///
     pub async fn order_book(
         &self,
@@ -726,7 +607,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/market-data/Recent-Block-Trade-List).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/market-data/Recent-Block-Trade-List).
     ///
     pub async fn recent_block_trades_list(
         &self,
@@ -771,58 +652,13 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/market-data/Recent-Trades-List).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/market-data/Recent-Trades-List).
     ///
     pub async fn recent_trades_list(
         &self,
         params: RecentTradesListParams,
     ) -> anyhow::Result<RestApiResponse<Vec<models::RecentTradesListResponseInner>>> {
         self.market_data_api_client.recent_trades_list(params).await
-    }
-
-    /// Symbol Price Ticker
-    ///
-    /// Get spot index price for option underlying.
-    ///
-    /// Weight: 1
-    ///
-    /// # Arguments
-    ///
-    /// - `params`: [`SymbolPriceTickerParams`]
-    ///   The parameters for this operation.
-    ///
-    /// # Returns
-    ///
-    /// [`RestApiResponse<models::SymbolPriceTickerResponse>`] on success.
-    ///
-    /// # Errors
-    ///
-    /// This function will return an [`anyhow::Error`] if:
-    /// - the HTTP request fails
-    /// - any parameter is invalid
-    /// - the response cannot be parsed
-    /// - or one of the following occurs:
-    ///   - `RequiredError`
-    ///   - `ConnectorClientError`
-    ///   - `UnauthorizedError`
-    ///   - `ForbiddenError`
-    ///   - `TooManyRequestsError`
-    ///   - `RateLimitBanError`
-    ///   - `ServerError`
-    ///   - `NotFoundError`
-    ///   - `NetworkError`
-    ///   - `BadRequestError`
-    ///
-    ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/market-data/Symbol-Price-Ticker).
-    ///
-    pub async fn symbol_price_ticker(
-        &self,
-        params: SymbolPriceTickerParams,
-    ) -> anyhow::Result<RestApiResponse<models::SymbolPriceTickerResponse>> {
-        self.market_data_api_client
-            .symbol_price_ticker(params)
-            .await
     }
 
     /// Test Connectivity
@@ -859,7 +695,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/market-data/Test-Connectivity).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/market-data/Test-Connectivity).
     ///
     pub async fn test_connectivity(&self) -> anyhow::Result<RestApiResponse<Value>> {
         self.market_data_api_client.test_connectivity().await
@@ -899,7 +735,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/market-data/24hr-Ticker-Price-Change-Statistics).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/market-data/24hr-Ticker-Price-Change-Statistics).
     ///
     pub async fn ticker24hr_price_change_statistics(
         &self,
@@ -945,7 +781,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/market-maker-block-trade/Accept-Block-Trade-Order).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/market-maker-block-trade/Accept-Block-Trade-Order).
     ///
     pub async fn accept_block_trade_order(
         &self,
@@ -990,7 +826,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/market-maker-block-trade/Account-Block-Trade-List).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/market-maker-block-trade/Account-Block-Trade-List).
     ///
     pub async fn account_block_trade_list(
         &self,
@@ -1035,7 +871,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/market-maker-block-trade/Cancel-Block-Trade-Order).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/market-maker-block-trade/Cancel-Block-Trade-Order).
     ///
     pub async fn cancel_block_trade_order(
         &self,
@@ -1080,7 +916,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/market-maker-block-trade/Extend-Block-Trade-Order).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/market-maker-block-trade/Extend-Block-Trade-Order).
     ///
     pub async fn extend_block_trade_order(
         &self,
@@ -1125,7 +961,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/market-maker-block-trade/New-Block-Trade-Order).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/market-maker-block-trade/New-Block-Trade-Order).
     ///
     pub async fn new_block_trade_order(
         &self,
@@ -1170,7 +1006,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/market-maker-block-trade/Query-Block-Trade-Detail).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/market-maker-block-trade/Query-Block-Trade-Detail).
     ///
     pub async fn query_block_trade_details(
         &self,
@@ -1215,7 +1051,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/market-maker-block-trade/Query-Block-Trade-Order).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/market-maker-block-trade/Query-Block-Trade-Order).
     ///
     pub async fn query_block_trade_order(
         &self,
@@ -1262,7 +1098,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/market-maker-endpoints/Auto-Cancel-All-Open-Orders-Heartbeat).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/market-maker-endpoints/Auto-Cancel-All-Open-Orders-Heartbeat).
     ///
     pub async fn auto_cancel_all_open_orders(
         &self,
@@ -1309,7 +1145,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/market-maker-endpoints/Get-Auto-Cancel-All-Open-Orders-Config).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/market-maker-endpoints/Get-Auto-Cancel-All-Open-Orders-Config).
     ///
     pub async fn get_auto_cancel_all_open_orders(
         &self,
@@ -1354,7 +1190,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/market-maker-endpoints/Get-Market-Maker-Protection-Config).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/market-maker-endpoints/Get-Market-Maker-Protection-Config).
     ///
     pub async fn get_market_maker_protection_config(
         &self,
@@ -1399,7 +1235,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/market-maker-endpoints/Reset-Market-Maker-Protection-Config).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/market-maker-endpoints/Reset-Market-Maker-Protection-Config).
     ///
     pub async fn reset_market_maker_protection_config(
         &self,
@@ -1418,7 +1254,7 @@ impl RestApi {
     /// * This rest endpoint sets up the parameters to cancel your open orders in case of an outage or disconnection.
     /// * Example usage:
     /// Call this endpoint with a countdownTime value of 10000 (10 seconds) to turn on the auto-cancel feature. If the corresponding countdownCancelAllHeartBeat endpoint is not called within 10 seconds with the specified underlying symbol, all open orders of the specified symbol will be automatically canceled. If this endpoint is called with an countdownTime of 0, the countdown timer will be stopped.
-    /// * The system will check all countdowns approximately every 1000 milliseconds, **please note that sufficient redundancy should be considered when using this function**. We do not recommend setting the countdown time to be too precise or too small.
+    /// * The system will check all countdowns approximately every 100 milliseconds, **please note that sufficient redundancy should be considered when using this function**. We do not recommend setting the countdown time to be too precise or too small.
     ///
     /// Weight: 1
     ///
@@ -1450,7 +1286,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/market-maker-endpoints/Set-Auto-Cancel-All-Open-Orders-Config).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/market-maker-endpoints/Set-Auto-Cancel-All-Open-Orders-Config).
     ///
     pub async fn set_auto_cancel_all_open_orders(
         &self,
@@ -1496,7 +1332,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/market-maker-endpoints/Set-Market-Maker-Protection-Config).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/market-maker-endpoints/Set-Market-Maker-Protection-Config).
     ///
     pub async fn set_market_maker_protection_config(
         &self,
@@ -1541,7 +1377,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/trade/Account-Trade-List).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/trade/Account-Trade-List).
     ///
     pub async fn account_trade_list(
         &self,
@@ -1584,7 +1420,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/trade/Cancel-All-Option-Orders-By-Underlying).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/trade/Cancel-All-Option-Orders-By-Underlying).
     ///
     pub async fn cancel_all_option_orders_by_underlying(
         &self,
@@ -1599,7 +1435,7 @@ impl RestApi {
     ///
     /// Cancel all active order on a symbol.
     ///
-    /// Weight: 1
+    /// Weight: 5
     ///
     /// # Arguments
     ///
@@ -1629,7 +1465,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/trade/Cancel-all-Option-orders-on-specific-symbol).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/trade/Cancel-all-Option-orders-on-specific-symbol).
     ///
     pub async fn cancel_all_option_orders_on_specific_symbol(
         &self,
@@ -1677,7 +1513,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/trade/Cancel-Multiple-Option-Orders).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/trade/Cancel-Multiple-Option-Orders).
     ///
     pub async fn cancel_multiple_option_orders(
         &self,
@@ -1724,7 +1560,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/trade/Cancel-Option-Order).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/trade/Cancel-Option-Order).
     ///
     pub async fn cancel_option_order(
         &self,
@@ -1767,7 +1603,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/trade/New-Order).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/trade/New-Order).
     ///
     pub async fn new_order(
         &self,
@@ -1810,7 +1646,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/trade/Option-Position-Information).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/trade/Option-Position-Information).
     ///
     pub async fn option_position_information(
         &self,
@@ -1858,7 +1694,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/trade/Place-Multiple-Orders).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/trade/Place-Multiple-Orders).
     ///
     pub async fn place_multiple_orders(
         &self,
@@ -1901,7 +1737,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/trade/Query-Current-Open-Option-Orders).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/trade/Query-Current-Open-Option-Orders).
     ///
     pub async fn query_current_open_option_orders(
         &self,
@@ -1947,7 +1783,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/trade/Query-Option-Order-History).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/trade/Query-Option-Order-History).
     ///
     pub async fn query_option_order_history(
         &self,
@@ -2000,13 +1836,56 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/trade/Query-Single-Order).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/trade/Query-Single-Order).
     ///
     pub async fn query_single_order(
         &self,
         params: QuerySingleOrderParams,
     ) -> anyhow::Result<RestApiResponse<models::QuerySingleOrderResponse>> {
         self.trade_api_client.query_single_order(params).await
+    }
+
+    /// User Commission (`USER_DATA`)
+    ///
+    /// Get account commission.
+    ///
+    /// Weight: 5
+    ///
+    /// # Arguments
+    ///
+    /// - `params`: [`UserCommissionParams`]
+    ///   The parameters for this operation.
+    ///
+    /// # Returns
+    ///
+    /// [`RestApiResponse<models::UserCommissionResponse>`] on success.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an [`anyhow::Error`] if:
+    /// - the HTTP request fails
+    /// - any parameter is invalid
+    /// - the response cannot be parsed
+    /// - or one of the following occurs:
+    ///   - `RequiredError`
+    ///   - `ConnectorClientError`
+    ///   - `UnauthorizedError`
+    ///   - `ForbiddenError`
+    ///   - `TooManyRequestsError`
+    ///   - `RateLimitBanError`
+    ///   - `ServerError`
+    ///   - `NotFoundError`
+    ///   - `NetworkError`
+    ///   - `BadRequestError`
+    ///
+    ///
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/trade/User-Commission).
+    ///
+    pub async fn user_commission(
+        &self,
+        params: UserCommissionParams,
+    ) -> anyhow::Result<RestApiResponse<models::UserCommissionResponse>> {
+        self.trade_api_client.user_commission(params).await
     }
 
     /// User Exercise Record (`USER_DATA`)
@@ -2043,7 +1922,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/trade/User-Exercise-Record).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/trade/User-Exercise-Record).
     ///
     pub async fn user_exercise_record(
         &self,
@@ -2086,7 +1965,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/user-data-streams/Close-User-Data-Stream).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/user-data-streams/Close-User-Data-Stream).
     ///
     pub async fn close_user_data_stream(&self) -> anyhow::Result<RestApiResponse<Value>> {
         self.user_data_streams_api_client
@@ -2128,7 +2007,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/user-data-streams/Keepalive-User-Data-Stream).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/user-data-streams/Keepalive-User-Data-Stream).
     ///
     pub async fn keepalive_user_data_stream(&self) -> anyhow::Result<RestApiResponse<Value>> {
         self.user_data_streams_api_client
@@ -2170,7 +2049,7 @@ impl RestApi {
     ///   - `BadRequestError`
     ///
     ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/option/user-data-streams/Start-User-Data-Stream).
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/options-trading/user-data-streams/Start-User-Data-Stream).
     ///
     pub async fn start_user_data_stream(
         &self,

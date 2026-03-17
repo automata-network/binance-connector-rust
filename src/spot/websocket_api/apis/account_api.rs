@@ -59,6 +59,10 @@ pub trait AccountApi: Send + Sync {
         &self,
         params: MyAllocationsParams,
     ) -> anyhow::Result<WebsocketApiResponse<Vec<models::MyAllocationsResponseResultInner>>>;
+    async fn my_filters(
+        &self,
+        params: MyFiltersParams,
+    ) -> anyhow::Result<WebsocketApiResponse<Box<models::MyFiltersResponseResult>>>;
     async fn my_prevented_matches(
         &self,
         params: MyPreventedMatchesParams,
@@ -203,7 +207,7 @@ pub struct AllOrderListsParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub id: Option<String>,
-    /// Aggregate trade ID to begin at
+    /// Trade ID to begin at
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -364,6 +368,43 @@ impl MyAllocationsParams {
         MyAllocationsParamsBuilder::default().symbol(symbol)
     }
 }
+/// Request parameters for the [`my_filters`] operation.
+///
+/// This struct holds all of the inputs you can pass when calling
+/// [`my_filters`](#method.my_filters).
+#[derive(Clone, Debug, Builder)]
+#[builder(pattern = "owned", build_fn(error = "ParamBuildError"))]
+pub struct MyFiltersParams {
+    ///
+    /// The `symbol` parameter.
+    ///
+    /// This field is **required.
+    #[builder(setter(into))]
+    pub symbol: String,
+    /// Unique WebSocket request ID.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub id: Option<String>,
+    /// The value cannot be greater than `60000`. <br> Supports up to three decimal places of precision (e.g., 6000.346) so that microseconds may be specified.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub recv_window: Option<rust_decimal::Decimal>,
+}
+
+impl MyFiltersParams {
+    /// Create a builder for [`my_filters`].
+    ///
+    /// Required parameters:
+    ///
+    /// * `symbol` — String
+    ///
+    #[must_use]
+    pub fn builder(symbol: String) -> MyFiltersParamsBuilder {
+        MyFiltersParamsBuilder::default().symbol(symbol)
+    }
+}
 /// Request parameters for the [`my_prevented_matches`] operation.
 ///
 /// This struct holds all of the inputs you can pass when calling
@@ -458,7 +499,7 @@ pub struct MyTradesParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub end_time: Option<i64>,
-    /// Aggregate trade ID to begin at
+    /// Trade ID to begin at
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -576,11 +617,11 @@ pub struct OrderAmendmentsParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub from_execution_id: Option<i64>,
-    /// Default: 100; Maximum: 5000
+    /// Default: 500; Maximum: 1000
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
-    pub limit: Option<i32>,
+    pub limit: Option<i64>,
     /// The value cannot be greater than `60000`. <br> Supports up to three decimal places of precision (e.g., 6000.346) so that microseconds may be specified.
     ///
     /// This field is **optional.
@@ -924,6 +965,40 @@ impl AccountApi for AccountApiClient {
         self.websocket_api_base
             .send_message::<Vec<models::MyAllocationsResponseResultInner>>(
                 "/myAllocations".trim_start_matches('/'),
+                payload,
+                WebsocketMessageSendOptions::new().signed(),
+            )
+            .await
+            .map_err(anyhow::Error::from)?
+            .into_iter()
+            .next()
+            .ok_or(WebsocketError::NoResponse)
+            .map_err(anyhow::Error::from)
+    }
+
+    async fn my_filters(
+        &self,
+        params: MyFiltersParams,
+    ) -> anyhow::Result<WebsocketApiResponse<Box<models::MyFiltersResponseResult>>> {
+        let MyFiltersParams {
+            symbol,
+            id,
+            recv_window,
+        } = params;
+
+        let mut payload: BTreeMap<String, Value> = BTreeMap::new();
+        payload.insert("symbol".to_string(), serde_json::json!(symbol));
+        if let Some(value) = id {
+            payload.insert("id".to_string(), serde_json::json!(value));
+        }
+        if let Some(value) = recv_window {
+            payload.insert("recvWindow".to_string(), serde_json::json!(value));
+        }
+        let payload = remove_empty_value(payload);
+
+        self.websocket_api_base
+            .send_message::<Box<models::MyFiltersResponseResult>>(
+                "/myFilters".trim_start_matches('/'),
                 payload,
                 WebsocketMessageSendOptions::new().signed(),
             )
@@ -2027,6 +2102,137 @@ mod tests {
                     .build()
                     .unwrap();
                 client.my_allocations(params).await
+            });
+
+            let sent = timeout(Duration::from_secs(1), rx.recv())
+                .await
+                .expect("send should occur")
+                .expect("channel closed");
+            let Message::Text(text) = sent else {
+                panic!("expected Message Text")
+            };
+
+            let _: Value = serde_json::from_str(&text).unwrap();
+
+            let result = handle.await.expect("task completed");
+            match result {
+                Err(e) => {
+                    if let Some(inner) = e.downcast_ref::<WebsocketError>() {
+                        assert!(matches!(inner, WebsocketError::Timeout));
+                    } else {
+                        panic!("Unexpected error type: {:?}", e);
+                    }
+                }
+                Ok(_) => panic!("Expected timeout error"),
+            }
+        });
+    }
+
+    #[test]
+    fn my_filters_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let (ws_api, conn, mut rx) = setup().await;
+            let client = AccountApiClient::new(ws_api.clone());
+
+            let handle = spawn(async move {
+                let params = MyFiltersParams::builder("BNBUSDT".to_string(),).build().unwrap();
+                client.my_filters(params).await
+            });
+
+            let sent = timeout(Duration::from_secs(1), rx.recv()).await.expect("send should occur").expect("channel closed");
+            let Message::Text(text) = sent else { panic!() };
+            let v: Value = serde_json::from_str(&text).unwrap();
+            let id = v["id"].as_str().unwrap();
+            assert_eq!(v["method"], "/myFilters".trim_start_matches('/'));
+
+            let mut resp_json: Value = serde_json::from_str(r#"{"id":"1758009606869","status":200,"result":{"exchangeFilters":[{"filterType":"EXCHANGE_MAX_NUM_ORDERS","maxNumOrders":1000}],"symbolFilters":[{"filterType":"MAX_NUM_ORDER_LISTS","maxNumOrderLists":20}],"assetFilters":[{"filterType":"MAX_ASSET","asset":"JPY","limit":"1000000.00000000"}]},"rateLimits":[{"rateLimitType":"REQUEST_WEIGHT","interval":"MINUTE","intervalNum":1,"limit":6000},{"rateLimitType":"ORDERS","interval":"DAY","intervalNum":1,"limit":160000},{"rateLimitType":"RAW_REQUESTS","interval":"MINUTE","intervalNum":5,"limit":61000}]}"#).unwrap();
+            resp_json["id"] = id.into();
+
+            let raw_data = resp_json.get("result").or_else(|| resp_json.get("response")).expect("no response in JSON");
+            let expected_data: Box<models::MyFiltersResponseResult> = serde_json::from_value(raw_data.clone()).expect("should parse raw response");
+            let empty_array = Value::Array(vec![]);
+            let raw_rate_limits = resp_json.get("rateLimits").unwrap_or(&empty_array);
+            let expected_rate_limits: Option<Vec<WebsocketApiRateLimit>> =
+                match raw_rate_limits.as_array() {
+                    Some(arr) if arr.is_empty() => None,
+                    Some(_) => Some(serde_json::from_value(raw_rate_limits.clone()).expect("should parse rateLimits array")),
+                    None => None,
+                };
+
+            WebsocketHandler::on_message(&*ws_api, resp_json.to_string(), conn.clone()).await;
+
+            let response = timeout(Duration::from_secs(1), handle).await.expect("task done").expect("no panic").expect("no error");
+
+
+            let response_rate_limits = response.rate_limits.clone();
+            let response_data = response.data().expect("deserialize data");
+
+            assert_eq!(response_rate_limits, expected_rate_limits);
+            assert_eq!(response_data, expected_data);
+        });
+    }
+
+    #[test]
+    fn my_filters_error_response() {
+        TOKIO_SHARED_RT.block_on(async {
+            let (ws_api, conn, mut rx) = setup().await;
+            let client = AccountApiClient::new(ws_api.clone());
+
+            let handle = tokio::spawn(async move {
+                let params = MyFiltersParams::builder("BNBUSDT".to_string(),).build().unwrap();
+                client.my_filters(params).await
+            });
+
+            let sent = timeout(Duration::from_secs(1), rx.recv()).await.unwrap().unwrap();
+            let Message::Text(text) = sent else { panic!() };
+            let v: Value = serde_json::from_str(&text).unwrap();
+            let id = v["id"].as_str().unwrap().to_string();
+
+            let resp_json = json!({
+                "id": id,
+                "status": 400,
+                    "error": {
+                        "code": -2010,
+                        "msg": "Account has insufficient balance for requested action.",
+                    },
+                    "rateLimits": [
+                        {
+                            "rateLimitType": "ORDERS",
+                            "interval": "SECOND",
+                            "intervalNum": 10,
+                            "limit": 50,
+                            "count": 13
+                        },
+                    ],
+            });
+            WebsocketHandler::on_message(&*ws_api, resp_json.to_string(), conn.clone()).await;
+
+            let join = timeout(Duration::from_secs(1), handle).await.unwrap();
+            match join {
+                Ok(Err(e)) => {
+                    let msg = e.to_string();
+                    assert!(
+                        msg.contains("Server‐side response error (code -2010): Account has insufficient balance for requested action."),
+                        "Expected error msg to contain server error, got: {msg}"
+                    );
+                }
+                Ok(Ok(_)) => panic!("Expected error"),
+                Err(_) => panic!("Task panicked"),
+            }
+        });
+    }
+
+    #[test]
+    fn my_filters_request_timeout() {
+        TOKIO_SHARED_RT.block_on(async {
+            let (ws_api, _conn, mut rx) = setup().await;
+            let client = AccountApiClient::new(ws_api.clone());
+
+            let handle = spawn(async move {
+                let params = MyFiltersParams::builder("BNBUSDT".to_string())
+                    .build()
+                    .unwrap();
+                client.my_filters(params).await
             });
 
             let sent = timeout(Duration::from_secs(1), rx.recv())

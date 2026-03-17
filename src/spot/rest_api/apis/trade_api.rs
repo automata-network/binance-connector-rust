@@ -68,6 +68,14 @@ pub trait TradeApi: Send + Sync {
         &self,
         params: OrderListOcoParams,
     ) -> anyhow::Result<RestApiResponse<models::OrderListOcoResponse>>;
+    async fn order_list_opo(
+        &self,
+        params: OrderListOpoParams,
+    ) -> anyhow::Result<RestApiResponse<models::OrderListOpoResponse>>;
+    async fn order_list_opoco(
+        &self,
+        params: OrderListOpocoParams,
+    ) -> anyhow::Result<RestApiResponse<models::OrderListOpocoResponse>>;
     async fn order_list_oto(
         &self,
         params: OrderListOtoParams,
@@ -942,6 +950,41 @@ impl std::str::FromStr for OrderListOcoBelowTypeEnum {
 
 #[allow(non_camel_case_types)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum OrderListOcoAboveTimeInForceEnum {
+    #[serde(rename = "GTC")]
+    Gtc,
+    #[serde(rename = "IOC")]
+    Ioc,
+    #[serde(rename = "FOK")]
+    Fok,
+}
+
+impl OrderListOcoAboveTimeInForceEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Gtc => "GTC",
+            Self::Ioc => "IOC",
+            Self::Fok => "FOK",
+        }
+    }
+}
+
+impl std::str::FromStr for OrderListOcoAboveTimeInForceEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "GTC" => Ok(Self::Gtc),
+            "IOC" => Ok(Self::Ioc),
+            "FOK" => Ok(Self::Fok),
+            other => Err(format!("invalid OrderListOcoAboveTimeInForceEnum: {}", other).into()),
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum OrderListOcoAbovePegPriceTypeEnum {
     #[serde(rename = "PRIMARY_PEG")]
     PrimaryPeg,
@@ -1179,6 +1222,1004 @@ impl std::str::FromStr for OrderListOcoSelfTradePreventionModeEnum {
             other => {
                 Err(format!("invalid OrderListOcoSelfTradePreventionModeEnum: {}", other).into())
             }
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum OrderListOpoWorkingTypeEnum {
+    #[serde(rename = "LIMIT")]
+    Limit,
+    #[serde(rename = "LIMIT_MAKER")]
+    LimitMaker,
+}
+
+impl OrderListOpoWorkingTypeEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Limit => "LIMIT",
+            Self::LimitMaker => "LIMIT_MAKER",
+        }
+    }
+}
+
+impl std::str::FromStr for OrderListOpoWorkingTypeEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "LIMIT" => Ok(Self::Limit),
+            "LIMIT_MAKER" => Ok(Self::LimitMaker),
+            other => Err(format!("invalid OrderListOpoWorkingTypeEnum: {}", other).into()),
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum OrderListOpoWorkingSideEnum {
+    #[serde(rename = "BUY")]
+    Buy,
+    #[serde(rename = "SELL")]
+    Sell,
+}
+
+impl OrderListOpoWorkingSideEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Buy => "BUY",
+            Self::Sell => "SELL",
+        }
+    }
+}
+
+impl std::str::FromStr for OrderListOpoWorkingSideEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "BUY" => Ok(Self::Buy),
+            "SELL" => Ok(Self::Sell),
+            other => Err(format!("invalid OrderListOpoWorkingSideEnum: {}", other).into()),
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum OrderListOpoPendingTypeEnum {
+    #[serde(rename = "LIMIT")]
+    Limit,
+    #[serde(rename = "MARKET")]
+    Market,
+    #[serde(rename = "STOP_LOSS")]
+    StopLoss,
+    #[serde(rename = "STOP_LOSS_LIMIT")]
+    StopLossLimit,
+    #[serde(rename = "TAKE_PROFIT")]
+    TakeProfit,
+    #[serde(rename = "TAKE_PROFIT_LIMIT")]
+    TakeProfitLimit,
+    #[serde(rename = "LIMIT_MAKER")]
+    LimitMaker,
+}
+
+impl OrderListOpoPendingTypeEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Limit => "LIMIT",
+            Self::Market => "MARKET",
+            Self::StopLoss => "STOP_LOSS",
+            Self::StopLossLimit => "STOP_LOSS_LIMIT",
+            Self::TakeProfit => "TAKE_PROFIT",
+            Self::TakeProfitLimit => "TAKE_PROFIT_LIMIT",
+            Self::LimitMaker => "LIMIT_MAKER",
+        }
+    }
+}
+
+impl std::str::FromStr for OrderListOpoPendingTypeEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "LIMIT" => Ok(Self::Limit),
+            "MARKET" => Ok(Self::Market),
+            "STOP_LOSS" => Ok(Self::StopLoss),
+            "STOP_LOSS_LIMIT" => Ok(Self::StopLossLimit),
+            "TAKE_PROFIT" => Ok(Self::TakeProfit),
+            "TAKE_PROFIT_LIMIT" => Ok(Self::TakeProfitLimit),
+            "LIMIT_MAKER" => Ok(Self::LimitMaker),
+            other => Err(format!("invalid OrderListOpoPendingTypeEnum: {}", other).into()),
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum OrderListOpoPendingSideEnum {
+    #[serde(rename = "BUY")]
+    Buy,
+    #[serde(rename = "SELL")]
+    Sell,
+}
+
+impl OrderListOpoPendingSideEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Buy => "BUY",
+            Self::Sell => "SELL",
+        }
+    }
+}
+
+impl std::str::FromStr for OrderListOpoPendingSideEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "BUY" => Ok(Self::Buy),
+            "SELL" => Ok(Self::Sell),
+            other => Err(format!("invalid OrderListOpoPendingSideEnum: {}", other).into()),
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum OrderListOpoNewOrderRespTypeEnum {
+    #[serde(rename = "ACK")]
+    Ack,
+    #[serde(rename = "RESULT")]
+    Result,
+    #[serde(rename = "FULL")]
+    Full,
+    #[serde(rename = "MARKET")]
+    Market,
+    #[serde(rename = "LIMIT")]
+    Limit,
+}
+
+impl OrderListOpoNewOrderRespTypeEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Ack => "ACK",
+            Self::Result => "RESULT",
+            Self::Full => "FULL",
+            Self::Market => "MARKET",
+            Self::Limit => "LIMIT",
+        }
+    }
+}
+
+impl std::str::FromStr for OrderListOpoNewOrderRespTypeEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "ACK" => Ok(Self::Ack),
+            "RESULT" => Ok(Self::Result),
+            "FULL" => Ok(Self::Full),
+            "MARKET" => Ok(Self::Market),
+            "LIMIT" => Ok(Self::Limit),
+            other => Err(format!("invalid OrderListOpoNewOrderRespTypeEnum: {}", other).into()),
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum OrderListOpoSelfTradePreventionModeEnum {
+    #[serde(rename = "NONE")]
+    None,
+    #[serde(rename = "EXPIRE_TAKER")]
+    ExpireTaker,
+    #[serde(rename = "EXPIRE_MAKER")]
+    ExpireMaker,
+    #[serde(rename = "EXPIRE_BOTH")]
+    ExpireBoth,
+    #[serde(rename = "DECREMENT")]
+    Decrement,
+    #[serde(rename = "NON_REPRESENTABLE")]
+    NonRepresentable,
+}
+
+impl OrderListOpoSelfTradePreventionModeEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::None => "NONE",
+            Self::ExpireTaker => "EXPIRE_TAKER",
+            Self::ExpireMaker => "EXPIRE_MAKER",
+            Self::ExpireBoth => "EXPIRE_BOTH",
+            Self::Decrement => "DECREMENT",
+            Self::NonRepresentable => "NON_REPRESENTABLE",
+        }
+    }
+}
+
+impl std::str::FromStr for OrderListOpoSelfTradePreventionModeEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "NONE" => Ok(Self::None),
+            "EXPIRE_TAKER" => Ok(Self::ExpireTaker),
+            "EXPIRE_MAKER" => Ok(Self::ExpireMaker),
+            "EXPIRE_BOTH" => Ok(Self::ExpireBoth),
+            "DECREMENT" => Ok(Self::Decrement),
+            "NON_REPRESENTABLE" => Ok(Self::NonRepresentable),
+            other => {
+                Err(format!("invalid OrderListOpoSelfTradePreventionModeEnum: {}", other).into())
+            }
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum OrderListOpoWorkingTimeInForceEnum {
+    #[serde(rename = "GTC")]
+    Gtc,
+    #[serde(rename = "IOC")]
+    Ioc,
+    #[serde(rename = "FOK")]
+    Fok,
+}
+
+impl OrderListOpoWorkingTimeInForceEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Gtc => "GTC",
+            Self::Ioc => "IOC",
+            Self::Fok => "FOK",
+        }
+    }
+}
+
+impl std::str::FromStr for OrderListOpoWorkingTimeInForceEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "GTC" => Ok(Self::Gtc),
+            "IOC" => Ok(Self::Ioc),
+            "FOK" => Ok(Self::Fok),
+            other => Err(format!("invalid OrderListOpoWorkingTimeInForceEnum: {}", other).into()),
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum OrderListOpoWorkingPegPriceTypeEnum {
+    #[serde(rename = "PRIMARY_PEG")]
+    PrimaryPeg,
+    #[serde(rename = "MARKET_PEG")]
+    MarketPeg,
+}
+
+impl OrderListOpoWorkingPegPriceTypeEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::PrimaryPeg => "PRIMARY_PEG",
+            Self::MarketPeg => "MARKET_PEG",
+        }
+    }
+}
+
+impl std::str::FromStr for OrderListOpoWorkingPegPriceTypeEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "PRIMARY_PEG" => Ok(Self::PrimaryPeg),
+            "MARKET_PEG" => Ok(Self::MarketPeg),
+            other => Err(format!("invalid OrderListOpoWorkingPegPriceTypeEnum: {}", other).into()),
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum OrderListOpoWorkingPegOffsetTypeEnum {
+    #[serde(rename = "PRICE_LEVEL")]
+    PriceLevel,
+}
+
+impl OrderListOpoWorkingPegOffsetTypeEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::PriceLevel => "PRICE_LEVEL",
+        }
+    }
+}
+
+impl std::str::FromStr for OrderListOpoWorkingPegOffsetTypeEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "PRICE_LEVEL" => Ok(Self::PriceLevel),
+            other => Err(format!("invalid OrderListOpoWorkingPegOffsetTypeEnum: {}", other).into()),
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum OrderListOpoPendingTimeInForceEnum {
+    #[serde(rename = "GTC")]
+    Gtc,
+    #[serde(rename = "IOC")]
+    Ioc,
+    #[serde(rename = "FOK")]
+    Fok,
+}
+
+impl OrderListOpoPendingTimeInForceEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Gtc => "GTC",
+            Self::Ioc => "IOC",
+            Self::Fok => "FOK",
+        }
+    }
+}
+
+impl std::str::FromStr for OrderListOpoPendingTimeInForceEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "GTC" => Ok(Self::Gtc),
+            "IOC" => Ok(Self::Ioc),
+            "FOK" => Ok(Self::Fok),
+            other => Err(format!("invalid OrderListOpoPendingTimeInForceEnum: {}", other).into()),
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum OrderListOpoPendingPegPriceTypeEnum {
+    #[serde(rename = "PRIMARY_PEG")]
+    PrimaryPeg,
+    #[serde(rename = "MARKET_PEG")]
+    MarketPeg,
+}
+
+impl OrderListOpoPendingPegPriceTypeEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::PrimaryPeg => "PRIMARY_PEG",
+            Self::MarketPeg => "MARKET_PEG",
+        }
+    }
+}
+
+impl std::str::FromStr for OrderListOpoPendingPegPriceTypeEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "PRIMARY_PEG" => Ok(Self::PrimaryPeg),
+            "MARKET_PEG" => Ok(Self::MarketPeg),
+            other => Err(format!("invalid OrderListOpoPendingPegPriceTypeEnum: {}", other).into()),
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum OrderListOpoPendingPegOffsetTypeEnum {
+    #[serde(rename = "PRICE_LEVEL")]
+    PriceLevel,
+}
+
+impl OrderListOpoPendingPegOffsetTypeEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::PriceLevel => "PRICE_LEVEL",
+        }
+    }
+}
+
+impl std::str::FromStr for OrderListOpoPendingPegOffsetTypeEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "PRICE_LEVEL" => Ok(Self::PriceLevel),
+            other => Err(format!("invalid OrderListOpoPendingPegOffsetTypeEnum: {}", other).into()),
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum OrderListOpocoWorkingTypeEnum {
+    #[serde(rename = "LIMIT")]
+    Limit,
+    #[serde(rename = "LIMIT_MAKER")]
+    LimitMaker,
+}
+
+impl OrderListOpocoWorkingTypeEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Limit => "LIMIT",
+            Self::LimitMaker => "LIMIT_MAKER",
+        }
+    }
+}
+
+impl std::str::FromStr for OrderListOpocoWorkingTypeEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "LIMIT" => Ok(Self::Limit),
+            "LIMIT_MAKER" => Ok(Self::LimitMaker),
+            other => Err(format!("invalid OrderListOpocoWorkingTypeEnum: {}", other).into()),
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum OrderListOpocoWorkingSideEnum {
+    #[serde(rename = "BUY")]
+    Buy,
+    #[serde(rename = "SELL")]
+    Sell,
+}
+
+impl OrderListOpocoWorkingSideEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Buy => "BUY",
+            Self::Sell => "SELL",
+        }
+    }
+}
+
+impl std::str::FromStr for OrderListOpocoWorkingSideEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "BUY" => Ok(Self::Buy),
+            "SELL" => Ok(Self::Sell),
+            other => Err(format!("invalid OrderListOpocoWorkingSideEnum: {}", other).into()),
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum OrderListOpocoPendingSideEnum {
+    #[serde(rename = "BUY")]
+    Buy,
+    #[serde(rename = "SELL")]
+    Sell,
+}
+
+impl OrderListOpocoPendingSideEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Buy => "BUY",
+            Self::Sell => "SELL",
+        }
+    }
+}
+
+impl std::str::FromStr for OrderListOpocoPendingSideEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "BUY" => Ok(Self::Buy),
+            "SELL" => Ok(Self::Sell),
+            other => Err(format!("invalid OrderListOpocoPendingSideEnum: {}", other).into()),
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum OrderListOpocoPendingAboveTypeEnum {
+    #[serde(rename = "STOP_LOSS_LIMIT")]
+    StopLossLimit,
+    #[serde(rename = "STOP_LOSS")]
+    StopLoss,
+    #[serde(rename = "LIMIT_MAKER")]
+    LimitMaker,
+    #[serde(rename = "TAKE_PROFIT")]
+    TakeProfit,
+    #[serde(rename = "TAKE_PROFIT_LIMIT")]
+    TakeProfitLimit,
+}
+
+impl OrderListOpocoPendingAboveTypeEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::StopLossLimit => "STOP_LOSS_LIMIT",
+            Self::StopLoss => "STOP_LOSS",
+            Self::LimitMaker => "LIMIT_MAKER",
+            Self::TakeProfit => "TAKE_PROFIT",
+            Self::TakeProfitLimit => "TAKE_PROFIT_LIMIT",
+        }
+    }
+}
+
+impl std::str::FromStr for OrderListOpocoPendingAboveTypeEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "STOP_LOSS_LIMIT" => Ok(Self::StopLossLimit),
+            "STOP_LOSS" => Ok(Self::StopLoss),
+            "LIMIT_MAKER" => Ok(Self::LimitMaker),
+            "TAKE_PROFIT" => Ok(Self::TakeProfit),
+            "TAKE_PROFIT_LIMIT" => Ok(Self::TakeProfitLimit),
+            other => Err(format!("invalid OrderListOpocoPendingAboveTypeEnum: {}", other).into()),
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum OrderListOpocoNewOrderRespTypeEnum {
+    #[serde(rename = "ACK")]
+    Ack,
+    #[serde(rename = "RESULT")]
+    Result,
+    #[serde(rename = "FULL")]
+    Full,
+    #[serde(rename = "MARKET")]
+    Market,
+    #[serde(rename = "LIMIT")]
+    Limit,
+}
+
+impl OrderListOpocoNewOrderRespTypeEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Ack => "ACK",
+            Self::Result => "RESULT",
+            Self::Full => "FULL",
+            Self::Market => "MARKET",
+            Self::Limit => "LIMIT",
+        }
+    }
+}
+
+impl std::str::FromStr for OrderListOpocoNewOrderRespTypeEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "ACK" => Ok(Self::Ack),
+            "RESULT" => Ok(Self::Result),
+            "FULL" => Ok(Self::Full),
+            "MARKET" => Ok(Self::Market),
+            "LIMIT" => Ok(Self::Limit),
+            other => Err(format!("invalid OrderListOpocoNewOrderRespTypeEnum: {}", other).into()),
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum OrderListOpocoSelfTradePreventionModeEnum {
+    #[serde(rename = "NONE")]
+    None,
+    #[serde(rename = "EXPIRE_TAKER")]
+    ExpireTaker,
+    #[serde(rename = "EXPIRE_MAKER")]
+    ExpireMaker,
+    #[serde(rename = "EXPIRE_BOTH")]
+    ExpireBoth,
+    #[serde(rename = "DECREMENT")]
+    Decrement,
+    #[serde(rename = "NON_REPRESENTABLE")]
+    NonRepresentable,
+}
+
+impl OrderListOpocoSelfTradePreventionModeEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::None => "NONE",
+            Self::ExpireTaker => "EXPIRE_TAKER",
+            Self::ExpireMaker => "EXPIRE_MAKER",
+            Self::ExpireBoth => "EXPIRE_BOTH",
+            Self::Decrement => "DECREMENT",
+            Self::NonRepresentable => "NON_REPRESENTABLE",
+        }
+    }
+}
+
+impl std::str::FromStr for OrderListOpocoSelfTradePreventionModeEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "NONE" => Ok(Self::None),
+            "EXPIRE_TAKER" => Ok(Self::ExpireTaker),
+            "EXPIRE_MAKER" => Ok(Self::ExpireMaker),
+            "EXPIRE_BOTH" => Ok(Self::ExpireBoth),
+            "DECREMENT" => Ok(Self::Decrement),
+            "NON_REPRESENTABLE" => Ok(Self::NonRepresentable),
+            other => Err(format!(
+                "invalid OrderListOpocoSelfTradePreventionModeEnum: {}",
+                other
+            )
+            .into()),
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum OrderListOpocoWorkingTimeInForceEnum {
+    #[serde(rename = "GTC")]
+    Gtc,
+    #[serde(rename = "IOC")]
+    Ioc,
+    #[serde(rename = "FOK")]
+    Fok,
+}
+
+impl OrderListOpocoWorkingTimeInForceEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Gtc => "GTC",
+            Self::Ioc => "IOC",
+            Self::Fok => "FOK",
+        }
+    }
+}
+
+impl std::str::FromStr for OrderListOpocoWorkingTimeInForceEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "GTC" => Ok(Self::Gtc),
+            "IOC" => Ok(Self::Ioc),
+            "FOK" => Ok(Self::Fok),
+            other => Err(format!("invalid OrderListOpocoWorkingTimeInForceEnum: {}", other).into()),
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum OrderListOpocoWorkingPegPriceTypeEnum {
+    #[serde(rename = "PRIMARY_PEG")]
+    PrimaryPeg,
+    #[serde(rename = "MARKET_PEG")]
+    MarketPeg,
+}
+
+impl OrderListOpocoWorkingPegPriceTypeEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::PrimaryPeg => "PRIMARY_PEG",
+            Self::MarketPeg => "MARKET_PEG",
+        }
+    }
+}
+
+impl std::str::FromStr for OrderListOpocoWorkingPegPriceTypeEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "PRIMARY_PEG" => Ok(Self::PrimaryPeg),
+            "MARKET_PEG" => Ok(Self::MarketPeg),
+            other => {
+                Err(format!("invalid OrderListOpocoWorkingPegPriceTypeEnum: {}", other).into())
+            }
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum OrderListOpocoWorkingPegOffsetTypeEnum {
+    #[serde(rename = "PRICE_LEVEL")]
+    PriceLevel,
+}
+
+impl OrderListOpocoWorkingPegOffsetTypeEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::PriceLevel => "PRICE_LEVEL",
+        }
+    }
+}
+
+impl std::str::FromStr for OrderListOpocoWorkingPegOffsetTypeEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "PRICE_LEVEL" => Ok(Self::PriceLevel),
+            other => {
+                Err(format!("invalid OrderListOpocoWorkingPegOffsetTypeEnum: {}", other).into())
+            }
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum OrderListOpocoPendingAboveTimeInForceEnum {
+    #[serde(rename = "GTC")]
+    Gtc,
+    #[serde(rename = "IOC")]
+    Ioc,
+    #[serde(rename = "FOK")]
+    Fok,
+}
+
+impl OrderListOpocoPendingAboveTimeInForceEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Gtc => "GTC",
+            Self::Ioc => "IOC",
+            Self::Fok => "FOK",
+        }
+    }
+}
+
+impl std::str::FromStr for OrderListOpocoPendingAboveTimeInForceEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "GTC" => Ok(Self::Gtc),
+            "IOC" => Ok(Self::Ioc),
+            "FOK" => Ok(Self::Fok),
+            other => Err(format!(
+                "invalid OrderListOpocoPendingAboveTimeInForceEnum: {}",
+                other
+            )
+            .into()),
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum OrderListOpocoPendingAbovePegPriceTypeEnum {
+    #[serde(rename = "PRIMARY_PEG")]
+    PrimaryPeg,
+    #[serde(rename = "MARKET_PEG")]
+    MarketPeg,
+}
+
+impl OrderListOpocoPendingAbovePegPriceTypeEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::PrimaryPeg => "PRIMARY_PEG",
+            Self::MarketPeg => "MARKET_PEG",
+        }
+    }
+}
+
+impl std::str::FromStr for OrderListOpocoPendingAbovePegPriceTypeEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "PRIMARY_PEG" => Ok(Self::PrimaryPeg),
+            "MARKET_PEG" => Ok(Self::MarketPeg),
+            other => Err(format!(
+                "invalid OrderListOpocoPendingAbovePegPriceTypeEnum: {}",
+                other
+            )
+            .into()),
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum OrderListOpocoPendingAbovePegOffsetTypeEnum {
+    #[serde(rename = "PRICE_LEVEL")]
+    PriceLevel,
+}
+
+impl OrderListOpocoPendingAbovePegOffsetTypeEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::PriceLevel => "PRICE_LEVEL",
+        }
+    }
+}
+
+impl std::str::FromStr for OrderListOpocoPendingAbovePegOffsetTypeEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "PRICE_LEVEL" => Ok(Self::PriceLevel),
+            other => Err(format!(
+                "invalid OrderListOpocoPendingAbovePegOffsetTypeEnum: {}",
+                other
+            )
+            .into()),
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum OrderListOpocoPendingBelowTypeEnum {
+    #[serde(rename = "STOP_LOSS")]
+    StopLoss,
+    #[serde(rename = "STOP_LOSS_LIMIT")]
+    StopLossLimit,
+    #[serde(rename = "TAKE_PROFIT")]
+    TakeProfit,
+    #[serde(rename = "TAKE_PROFIT_LIMIT")]
+    TakeProfitLimit,
+}
+
+impl OrderListOpocoPendingBelowTypeEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::StopLoss => "STOP_LOSS",
+            Self::StopLossLimit => "STOP_LOSS_LIMIT",
+            Self::TakeProfit => "TAKE_PROFIT",
+            Self::TakeProfitLimit => "TAKE_PROFIT_LIMIT",
+        }
+    }
+}
+
+impl std::str::FromStr for OrderListOpocoPendingBelowTypeEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "STOP_LOSS" => Ok(Self::StopLoss),
+            "STOP_LOSS_LIMIT" => Ok(Self::StopLossLimit),
+            "TAKE_PROFIT" => Ok(Self::TakeProfit),
+            "TAKE_PROFIT_LIMIT" => Ok(Self::TakeProfitLimit),
+            other => Err(format!("invalid OrderListOpocoPendingBelowTypeEnum: {}", other).into()),
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum OrderListOpocoPendingBelowTimeInForceEnum {
+    #[serde(rename = "GTC")]
+    Gtc,
+    #[serde(rename = "IOC")]
+    Ioc,
+    #[serde(rename = "FOK")]
+    Fok,
+}
+
+impl OrderListOpocoPendingBelowTimeInForceEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Gtc => "GTC",
+            Self::Ioc => "IOC",
+            Self::Fok => "FOK",
+        }
+    }
+}
+
+impl std::str::FromStr for OrderListOpocoPendingBelowTimeInForceEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "GTC" => Ok(Self::Gtc),
+            "IOC" => Ok(Self::Ioc),
+            "FOK" => Ok(Self::Fok),
+            other => Err(format!(
+                "invalid OrderListOpocoPendingBelowTimeInForceEnum: {}",
+                other
+            )
+            .into()),
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum OrderListOpocoPendingBelowPegPriceTypeEnum {
+    #[serde(rename = "PRIMARY_PEG")]
+    PrimaryPeg,
+    #[serde(rename = "MARKET_PEG")]
+    MarketPeg,
+}
+
+impl OrderListOpocoPendingBelowPegPriceTypeEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::PrimaryPeg => "PRIMARY_PEG",
+            Self::MarketPeg => "MARKET_PEG",
+        }
+    }
+}
+
+impl std::str::FromStr for OrderListOpocoPendingBelowPegPriceTypeEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "PRIMARY_PEG" => Ok(Self::PrimaryPeg),
+            "MARKET_PEG" => Ok(Self::MarketPeg),
+            other => Err(format!(
+                "invalid OrderListOpocoPendingBelowPegPriceTypeEnum: {}",
+                other
+            )
+            .into()),
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum OrderListOpocoPendingBelowPegOffsetTypeEnum {
+    #[serde(rename = "PRICE_LEVEL")]
+    PriceLevel,
+}
+
+impl OrderListOpocoPendingBelowPegOffsetTypeEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::PriceLevel => "PRICE_LEVEL",
+        }
+    }
+}
+
+impl std::str::FromStr for OrderListOpocoPendingBelowPegOffsetTypeEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "PRICE_LEVEL" => Ok(Self::PriceLevel),
+            other => Err(format!(
+                "invalid OrderListOpocoPendingBelowPegOffsetTypeEnum: {}",
+                other
+            )
+            .into()),
         }
     }
 }
@@ -3664,11 +4705,12 @@ pub struct OrderListOcoParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub above_trailing_delta: Option<i64>,
-    /// Required if `aboveType` is `STOP_LOSS_LIMIT` or `TAKE_PROFIT_LIMIT`
+    ///
+    /// The `above_time_in_force` parameter.
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
-    pub above_time_in_force: Option<rust_decimal::Decimal>,
+    pub above_time_in_force: Option<OrderListOcoAboveTimeInForceEnum>,
     /// Arbitrary numeric value identifying the above order within an order strategy.
     ///
     /// This field is **optional.
@@ -3802,6 +4844,491 @@ impl OrderListOcoParams {
             .below_type(below_type)
     }
 }
+/// Request parameters for the [`order_list_opo`] operation.
+///
+/// This struct holds all of the inputs you can pass when calling
+/// [`order_list_opo`](#method.order_list_opo).
+#[derive(Clone, Debug, Builder)]
+#[builder(pattern = "owned", build_fn(error = "ParamBuildError"))]
+pub struct OrderListOpoParams {
+    ///
+    /// The `symbol` parameter.
+    ///
+    /// This field is **required.
+    #[builder(setter(into))]
+    pub symbol: String,
+    ///
+    /// The `working_type` parameter.
+    ///
+    /// This field is **required.
+    #[builder(setter(into))]
+    pub working_type: OrderListOpoWorkingTypeEnum,
+    ///
+    /// The `working_side` parameter.
+    ///
+    /// This field is **required.
+    #[builder(setter(into))]
+    pub working_side: OrderListOpoWorkingSideEnum,
+    ///
+    /// The `working_price` parameter.
+    ///
+    /// This field is **required.
+    #[builder(setter(into))]
+    pub working_price: rust_decimal::Decimal,
+    /// Sets the quantity for the working order.
+    ///
+    /// This field is **required.
+    #[builder(setter(into))]
+    pub working_quantity: rust_decimal::Decimal,
+    ///
+    /// The `pending_type` parameter.
+    ///
+    /// This field is **required.
+    #[builder(setter(into))]
+    pub pending_type: OrderListOpoPendingTypeEnum,
+    ///
+    /// The `pending_side` parameter.
+    ///
+    /// This field is **required.
+    #[builder(setter(into))]
+    pub pending_side: OrderListOpoPendingSideEnum,
+    /// A unique Id for the entire orderList
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub list_client_order_id: Option<String>,
+    ///
+    /// The `new_order_resp_type` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub new_order_resp_type: Option<OrderListOpoNewOrderRespTypeEnum>,
+    ///
+    /// The `self_trade_prevention_mode` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub self_trade_prevention_mode: Option<OrderListOpoSelfTradePreventionModeEnum>,
+    /// Arbitrary unique ID among open orders for the working order. Automatically generated if not sent.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub working_client_order_id: Option<String>,
+    /// This can only be used if `workingTimeInForce` is `GTC`, or if `workingType` is `LIMIT_MAKER`.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub working_iceberg_qty: Option<rust_decimal::Decimal>,
+    ///
+    /// The `working_time_in_force` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub working_time_in_force: Option<OrderListOpoWorkingTimeInForceEnum>,
+    /// Arbitrary numeric value identifying the working order within an order strategy.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub working_strategy_id: Option<i64>,
+    /// Arbitrary numeric value identifying the working order strategy. Values smaller than 1000000 are reserved and cannot be used.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub working_strategy_type: Option<i32>,
+    ///
+    /// The `working_peg_price_type` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub working_peg_price_type: Option<OrderListOpoWorkingPegPriceTypeEnum>,
+    ///
+    /// The `working_peg_offset_type` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub working_peg_offset_type: Option<OrderListOpoWorkingPegOffsetTypeEnum>,
+    ///
+    /// The `working_peg_offset_value` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub working_peg_offset_value: Option<i32>,
+    /// Arbitrary unique ID among open orders for the pending order. Automatically generated if not sent.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub pending_client_order_id: Option<String>,
+    ///
+    /// The `pending_price` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub pending_price: Option<rust_decimal::Decimal>,
+    ///
+    /// The `pending_stop_price` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub pending_stop_price: Option<rust_decimal::Decimal>,
+    ///
+    /// The `pending_trailing_delta` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub pending_trailing_delta: Option<rust_decimal::Decimal>,
+    /// This can only be used if `pendingTimeInForce` is `GTC` or if `pendingType` is `LIMIT_MAKER`.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub pending_iceberg_qty: Option<rust_decimal::Decimal>,
+    ///
+    /// The `pending_time_in_force` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub pending_time_in_force: Option<OrderListOpoPendingTimeInForceEnum>,
+    /// Arbitrary numeric value identifying the pending order within an order strategy.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub pending_strategy_id: Option<i64>,
+    /// Arbitrary numeric value identifying the pending order strategy. Values smaller than 1000000 are reserved and cannot be used.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub pending_strategy_type: Option<i32>,
+    ///
+    /// The `pending_peg_price_type` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub pending_peg_price_type: Option<OrderListOpoPendingPegPriceTypeEnum>,
+    ///
+    /// The `pending_peg_offset_type` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub pending_peg_offset_type: Option<OrderListOpoPendingPegOffsetTypeEnum>,
+    ///
+    /// The `pending_peg_offset_value` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub pending_peg_offset_value: Option<i32>,
+    /// The value cannot be greater than `60000`. <br> Supports up to three decimal places of precision (e.g., 6000.346) so that microseconds may be specified.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub recv_window: Option<rust_decimal::Decimal>,
+}
+
+impl OrderListOpoParams {
+    /// Create a builder for [`order_list_opo`].
+    ///
+    /// Required parameters:
+    ///
+    /// * `symbol` — String
+    /// * `working_type` — String
+    /// * `working_side` — String
+    /// * `working_price` — `rust_decimal::Decimal`
+    /// * `working_quantity` — Sets the quantity for the working order.
+    /// * `pending_type` — String
+    /// * `pending_side` — String
+    ///
+    #[must_use]
+    pub fn builder(
+        symbol: String,
+        working_type: OrderListOpoWorkingTypeEnum,
+        working_side: OrderListOpoWorkingSideEnum,
+        working_price: rust_decimal::Decimal,
+        working_quantity: rust_decimal::Decimal,
+        pending_type: OrderListOpoPendingTypeEnum,
+        pending_side: OrderListOpoPendingSideEnum,
+    ) -> OrderListOpoParamsBuilder {
+        OrderListOpoParamsBuilder::default()
+            .symbol(symbol)
+            .working_type(working_type)
+            .working_side(working_side)
+            .working_price(working_price)
+            .working_quantity(working_quantity)
+            .pending_type(pending_type)
+            .pending_side(pending_side)
+    }
+}
+/// Request parameters for the [`order_list_opoco`] operation.
+///
+/// This struct holds all of the inputs you can pass when calling
+/// [`order_list_opoco`](#method.order_list_opoco).
+#[derive(Clone, Debug, Builder)]
+#[builder(pattern = "owned", build_fn(error = "ParamBuildError"))]
+pub struct OrderListOpocoParams {
+    ///
+    /// The `symbol` parameter.
+    ///
+    /// This field is **required.
+    #[builder(setter(into))]
+    pub symbol: String,
+    ///
+    /// The `working_type` parameter.
+    ///
+    /// This field is **required.
+    #[builder(setter(into))]
+    pub working_type: OrderListOpocoWorkingTypeEnum,
+    ///
+    /// The `working_side` parameter.
+    ///
+    /// This field is **required.
+    #[builder(setter(into))]
+    pub working_side: OrderListOpocoWorkingSideEnum,
+    ///
+    /// The `working_price` parameter.
+    ///
+    /// This field is **required.
+    #[builder(setter(into))]
+    pub working_price: rust_decimal::Decimal,
+    /// Sets the quantity for the working order.
+    ///
+    /// This field is **required.
+    #[builder(setter(into))]
+    pub working_quantity: rust_decimal::Decimal,
+    ///
+    /// The `pending_side` parameter.
+    ///
+    /// This field is **required.
+    #[builder(setter(into))]
+    pub pending_side: OrderListOpocoPendingSideEnum,
+    ///
+    /// The `pending_above_type` parameter.
+    ///
+    /// This field is **required.
+    #[builder(setter(into))]
+    pub pending_above_type: OrderListOpocoPendingAboveTypeEnum,
+    /// A unique Id for the entire orderList
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub list_client_order_id: Option<String>,
+    ///
+    /// The `new_order_resp_type` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub new_order_resp_type: Option<OrderListOpocoNewOrderRespTypeEnum>,
+    ///
+    /// The `self_trade_prevention_mode` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub self_trade_prevention_mode: Option<OrderListOpocoSelfTradePreventionModeEnum>,
+    /// Arbitrary unique ID among open orders for the working order. Automatically generated if not sent.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub working_client_order_id: Option<String>,
+    /// This can only be used if `workingTimeInForce` is `GTC`, or if `workingType` is `LIMIT_MAKER`.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub working_iceberg_qty: Option<rust_decimal::Decimal>,
+    ///
+    /// The `working_time_in_force` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub working_time_in_force: Option<OrderListOpocoWorkingTimeInForceEnum>,
+    /// Arbitrary numeric value identifying the working order within an order strategy.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub working_strategy_id: Option<i64>,
+    /// Arbitrary numeric value identifying the working order strategy. Values smaller than 1000000 are reserved and cannot be used.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub working_strategy_type: Option<i32>,
+    ///
+    /// The `working_peg_price_type` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub working_peg_price_type: Option<OrderListOpocoWorkingPegPriceTypeEnum>,
+    ///
+    /// The `working_peg_offset_type` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub working_peg_offset_type: Option<OrderListOpocoWorkingPegOffsetTypeEnum>,
+    ///
+    /// The `working_peg_offset_value` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub working_peg_offset_value: Option<i32>,
+    /// Arbitrary unique ID among open orders for the pending above order. Automatically generated if not sent.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub pending_above_client_order_id: Option<String>,
+    /// Can be used if `pendingAboveType` is `STOP_LOSS_LIMIT` , `LIMIT_MAKER`, or `TAKE_PROFIT_LIMIT` to specify the limit price.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub pending_above_price: Option<rust_decimal::Decimal>,
+    /// Can be used if `pendingAboveType` is `STOP_LOSS`, `STOP_LOSS_LIMIT`, `TAKE_PROFIT`, `TAKE_PROFIT_LIMIT`
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub pending_above_stop_price: Option<rust_decimal::Decimal>,
+    /// See [Trailing Stop FAQ](./faqs/trailing-stop-faq.md)
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub pending_above_trailing_delta: Option<rust_decimal::Decimal>,
+    /// This can only be used if `pendingAboveTimeInForce` is `GTC` or if `pendingAboveType` is `LIMIT_MAKER`.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub pending_above_iceberg_qty: Option<rust_decimal::Decimal>,
+    ///
+    /// The `pending_above_time_in_force` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub pending_above_time_in_force: Option<OrderListOpocoPendingAboveTimeInForceEnum>,
+    /// Arbitrary numeric value identifying the pending above order within an order strategy.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub pending_above_strategy_id: Option<i64>,
+    /// Arbitrary numeric value identifying the pending above order strategy. Values smaller than 1000000 are reserved and cannot be used.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub pending_above_strategy_type: Option<i32>,
+    ///
+    /// The `pending_above_peg_price_type` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub pending_above_peg_price_type: Option<OrderListOpocoPendingAbovePegPriceTypeEnum>,
+    ///
+    /// The `pending_above_peg_offset_type` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub pending_above_peg_offset_type: Option<OrderListOpocoPendingAbovePegOffsetTypeEnum>,
+    ///
+    /// The `pending_above_peg_offset_value` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub pending_above_peg_offset_value: Option<i32>,
+    ///
+    /// The `pending_below_type` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub pending_below_type: Option<OrderListOpocoPendingBelowTypeEnum>,
+    /// Arbitrary unique ID among open orders for the pending below order. Automatically generated if not sent.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub pending_below_client_order_id: Option<String>,
+    /// Can be used if `pendingBelowType` is `STOP_LOSS_LIMIT` or `TAKE_PROFIT_LIMIT` to specify limit price
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub pending_below_price: Option<rust_decimal::Decimal>,
+    /// Can be used if `pendingBelowType` is `STOP_LOSS`, `STOP_LOSS_LIMIT, TAKE_PROFIT or TAKE_PROFIT_LIMIT`. Either `pendingBelowStopPrice` or `pendingBelowTrailingDelta` or both, must be specified.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub pending_below_stop_price: Option<rust_decimal::Decimal>,
+    ///
+    /// The `pending_below_trailing_delta` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub pending_below_trailing_delta: Option<rust_decimal::Decimal>,
+    /// This can only be used if `pendingBelowTimeInForce` is `GTC`, or if `pendingBelowType` is `LIMIT_MAKER`.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub pending_below_iceberg_qty: Option<rust_decimal::Decimal>,
+    ///
+    /// The `pending_below_time_in_force` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub pending_below_time_in_force: Option<OrderListOpocoPendingBelowTimeInForceEnum>,
+    /// Arbitrary numeric value identifying the pending below order within an order strategy.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub pending_below_strategy_id: Option<i64>,
+    /// Arbitrary numeric value identifying the pending below order strategy. Values smaller than 1000000 are reserved and cannot be used.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub pending_below_strategy_type: Option<i32>,
+    ///
+    /// The `pending_below_peg_price_type` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub pending_below_peg_price_type: Option<OrderListOpocoPendingBelowPegPriceTypeEnum>,
+    ///
+    /// The `pending_below_peg_offset_type` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub pending_below_peg_offset_type: Option<OrderListOpocoPendingBelowPegOffsetTypeEnum>,
+    ///
+    /// The `pending_below_peg_offset_value` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub pending_below_peg_offset_value: Option<i32>,
+    /// The value cannot be greater than `60000`. <br> Supports up to three decimal places of precision (e.g., 6000.346) so that microseconds may be specified.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub recv_window: Option<rust_decimal::Decimal>,
+}
+
+impl OrderListOpocoParams {
+    /// Create a builder for [`order_list_opoco`].
+    ///
+    /// Required parameters:
+    ///
+    /// * `symbol` — String
+    /// * `working_type` — String
+    /// * `working_side` — String
+    /// * `working_price` — `rust_decimal::Decimal`
+    /// * `working_quantity` — Sets the quantity for the working order.
+    /// * `pending_side` — String
+    /// * `pending_above_type` — String
+    ///
+    #[must_use]
+    pub fn builder(
+        symbol: String,
+        working_type: OrderListOpocoWorkingTypeEnum,
+        working_side: OrderListOpocoWorkingSideEnum,
+        working_price: rust_decimal::Decimal,
+        working_quantity: rust_decimal::Decimal,
+        pending_side: OrderListOpocoPendingSideEnum,
+        pending_above_type: OrderListOpocoPendingAboveTypeEnum,
+    ) -> OrderListOpocoParamsBuilder {
+        OrderListOpocoParamsBuilder::default()
+            .symbol(symbol)
+            .working_type(working_type)
+            .working_side(working_side)
+            .working_price(working_price)
+            .working_quantity(working_quantity)
+            .pending_side(pending_side)
+            .pending_above_type(pending_above_type)
+    }
+}
 /// Request parameters for the [`order_list_oto`] operation.
 ///
 /// This struct holds all of the inputs you can pass when calling
@@ -3872,7 +5399,7 @@ pub struct OrderListOtoParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub self_trade_prevention_mode: Option<OrderListOtoSelfTradePreventionModeEnum>,
-    /// Arbitrary unique ID among open orders for the working order.<br> Automatically generated if not sent.
+    /// Arbitrary unique ID among open orders for the working order. Automatically generated if not sent.
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -3893,7 +5420,7 @@ pub struct OrderListOtoParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub working_strategy_id: Option<i64>,
-    /// Arbitrary numeric value identifying the working order strategy. <br> Values smaller than 1000000 are reserved and cannot be used.
+    /// Arbitrary numeric value identifying the working order strategy. Values smaller than 1000000 are reserved and cannot be used.
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -3916,7 +5443,7 @@ pub struct OrderListOtoParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub working_peg_offset_value: Option<i32>,
-    /// Arbitrary unique ID among open orders for the pending order.<br> Automatically generated if not sent.
+    /// Arbitrary unique ID among open orders for the pending order. Automatically generated if not sent.
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -3955,7 +5482,7 @@ pub struct OrderListOtoParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub pending_strategy_id: Option<i64>,
-    /// Arbitrary numeric value identifying the pending order strategy. <br> Values smaller than 1000000 are reserved and cannot be used.
+    /// Arbitrary numeric value identifying the pending order strategy. Values smaller than 1000000 are reserved and cannot be used.
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -4091,7 +5618,7 @@ pub struct OrderListOtocoParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub self_trade_prevention_mode: Option<OrderListOtocoSelfTradePreventionModeEnum>,
-    /// Arbitrary unique ID among open orders for the working order.<br> Automatically generated if not sent.
+    /// Arbitrary unique ID among open orders for the working order. Automatically generated if not sent.
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -4112,7 +5639,7 @@ pub struct OrderListOtocoParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub working_strategy_id: Option<i64>,
-    /// Arbitrary numeric value identifying the working order strategy. <br> Values smaller than 1000000 are reserved and cannot be used.
+    /// Arbitrary numeric value identifying the working order strategy. Values smaller than 1000000 are reserved and cannot be used.
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -4135,7 +5662,7 @@ pub struct OrderListOtocoParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub working_peg_offset_value: Option<i32>,
-    /// Arbitrary unique ID among open orders for the pending above order.<br> Automatically generated if not sent.
+    /// Arbitrary unique ID among open orders for the pending above order. Automatically generated if not sent.
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -4150,7 +5677,7 @@ pub struct OrderListOtocoParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub pending_above_stop_price: Option<rust_decimal::Decimal>,
-    /// See [Trailing Stop FAQ](faqs/trailing-stop-faq.md)
+    /// See [Trailing Stop FAQ](./faqs/trailing-stop-faq.md)
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -4171,7 +5698,7 @@ pub struct OrderListOtocoParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub pending_above_strategy_id: Option<i64>,
-    /// Arbitrary numeric value identifying the pending above order strategy. <br> Values smaller than 1000000 are reserved and cannot be used.
+    /// Arbitrary numeric value identifying the pending above order strategy. Values smaller than 1000000 are reserved and cannot be used.
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -4200,7 +5727,7 @@ pub struct OrderListOtocoParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub pending_below_type: Option<OrderListOtocoPendingBelowTypeEnum>,
-    /// Arbitrary unique ID among open orders for the pending below order.<br> Automatically generated if not sent.
+    /// Arbitrary unique ID among open orders for the pending below order. Automatically generated if not sent.
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -4210,7 +5737,7 @@ pub struct OrderListOtocoParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub pending_below_price: Option<rust_decimal::Decimal>,
-    /// Can be used if `pendingBelowType` is `STOP_LOSS`, `STOP_LOSS_LIMIT, TAKE_PROFIT or TAKE_PROFIT_LIMIT`. <br>Either `pendingBelowStopPrice` or `pendingBelowTrailingDelta` or both, must be specified.
+    /// Can be used if `pendingBelowType` is `STOP_LOSS`, `STOP_LOSS_LIMIT, TAKE_PROFIT or TAKE_PROFIT_LIMIT`. Either `pendingBelowStopPrice` or `pendingBelowTrailingDelta` or both, must be specified.
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -4237,7 +5764,7 @@ pub struct OrderListOtocoParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub pending_below_strategy_id: Option<i64>,
-    /// Arbitrary numeric value identifying the pending below order strategy. <br> Values smaller than 1000000 are reserved and cannot be used.
+    /// Arbitrary numeric value identifying the pending below order strategy. Values smaller than 1000000 are reserved and cannot be used.
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -4923,6 +6450,7 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
 
@@ -4935,6 +6463,7 @@ impl TradeApi for TradeApiClient {
             "/api/v1/openOrders",
             reqwest::Method::DELETE,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -4959,6 +6488,7 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
 
@@ -4987,6 +6517,7 @@ impl TradeApi for TradeApiClient {
             "/api/v1/order",
             reqwest::Method::DELETE,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -5010,6 +6541,7 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
 
@@ -5034,6 +6566,7 @@ impl TradeApi for TradeApiClient {
             "/api/v1/orderList",
             reqwest::Method::DELETE,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -5071,6 +6604,7 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
 
@@ -5147,6 +6681,7 @@ impl TradeApi for TradeApiClient {
             "/api/v1/order",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -5171,10 +6706,9 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
-
-        query_params.insert("newQty".to_string(), json!(new_qty));
 
         if let Some(rw) = order_id {
             query_params.insert("orderId".to_string(), json!(rw));
@@ -5188,6 +6722,8 @@ impl TradeApi for TradeApiClient {
             query_params.insert("newClientOrderId".to_string(), json!(rw));
         }
 
+        query_params.insert("newQty".to_string(), json!(new_qty));
+
         if let Some(rw) = recv_window {
             query_params.insert("recvWindow".to_string(), json!(rw));
         }
@@ -5197,6 +6733,7 @@ impl TradeApi for TradeApiClient {
             "/api/v1/order/amend/keepPriority",
             reqwest::Method::PUT,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -5240,6 +6777,7 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
 
@@ -5338,6 +6876,7 @@ impl TradeApi for TradeApiClient {
             "/api/v1/order/cancelReplace",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -5387,20 +6926,19 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
+
+        if let Some(rw) = list_client_order_id {
+            query_params.insert("listClientOrderId".to_string(), json!(rw));
+        }
 
         query_params.insert("side".to_string(), json!(side));
 
         query_params.insert("quantity".to_string(), json!(quantity));
 
         query_params.insert("aboveType".to_string(), json!(above_type));
-
-        query_params.insert("belowType".to_string(), json!(below_type));
-
-        if let Some(rw) = list_client_order_id {
-            query_params.insert("listClientOrderId".to_string(), json!(rw));
-        }
 
         if let Some(rw) = above_client_order_id {
             query_params.insert("aboveClientOrderId".to_string(), json!(rw));
@@ -5445,6 +6983,8 @@ impl TradeApi for TradeApiClient {
         if let Some(rw) = above_peg_offset_value {
             query_params.insert("abovePegOffsetValue".to_string(), json!(rw));
         }
+
+        query_params.insert("belowType".to_string(), json!(below_type));
 
         if let Some(rw) = below_client_order_id {
             query_params.insert("belowClientOrderId".to_string(), json!(rw));
@@ -5507,6 +7047,7 @@ impl TradeApi for TradeApiClient {
             "/api/v1/orderList/oco",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -5517,11 +7058,11 @@ impl TradeApi for TradeApiClient {
         .await
     }
 
-    async fn order_list_oto(
+    async fn order_list_opo(
         &self,
-        params: OrderListOtoParams,
-    ) -> anyhow::Result<RestApiResponse<models::OrderListOtoResponse>> {
-        let OrderListOtoParams {
+        params: OrderListOpoParams,
+    ) -> anyhow::Result<RestApiResponse<models::OrderListOpoResponse>> {
+        let OrderListOpoParams {
             symbol,
             working_type,
             working_side,
@@ -5529,7 +7070,6 @@ impl TradeApi for TradeApiClient {
             working_quantity,
             pending_type,
             pending_side,
-            pending_quantity,
             list_client_order_id,
             new_order_resp_type,
             self_trade_prevention_mode,
@@ -5556,22 +7096,9 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
-
-        query_params.insert("workingType".to_string(), json!(working_type));
-
-        query_params.insert("workingSide".to_string(), json!(working_side));
-
-        query_params.insert("workingPrice".to_string(), json!(working_price));
-
-        query_params.insert("workingQuantity".to_string(), json!(working_quantity));
-
-        query_params.insert("pendingType".to_string(), json!(pending_type));
-
-        query_params.insert("pendingSide".to_string(), json!(pending_side));
-
-        query_params.insert("pendingQuantity".to_string(), json!(pending_quantity));
 
         if let Some(rw) = list_client_order_id {
             query_params.insert("listClientOrderId".to_string(), json!(rw));
@@ -5585,9 +7112,17 @@ impl TradeApi for TradeApiClient {
             query_params.insert("selfTradePreventionMode".to_string(), json!(rw));
         }
 
+        query_params.insert("workingType".to_string(), json!(working_type));
+
+        query_params.insert("workingSide".to_string(), json!(working_side));
+
         if let Some(rw) = working_client_order_id {
             query_params.insert("workingClientOrderId".to_string(), json!(rw));
         }
+
+        query_params.insert("workingPrice".to_string(), json!(working_price));
+
+        query_params.insert("workingQuantity".to_string(), json!(working_quantity));
 
         if let Some(rw) = working_iceberg_qty {
             query_params.insert("workingIcebergQty".to_string(), json!(rw));
@@ -5616,6 +7151,10 @@ impl TradeApi for TradeApiClient {
         if let Some(rw) = working_peg_offset_value {
             query_params.insert("workingPegOffsetValue".to_string(), json!(rw));
         }
+
+        query_params.insert("pendingType".to_string(), json!(pending_type));
+
+        query_params.insert("pendingSide".to_string(), json!(pending_side));
 
         if let Some(rw) = pending_client_order_id {
             query_params.insert("pendingClientOrderId".to_string(), json!(rw));
@@ -5665,11 +7204,399 @@ impl TradeApi for TradeApiClient {
             query_params.insert("recvWindow".to_string(), json!(rw));
         }
 
+        send_request::<models::OrderListOpoResponse>(
+            &self.configuration,
+            "/api/v3/orderList/opo",
+            reqwest::Method::POST,
+            query_params,
+            body_params,
+            if HAS_TIME_UNIT {
+                self.configuration.time_unit
+            } else {
+                None
+            },
+            true,
+        )
+        .await
+    }
+
+    async fn order_list_opoco(
+        &self,
+        params: OrderListOpocoParams,
+    ) -> anyhow::Result<RestApiResponse<models::OrderListOpocoResponse>> {
+        let OrderListOpocoParams {
+            symbol,
+            working_type,
+            working_side,
+            working_price,
+            working_quantity,
+            pending_side,
+            pending_above_type,
+            list_client_order_id,
+            new_order_resp_type,
+            self_trade_prevention_mode,
+            working_client_order_id,
+            working_iceberg_qty,
+            working_time_in_force,
+            working_strategy_id,
+            working_strategy_type,
+            working_peg_price_type,
+            working_peg_offset_type,
+            working_peg_offset_value,
+            pending_above_client_order_id,
+            pending_above_price,
+            pending_above_stop_price,
+            pending_above_trailing_delta,
+            pending_above_iceberg_qty,
+            pending_above_time_in_force,
+            pending_above_strategy_id,
+            pending_above_strategy_type,
+            pending_above_peg_price_type,
+            pending_above_peg_offset_type,
+            pending_above_peg_offset_value,
+            pending_below_type,
+            pending_below_client_order_id,
+            pending_below_price,
+            pending_below_stop_price,
+            pending_below_trailing_delta,
+            pending_below_iceberg_qty,
+            pending_below_time_in_force,
+            pending_below_strategy_id,
+            pending_below_strategy_type,
+            pending_below_peg_price_type,
+            pending_below_peg_offset_type,
+            pending_below_peg_offset_value,
+            recv_window,
+        } = params;
+
+        let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
+
+        query_params.insert("symbol".to_string(), json!(symbol));
+
+        if let Some(rw) = list_client_order_id {
+            query_params.insert("listClientOrderId".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = new_order_resp_type {
+            query_params.insert("newOrderRespType".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = self_trade_prevention_mode {
+            query_params.insert("selfTradePreventionMode".to_string(), json!(rw));
+        }
+
+        query_params.insert("workingType".to_string(), json!(working_type));
+
+        query_params.insert("workingSide".to_string(), json!(working_side));
+
+        if let Some(rw) = working_client_order_id {
+            query_params.insert("workingClientOrderId".to_string(), json!(rw));
+        }
+
+        query_params.insert("workingPrice".to_string(), json!(working_price));
+
+        query_params.insert("workingQuantity".to_string(), json!(working_quantity));
+
+        if let Some(rw) = working_iceberg_qty {
+            query_params.insert("workingIcebergQty".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = working_time_in_force {
+            query_params.insert("workingTimeInForce".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = working_strategy_id {
+            query_params.insert("workingStrategyId".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = working_strategy_type {
+            query_params.insert("workingStrategyType".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = working_peg_price_type {
+            query_params.insert("workingPegPriceType".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = working_peg_offset_type {
+            query_params.insert("workingPegOffsetType".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = working_peg_offset_value {
+            query_params.insert("workingPegOffsetValue".to_string(), json!(rw));
+        }
+
+        query_params.insert("pendingSide".to_string(), json!(pending_side));
+
+        query_params.insert("pendingAboveType".to_string(), json!(pending_above_type));
+
+        if let Some(rw) = pending_above_client_order_id {
+            query_params.insert("pendingAboveClientOrderId".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = pending_above_price {
+            query_params.insert("pendingAbovePrice".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = pending_above_stop_price {
+            query_params.insert("pendingAboveStopPrice".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = pending_above_trailing_delta {
+            query_params.insert("pendingAboveTrailingDelta".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = pending_above_iceberg_qty {
+            query_params.insert("pendingAboveIcebergQty".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = pending_above_time_in_force {
+            query_params.insert("pendingAboveTimeInForce".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = pending_above_strategy_id {
+            query_params.insert("pendingAboveStrategyId".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = pending_above_strategy_type {
+            query_params.insert("pendingAboveStrategyType".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = pending_above_peg_price_type {
+            query_params.insert("pendingAbovePegPriceType".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = pending_above_peg_offset_type {
+            query_params.insert("pendingAbovePegOffsetType".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = pending_above_peg_offset_value {
+            query_params.insert("pendingAbovePegOffsetValue".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = pending_below_type {
+            query_params.insert("pendingBelowType".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = pending_below_client_order_id {
+            query_params.insert("pendingBelowClientOrderId".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = pending_below_price {
+            query_params.insert("pendingBelowPrice".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = pending_below_stop_price {
+            query_params.insert("pendingBelowStopPrice".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = pending_below_trailing_delta {
+            query_params.insert("pendingBelowTrailingDelta".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = pending_below_iceberg_qty {
+            query_params.insert("pendingBelowIcebergQty".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = pending_below_time_in_force {
+            query_params.insert("pendingBelowTimeInForce".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = pending_below_strategy_id {
+            query_params.insert("pendingBelowStrategyId".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = pending_below_strategy_type {
+            query_params.insert("pendingBelowStrategyType".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = pending_below_peg_price_type {
+            query_params.insert("pendingBelowPegPriceType".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = pending_below_peg_offset_type {
+            query_params.insert("pendingBelowPegOffsetType".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = pending_below_peg_offset_value {
+            query_params.insert("pendingBelowPegOffsetValue".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = recv_window {
+            query_params.insert("recvWindow".to_string(), json!(rw));
+        }
+
+        send_request::<models::OrderListOpocoResponse>(
+            &self.configuration,
+            "/api/v3/orderList/opoco",
+            reqwest::Method::POST,
+            query_params,
+            body_params,
+            if HAS_TIME_UNIT {
+                self.configuration.time_unit
+            } else {
+                None
+            },
+            true,
+        )
+        .await
+    }
+
+    async fn order_list_oto(
+        &self,
+        params: OrderListOtoParams,
+    ) -> anyhow::Result<RestApiResponse<models::OrderListOtoResponse>> {
+        let OrderListOtoParams {
+            symbol,
+            working_type,
+            working_side,
+            working_price,
+            working_quantity,
+            pending_type,
+            pending_side,
+            pending_quantity,
+            list_client_order_id,
+            new_order_resp_type,
+            self_trade_prevention_mode,
+            working_client_order_id,
+            working_iceberg_qty,
+            working_time_in_force,
+            working_strategy_id,
+            working_strategy_type,
+            working_peg_price_type,
+            working_peg_offset_type,
+            working_peg_offset_value,
+            pending_client_order_id,
+            pending_price,
+            pending_stop_price,
+            pending_trailing_delta,
+            pending_iceberg_qty,
+            pending_time_in_force,
+            pending_strategy_id,
+            pending_strategy_type,
+            pending_peg_price_type,
+            pending_peg_offset_type,
+            pending_peg_offset_value,
+            recv_window,
+        } = params;
+
+        let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
+
+        query_params.insert("symbol".to_string(), json!(symbol));
+
+        if let Some(rw) = list_client_order_id {
+            query_params.insert("listClientOrderId".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = new_order_resp_type {
+            query_params.insert("newOrderRespType".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = self_trade_prevention_mode {
+            query_params.insert("selfTradePreventionMode".to_string(), json!(rw));
+        }
+
+        query_params.insert("workingType".to_string(), json!(working_type));
+
+        query_params.insert("workingSide".to_string(), json!(working_side));
+
+        if let Some(rw) = working_client_order_id {
+            query_params.insert("workingClientOrderId".to_string(), json!(rw));
+        }
+
+        query_params.insert("workingPrice".to_string(), json!(working_price));
+
+        query_params.insert("workingQuantity".to_string(), json!(working_quantity));
+
+        if let Some(rw) = working_iceberg_qty {
+            query_params.insert("workingIcebergQty".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = working_time_in_force {
+            query_params.insert("workingTimeInForce".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = working_strategy_id {
+            query_params.insert("workingStrategyId".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = working_strategy_type {
+            query_params.insert("workingStrategyType".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = working_peg_price_type {
+            query_params.insert("workingPegPriceType".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = working_peg_offset_type {
+            query_params.insert("workingPegOffsetType".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = working_peg_offset_value {
+            query_params.insert("workingPegOffsetValue".to_string(), json!(rw));
+        }
+
+        query_params.insert("pendingType".to_string(), json!(pending_type));
+
+        query_params.insert("pendingSide".to_string(), json!(pending_side));
+
+        if let Some(rw) = pending_client_order_id {
+            query_params.insert("pendingClientOrderId".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = pending_price {
+            query_params.insert("pendingPrice".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = pending_stop_price {
+            query_params.insert("pendingStopPrice".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = pending_trailing_delta {
+            query_params.insert("pendingTrailingDelta".to_string(), json!(rw));
+        }
+
+        query_params.insert("pendingQuantity".to_string(), json!(pending_quantity));
+
+        if let Some(rw) = pending_iceberg_qty {
+            query_params.insert("pendingIcebergQty".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = pending_time_in_force {
+            query_params.insert("pendingTimeInForce".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = pending_strategy_id {
+            query_params.insert("pendingStrategyId".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = pending_strategy_type {
+            query_params.insert("pendingStrategyType".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = pending_peg_price_type {
+            query_params.insert("pendingPegPriceType".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = pending_peg_offset_type {
+            query_params.insert("pendingPegOffsetType".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = pending_peg_offset_value {
+            query_params.insert("pendingPegOffsetValue".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = recv_window {
+            query_params.insert("recvWindow".to_string(), json!(rw));
+        }
+
         send_request::<models::OrderListOtoResponse>(
             &self.configuration,
             "/api/v1/orderList/oto",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -5731,22 +7658,9 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
-
-        query_params.insert("workingType".to_string(), json!(working_type));
-
-        query_params.insert("workingSide".to_string(), json!(working_side));
-
-        query_params.insert("workingPrice".to_string(), json!(working_price));
-
-        query_params.insert("workingQuantity".to_string(), json!(working_quantity));
-
-        query_params.insert("pendingSide".to_string(), json!(pending_side));
-
-        query_params.insert("pendingQuantity".to_string(), json!(pending_quantity));
-
-        query_params.insert("pendingAboveType".to_string(), json!(pending_above_type));
 
         if let Some(rw) = list_client_order_id {
             query_params.insert("listClientOrderId".to_string(), json!(rw));
@@ -5760,9 +7674,17 @@ impl TradeApi for TradeApiClient {
             query_params.insert("selfTradePreventionMode".to_string(), json!(rw));
         }
 
+        query_params.insert("workingType".to_string(), json!(working_type));
+
+        query_params.insert("workingSide".to_string(), json!(working_side));
+
         if let Some(rw) = working_client_order_id {
             query_params.insert("workingClientOrderId".to_string(), json!(rw));
         }
+
+        query_params.insert("workingPrice".to_string(), json!(working_price));
+
+        query_params.insert("workingQuantity".to_string(), json!(working_quantity));
 
         if let Some(rw) = working_iceberg_qty {
             query_params.insert("workingIcebergQty".to_string(), json!(rw));
@@ -5791,6 +7713,12 @@ impl TradeApi for TradeApiClient {
         if let Some(rw) = working_peg_offset_value {
             query_params.insert("workingPegOffsetValue".to_string(), json!(rw));
         }
+
+        query_params.insert("pendingSide".to_string(), json!(pending_side));
+
+        query_params.insert("pendingQuantity".to_string(), json!(pending_quantity));
+
+        query_params.insert("pendingAboveType".to_string(), json!(pending_above_type));
 
         if let Some(rw) = pending_above_client_order_id {
             query_params.insert("pendingAboveClientOrderId".to_string(), json!(rw));
@@ -5893,6 +7821,7 @@ impl TradeApi for TradeApiClient {
             "/api/v1/orderList/otoco",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -5931,24 +7860,23 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
-
-        query_params.insert("side".to_string(), json!(side));
-
-        query_params.insert("quantity".to_string(), json!(quantity));
-
-        query_params.insert("price".to_string(), json!(price));
-
-        query_params.insert("stopPrice".to_string(), json!(stop_price));
 
         if let Some(rw) = list_client_order_id {
             query_params.insert("listClientOrderId".to_string(), json!(rw));
         }
 
+        query_params.insert("side".to_string(), json!(side));
+
+        query_params.insert("quantity".to_string(), json!(quantity));
+
         if let Some(rw) = limit_client_order_id {
             query_params.insert("limitClientOrderId".to_string(), json!(rw));
         }
+
+        query_params.insert("price".to_string(), json!(price));
 
         if let Some(rw) = limit_strategy_id {
             query_params.insert("limitStrategyId".to_string(), json!(rw));
@@ -5969,6 +7897,8 @@ impl TradeApi for TradeApiClient {
         if let Some(rw) = stop_client_order_id {
             query_params.insert("stopClientOrderId".to_string(), json!(rw));
         }
+
+        query_params.insert("stopPrice".to_string(), json!(stop_price));
 
         if let Some(rw) = stop_strategy_id {
             query_params.insert("stopStrategyId".to_string(), json!(rw));
@@ -6007,6 +7937,7 @@ impl TradeApi for TradeApiClient {
             "/api/v1/order/oco",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -6045,16 +7976,17 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
+
+        if let Some(rw) = compute_commission_rates {
+            query_params.insert("computeCommissionRates".to_string(), json!(rw));
+        }
 
         query_params.insert("symbol".to_string(), json!(symbol));
 
         query_params.insert("side".to_string(), json!(side));
 
         query_params.insert("type".to_string(), json!(r#type));
-
-        if let Some(rw) = compute_commission_rates {
-            query_params.insert("computeCommissionRates".to_string(), json!(rw));
-        }
 
         if let Some(rw) = time_in_force {
             query_params.insert("timeInForce".to_string(), json!(rw));
@@ -6125,6 +8057,7 @@ impl TradeApi for TradeApiClient {
             "/api/v1/order/test",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -6156,6 +8089,7 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
 
@@ -6163,11 +8097,11 @@ impl TradeApi for TradeApiClient {
 
         query_params.insert("type".to_string(), json!(r#type));
 
-        query_params.insert("quantity".to_string(), json!(quantity));
-
         if let Some(rw) = time_in_force {
             query_params.insert("timeInForce".to_string(), json!(rw));
         }
+
+        query_params.insert("quantity".to_string(), json!(quantity));
 
         if let Some(rw) = price {
             query_params.insert("price".to_string(), json!(rw));
@@ -6206,6 +8140,7 @@ impl TradeApi for TradeApiClient {
             "/api/v1/sor/order",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -6238,6 +8173,11 @@ impl TradeApi for TradeApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
+
+        if let Some(rw) = compute_commission_rates {
+            query_params.insert("computeCommissionRates".to_string(), json!(rw));
+        }
 
         query_params.insert("symbol".to_string(), json!(symbol));
 
@@ -6245,15 +8185,11 @@ impl TradeApi for TradeApiClient {
 
         query_params.insert("type".to_string(), json!(r#type));
 
-        query_params.insert("quantity".to_string(), json!(quantity));
-
-        if let Some(rw) = compute_commission_rates {
-            query_params.insert("computeCommissionRates".to_string(), json!(rw));
-        }
-
         if let Some(rw) = time_in_force {
             query_params.insert("timeInForce".to_string(), json!(rw));
         }
+
+        query_params.insert("quantity".to_string(), json!(quantity));
 
         if let Some(rw) = price {
             query_params.insert("price".to_string(), json!(rw));
@@ -6292,6 +8228,7 @@ impl TradeApi for TradeApiClient {
             "/api/v1/sor/order/test",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -6427,9 +8364,11 @@ mod tests {
             _params: DeleteOpenOrdersParams,
         ) -> anyhow::Result<RestApiResponse<Vec<models::DeleteOpenOrdersResponseInner>>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"symbol":"BTCUSDT","origClientOrderId":"E6APeyTJvkMvLMYMqu1KQ4","orderId":11,"orderListId":-1,"clientOrderId":"pXLV6Hz6mprAcVYpVMTGgx","transactTime":1684804350068,"price":"0.089853","origQty":"0.178622","executedQty":"0.000000","origQuoteOrderQty":"0.000000","cummulativeQuoteQty":"0.000000","status":"CANCELED","timeInForce":"GTC","type":"LIMIT","side":"BUY","selfTradePreventionMode":"NONE"},{"symbol":"BTCUSDT","origClientOrderId":"A3EF2HCwxgZPFMrfwbgrhv","orderId":13,"orderListId":-1,"clientOrderId":"pXLV6Hz6mprAcVYpVMTGgx","transactTime":1684804350069,"price":"0.090430","origQty":"0.178622","executedQty":"0.000000","origQuoteOrderQty":"0.000000","cummulativeQuoteQty":"0.000000","status":"CANCELED","timeInForce":"GTC","type":"LIMIT","side":"BUY","selfTradePreventionMode":"NONE"},{"orderListId":1929,"contingencyType":"OCO","listStatusType":"ALL_DONE","listOrderStatus":"ALL_DONE","listClientOrderId":"2inzWQdDvZLHbbAmAozX2N","transactionTime":1585230948299,"symbol":"BTCUSDT","orders":[{"symbol":"BTCUSDT","orderId":20,"clientOrderId":"CwOOIPHSmYywx6jZX77TdL"},{"symbol":"BTCUSDT","orderId":21,"clientOrderId":"461cPg51vQjV3zIMOXNz39"}],"orderReports":[{"symbol":"BTCUSDT","origClientOrderId":"CwOOIPHSmYywx6jZX77TdL","orderId":20,"orderListId":1929,"clientOrderId":"pXLV6Hz6mprAcVYpVMTGgx","transactTime":1688005070874,"price":"0.668611","origQty":"0.690354","executedQty":"0.000000","origQuoteOrderQty":"0.000000","cummulativeQuoteQty":"0.000000","status":"CANCELED","timeInForce":"GTC","type":"STOP_LOSS_LIMIT","side":"BUY","stopPrice":"0.378131","icebergQty":"0.017083","selfTradePreventionMode":"NONE"},{"symbol":"BTCUSDT","origClientOrderId":"461cPg51vQjV3zIMOXNz39","orderId":21,"orderListId":1929,"clientOrderId":"pXLV6Hz6mprAcVYpVMTGgx","transactTime":1688005070874,"price":"0.008791","origQty":"0.690354","executedQty":"0.000000","origQuoteOrderQty":"0.000000","cummulativeQuoteQty":"0.000000","status":"CANCELED","timeInForce":"GTC","type":"LIMIT_MAKER","side":"BUY","icebergQty":"0.639962","selfTradePreventionMode":"NONE"}]}]"#).unwrap();
@@ -6452,9 +8391,11 @@ mod tests {
             _params: DeleteOrderParams,
         ) -> anyhow::Result<RestApiResponse<models::DeleteOrderResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"symbol":"LTCBTC","origClientOrderId":"myOrder1","orderId":4,"orderListId":-1,"clientOrderId":"cancelMyOrder1","transactTime":1684804350068,"price":"2.00000000","origQty":"1.00000000","executedQty":"0.00000000","origQuoteOrderQty":"0.000000","cummulativeQuoteQty":"0.00000000","status":"CANCELED","timeInForce":"GTC","type":"LIMIT","side":"BUY","selfTradePreventionMode":"NONE"}"#).unwrap();
@@ -6477,9 +8418,11 @@ mod tests {
             _params: DeleteOrderListParams,
         ) -> anyhow::Result<RestApiResponse<models::DeleteOrderListResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"orderListId":0,"contingencyType":"OCO","listStatusType":"ALL_DONE","listOrderStatus":"ALL_DONE","listClientOrderId":"C3wyj4WVEktd7u9aVBRXcN","transactionTime":1574040868128,"symbol":"LTCBTC","orders":[{"symbol":"LTCBTC","orderId":3,"clientOrderId":"TXOvglzXuaubXAaENpaRCB"},{"symbol":"LTCBTC","orderId":2,"clientOrderId":"pO9ufTiFGg3nw2fOdgeOXa"}],"orderReports":[{"symbol":"LTCBTC","origClientOrderId":"TXOvglzXuaubXAaENpaRCB","orderId":3,"orderListId":0,"clientOrderId":"unfWT8ig8i0uj6lPuYLez6","transactTime":1688005070874,"price":"3.00000000","origQty":"10.00000000","executedQty":"0.00000000","origQuoteOrderQty":"0.000000","cummulativeQuoteQty":"0.00000000","status":"CANCELED","timeInForce":"GTC","type":"LIMIT_MAKER","side":"SELL","selfTradePreventionMode":"NONE"},{"symbol":"LTCBTC","origClientOrderId":"pO9ufTiFGg3nw2fOdgeOXa","orderId":2,"orderListId":0,"clientOrderId":"unfWT8ig8i0uj6lPuYLez6","transactTime":1688005070874,"price":"1.00000000","origQty":"10.00000000","executedQty":"0.00000000","origQuoteOrderQty":"0.000000","cummulativeQuoteQty":"0.00000000","status":"CANCELED","timeInForce":"GTC","type":"STOP_LOSS_LIMIT","side":"SELL","stopPrice":"1.00000000","selfTradePreventionMode":"NONE"}]}"#).unwrap();
@@ -6502,9 +8445,11 @@ mod tests {
             _params: NewOrderParams,
         ) -> anyhow::Result<RestApiResponse<models::NewOrderResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"symbol":"BTCUSDT","orderId":28,"orderListId":-1,"clientOrderId":"6gCrw2kRUAF9CvJDGP16IP","transactTime":1507725176595,"price":"0.00000000","origQty":"10.00000000","executedQty":"10.00000000","origQuoteOrderQty":"0.000000","cummulativeQuoteQty":"10.00000000","status":"FILLED","timeInForce":"GTC","type":"MARKET","side":"SELL","workingTime":1507725176595,"selfTradePreventionMode":"NONE","fills":[{"price":"3995.00000000","qty":"1.00000000","commission":"3.99500000","commissionAsset":"USDT","tradeId":60},{"price":"3997.00000000","qty":"1.00000000","commission":"3.99700000","commissionAsset":"USDT","tradeId":59},{"price":"3998.00000000","qty":"2.00000000","commission":"7.99600000","commissionAsset":"USDT","tradeId":58},{"price":"3999.00000000","qty":"5.00000000","commission":"19.99500000","commissionAsset":"USDT","tradeId":57},{"price":"4000.00000000","qty":"1.00000000","commission":"4.00000000","commissionAsset":"USDT","tradeId":56},{"price":"3995.00000000","qty":"1.00000000","commission":"3.99500000","commissionAsset":"USDT","tradeId":60},{"price":"3997.00000000","qty":"1.00000000","commission":"3.99700000","commissionAsset":"USDT","tradeId":59},{"price":"3998.00000000","qty":"2.00000000","commission":"7.99600000","commissionAsset":"USDT","tradeId":58},{"price":"3999.00000000","qty":"5.00000000","commission":"19.99500000","commissionAsset":"USDT","tradeId":57},{"price":"4000.00000000","qty":"1.00000000","commission":"4.00000000","commissionAsset":"USDT","tradeId":56}]}"#).unwrap();
@@ -6527,9 +8472,11 @@ mod tests {
             _params: OrderAmendKeepPriorityParams,
         ) -> anyhow::Result<RestApiResponse<models::OrderAmendKeepPriorityResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"transactTime":1741669661670,"executionId":22,"amendedOrder":{"symbol":"BTCUSDT","orderId":9,"orderListId":1,"origClientOrderId":"W0fJ9fiLKHOJutovPK3oJp","clientOrderId":"UQ1Np3bmQ71jJzsSDW9Vpi","price":"0.00000000","qty":"4.00000000","executedQty":"0.00000000","preventedQty":"0.00000000","quoteOrderQty":"0.00000000","cumulativeQuoteQty":"0.00000000","status":"PENDING_NEW","timeInForce":"GTC","type":"MARKET","side":"BUY","workingTime":1741926410242,"selfTradePreventionMode":"NONE"},"listStatus":{"orderListId":1,"contingencyType":"OTO","listOrderStatus":"EXECUTING","listClientOrderId":"AT7FTxZXylVSwRoZs52mt3","symbol":"BTCUSDT","orders":[{"symbol":"BTCUSDT","orderId":9,"clientOrderId":"UQ1Np3bmQ71jJzsSDW9Vpi"},{"symbol":"BTCUSDT","orderId":8,"clientOrderId":"GkwwHZUUbFtZOoH1YsZk9Q"},{"symbol":"BTCUSDT","orderId":9,"clientOrderId":"UQ1Np3bmQ71jJzsSDW9Vpi"},{"symbol":"BTCUSDT","orderId":8,"clientOrderId":"GkwwHZUUbFtZOoH1YsZk9Q"}]}}"#).unwrap();
@@ -6552,9 +8499,11 @@ mod tests {
             _params: OrderCancelReplaceParams,
         ) -> anyhow::Result<RestApiResponse<models::OrderCancelReplaceResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"cancelResult":"SUCCESS","newOrderResult":"SUCCESS","cancelResponse":{"symbol":"BTCUSDT","origClientOrderId":"DnLo3vTAQcjha43lAZhZ0y","orderId":9,"orderListId":-1,"clientOrderId":"osxN3JXAtJvKvCqGeMWMVR","transactTime":1684804350068,"price":"0.01000000","origQty":"0.000100","executedQty":"0.00000000","origQuoteOrderQty":"0.000000","cummulativeQuoteQty":"0.00000000","status":"CANCELED","timeInForce":"GTC","type":"LIMIT","side":"SELL","selfTradePreventionMode":"NONE"},"newOrderResponse":{"symbol":"BTCUSDT","orderId":10,"orderListId":-1,"clientOrderId":"wOceeeOzNORyLiQfw7jd8S","transactTime":1652928801803,"price":"0.02000000","origQty":"0.040000","executedQty":"0.00000000","origQuoteOrderQty":"0.000000","cummulativeQuoteQty":"0.00000000","status":"NEW","timeInForce":"GTC","type":"LIMIT","side":"BUY","workingTime":1669277163808,"fills":[],"selfTradePreventionMode":"NONE"},"code":-2021,"msg":"Order cancel-replace partially failed.","data":{"cancelResult":"SUCCESS","newOrderResult":"FAILURE","cancelResponse":{"code":-2011,"msg":"Unknown order sent.","symbol":"LTCBNB","origClientOrderId":"GKt5zzfOxRDSQLveDYCTkc","orderId":64,"orderListId":-1,"clientOrderId":"loehOJF3FjoreUBDmv739R","transactTime":1715779007228,"price":"1.00","origQty":"10.00000000","executedQty":"0.00000000","origQuoteOrderQty":"0.000000","cummulativeQuoteQty":"0.00","status":"CANCELED","timeInForce":"GTC","type":"LIMIT","side":"SELL","selfTradePreventionMode":"NONE"},"newOrderResponse":{"code":-1015,"msg":"Too many new orders; current limit is 1 orders per 10 SECOND.","symbol":"BTCUSDT","orderId":11,"orderListId":-1,"clientOrderId":"pfojJMg6IMNDKuJqDxvoxN","transactTime":1648540168818}}}"#).unwrap();
@@ -6577,9 +8526,11 @@ mod tests {
             _params: OrderListOcoParams,
         ) -> anyhow::Result<RestApiResponse<models::OrderListOcoResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"orderListId":1,"contingencyType":"OCO","listStatusType":"EXEC_STARTED","listOrderStatus":"EXECUTING","listClientOrderId":"lH1YDkuQKWiXVXHPSKYEIp","transactionTime":1710485608839,"symbol":"LTCBTC","orders":[{"symbol":"LTCBTC","orderId":11,"clientOrderId":"NuMp0nVYnciDiFmVqfpBqK"},{"symbol":"LTCBTC","orderId":10,"clientOrderId":"44nZvqpemY7sVYgPYbvPih"}],"orderReports":[{"symbol":"LTCBTC","orderId":11,"orderListId":1,"clientOrderId":"NuMp0nVYnciDiFmVqfpBqK","transactTime":1710485608839,"price":"3.00000000","origQty":"5.00000000","executedQty":"0.00000000","origQuoteOrderQty":"0.000000","cummulativeQuoteQty":"0.00000000","status":"NEW","timeInForce":"GTC","type":"LIMIT_MAKER","side":"SELL","workingTime":1710485608839,"selfTradePreventionMode":"NONE"},{"symbol":"LTCBTC","orderId":10,"orderListId":1,"clientOrderId":"44nZvqpemY7sVYgPYbvPih","transactTime":1710485608839,"price":"1.00000000","origQty":"5.00000000","executedQty":"0.00000000","origQuoteOrderQty":"0.000000","cummulativeQuoteQty":"0.00000000","status":"NEW","timeInForce":"GTC","type":"STOP_LOSS_LIMIT","side":"SELL","stopPrice":"1.00000000","workingTime":-1,"icebergQty":"1.00000000","selfTradePreventionMode":"NONE"}]}"#).unwrap();
@@ -6597,14 +8548,70 @@ mod tests {
             Ok(dummy.into())
         }
 
+        async fn order_list_opo(
+            &self,
+            _params: OrderListOpoParams,
+        ) -> anyhow::Result<RestApiResponse<models::OrderListOpoResponse>> {
+            if self.force_error {
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
+            }
+
+            let resp_json: Value = serde_json::from_str(r#"{"orderListId":0,"contingencyType":"OTO","listStatusType":"EXEC_STARTED","listOrderStatus":"EXECUTING","listClientOrderId":"H94qCqO27P74OEiO4X8HOG","transactionTime":1762998011671,"symbol":"BTCUSDT","orders":[{"symbol":"BTCUSDT","orderId":3,"clientOrderId":"2ZJCY0IjOhuYIMLGN8kU8S"},{"symbol":"BTCUSDT","orderId":2,"clientOrderId":"JX6xfdjo0wysiGumfHNmPu"}],"orderReports":[{"symbol":"BTCUSDT","orderId":3,"orderListId":0,"clientOrderId":"2ZJCY0IjOhuYIMLGN8kU8S","transactTime":1762998011671,"price":"0.00000000","executedQty":"0.00000000","origQuoteOrderQty":"0.00000000","cummulativeQuoteQty":"0.00000000","status":"PENDING_NEW","timeInForce":"GTC","type":"MARKET","side":"SELL","workingTime":-1,"selfTradePreventionMode":"NONE"},{"symbol":"BTCUSDT","orderId":2,"orderListId":0,"clientOrderId":"JX6xfdjo0wysiGumfHNmPu","transactTime":1762998011671,"price":"102264.00000000","origQty":"0.00060000","executedQty":"0.00000000","origQuoteOrderQty":"0.00000000","cummulativeQuoteQty":"0.00000000","status":"NEW","timeInForce":"GTC","type":"LIMIT","side":"BUY","workingTime":1762998011671,"selfTradePreventionMode":"NONE"}]}"#).unwrap();
+            let dummy_response: models::OrderListOpoResponse =
+                serde_json::from_value(resp_json.clone())
+                    .expect("should parse into models::OrderListOpoResponse");
+
+            let dummy = DummyRestApiResponse {
+                inner: Box::new(move || Box::pin(async move { Ok(dummy_response) })),
+                status: 200,
+                headers: HashMap::new(),
+                rate_limits: None,
+            };
+
+            Ok(dummy.into())
+        }
+
+        async fn order_list_opoco(
+            &self,
+            _params: OrderListOpocoParams,
+        ) -> anyhow::Result<RestApiResponse<models::OrderListOpocoResponse>> {
+            if self.force_error {
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
+            }
+
+            let resp_json: Value = serde_json::from_str(r#"{"orderListId":2,"contingencyType":"OTO","listStatusType":"EXEC_STARTED","listOrderStatus":"EXECUTING","listClientOrderId":"bcedxMpQG6nFrZUPQyshoL","transactionTime":1763000506354,"symbol":"BTCUSDT","orders":[{"symbol":"BTCUSDT","orderId":11,"clientOrderId":"yINkaXSJeoi3bU5vWMY8Z8"},{"symbol":"BTCUSDT","orderId":10,"clientOrderId":"mfif39yPTHsB3C0FIXznR2"},{"symbol":"BTCUSDT","orderId":9,"clientOrderId":"OLSBhMWaIlLSzZ9Zm7fnKB"}],"orderReports":[{"symbol":"BTCUSDT","orderId":11,"orderListId":2,"clientOrderId":"yINkaXSJeoi3bU5vWMY8Z8","transactTime":1763000506354,"price":"104261.00000000","executedQty":"0.00000000","origQuoteOrderQty":"0.00000000","cummulativeQuoteQty":"0.00000000","status":"PENDING_NEW","timeInForce":"GTC","type":"LIMIT_MAKER","side":"SELL","workingTime":-1,"selfTradePreventionMode":"NONE"},{"symbol":"BTCUSDT","orderId":10,"orderListId":2,"clientOrderId":"mfif39yPTHsB3C0FIXznR2","transactTime":1763000506354,"price":"101613.00000000","executedQty":"0.00000000","origQuoteOrderQty":"0.00000000","cummulativeQuoteQty":"0.00000000","status":"PENDING_NEW","timeInForce":"GTC","type":"STOP_LOSS_LIMIT","side":"SELL","stopPrice":"10100.00000000","workingTime":-1,"selfTradePreventionMode":"NONE"},{"symbol":"BTCUSDT","orderId":9,"orderListId":2,"clientOrderId":"OLSBhMWaIlLSzZ9Zm7fnKB","transactTime":1763000506354,"price":"102496.00000000","origQty":"0.00170000","executedQty":"0.00000000","origQuoteOrderQty":"0.00000000","cummulativeQuoteQty":"0.00000000","status":"NEW","timeInForce":"GTC","type":"LIMIT","side":"BUY","workingTime":1763000506354,"selfTradePreventionMode":"NONE"}]}"#).unwrap();
+            let dummy_response: models::OrderListOpocoResponse =
+                serde_json::from_value(resp_json.clone())
+                    .expect("should parse into models::OrderListOpocoResponse");
+
+            let dummy = DummyRestApiResponse {
+                inner: Box::new(move || Box::pin(async move { Ok(dummy_response) })),
+                status: 200,
+                headers: HashMap::new(),
+                rate_limits: None,
+            };
+
+            Ok(dummy.into())
+        }
+
         async fn order_list_oto(
             &self,
             _params: OrderListOtoParams,
         ) -> anyhow::Result<RestApiResponse<models::OrderListOtoResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"orderListId":0,"contingencyType":"OTO","listStatusType":"EXEC_STARTED","listOrderStatus":"EXECUTING","listClientOrderId":"yl2ERtcar1o25zcWtqVBTC","transactionTime":1712289389158,"symbol":"LTCBTC","orders":[{"symbol":"LTCBTC","orderId":5,"clientOrderId":"arLFo0zGJVDE69cvGBaU0d"},{"symbol":"LTCBTC","orderId":4,"clientOrderId":"Bq17mn9fP6vyCn75Jw1xya"}],"orderReports":[{"symbol":"LTCBTC","orderId":5,"orderListId":0,"clientOrderId":"arLFo0zGJVDE69cvGBaU0d","transactTime":1712289389158,"price":"0.00000000","origQty":"5.00000000","executedQty":"0.00000000","origQuoteOrderQty":"0.000000","cummulativeQuoteQty":"0.00000000","status":"PENDING_NEW","timeInForce":"GTC","type":"MARKET","side":"BUY","workingTime":-1,"selfTradePreventionMode":"NONE"},{"symbol":"LTCBTC","orderId":4,"orderListId":0,"clientOrderId":"Bq17mn9fP6vyCn75Jw1xya","transactTime":1712289389158,"price":"1.00000000","origQty":"1.00000000","executedQty":"0.00000000","origQuoteOrderQty":"0.000000","cummulativeQuoteQty":"0.00000000","status":"NEW","timeInForce":"GTC","type":"LIMIT","side":"SELL","workingTime":1712289389158,"selfTradePreventionMode":"NONE"}]}"#).unwrap();
@@ -6627,9 +8634,11 @@ mod tests {
             _params: OrderListOtocoParams,
         ) -> anyhow::Result<RestApiResponse<models::OrderListOtocoResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"orderListId":1,"contingencyType":"OTO","listStatusType":"EXEC_STARTED","listOrderStatus":"EXECUTING","listClientOrderId":"RumwQpBaDctlUu5jyG5rs0","transactionTime":1712291372842,"symbol":"LTCBTC","orders":[{"symbol":"LTCBTC","orderId":8,"clientOrderId":"r4JMv9cwAYYUwwBZfbussx"},{"symbol":"LTCBTC","orderId":7,"clientOrderId":"6pcQbFIzTXGZQ1e2MkGDq4"},{"symbol":"LTCBTC","orderId":6,"clientOrderId":"fM9Y4m23IFJVCQmIrlUmMK"}],"orderReports":[{"symbol":"LTCBTC","orderId":8,"orderListId":1,"clientOrderId":"r4JMv9cwAYYUwwBZfbussx","transactTime":1712291372842,"price":"3.00000000","origQty":"5.00000000","executedQty":"0.00000000","origQuoteOrderQty":"0.000000","cummulativeQuoteQty":"0.00000000","status":"PENDING_NEW","timeInForce":"GTC","type":"LIMIT_MAKER","side":"BUY","workingTime":-1,"selfTradePreventionMode":"NONE"},{"symbol":"LTCBTC","orderId":7,"orderListId":1,"clientOrderId":"6pcQbFIzTXGZQ1e2MkGDq4","transactTime":1712291372842,"price":"1.00000000","origQty":"5.00000000","executedQty":"0.00000000","origQuoteOrderQty":"0.000000","cummulativeQuoteQty":"0.00000000","status":"PENDING_NEW","timeInForce":"IOC","type":"STOP_LOSS_LIMIT","side":"BUY","stopPrice":"6.00000000","workingTime":-1,"selfTradePreventionMode":"NONE"},{"symbol":"LTCBTC","orderId":6,"orderListId":1,"clientOrderId":"fM9Y4m23IFJVCQmIrlUmMK","transactTime":1712291372842,"price":"1.00000000","origQty":"1.00000000","executedQty":"0.00000000","origQuoteOrderQty":"0.000000","cummulativeQuoteQty":"0.00000000","status":"NEW","timeInForce":"GTC","type":"LIMIT","side":"SELL","workingTime":1712291372842,"selfTradePreventionMode":"NONE"}]}"#).unwrap();
@@ -6652,9 +8661,11 @@ mod tests {
             _params: OrderOcoParams,
         ) -> anyhow::Result<RestApiResponse<models::OrderOcoResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"orderListId":0,"contingencyType":"OCO","listStatusType":"EXEC_STARTED","listOrderStatus":"EXECUTING","listClientOrderId":"JYVpp3F0f5CAG15DhtrqLp","transactionTime":1563417480525,"symbol":"LTCBTC","orders":[{"symbol":"LTCBTC","orderId":3,"clientOrderId":"xTXKaGYd4bluPVp78IVRvl"},{"symbol":"LTCBTC","orderId":2,"clientOrderId":"Kk7sqHb9J6mJWTMDVW7Vos"}],"orderReports":[{"symbol":"LTCBTC","orderId":3,"orderListId":0,"clientOrderId":"xTXKaGYd4bluPVp78IVRvl","transactTime":1563417480525,"price":"0.036435","origQty":"0.624363","executedQty":"0.000000","origQuoteOrderQty":"0.000000","cummulativeQuoteQty":"0.000000","status":"NEW","timeInForce":"GTC","type":"LIMIT_MAKER","side":"BUY","workingTime":1563417480525,"selfTradePreventionMode":"NONE"},{"symbol":"LTCBTC","orderId":2,"orderListId":0,"clientOrderId":"Kk7sqHb9J6mJWTMDVW7Vos","transactTime":1563417480525,"price":"0.000000","origQty":"0.624363","executedQty":"0.000000","origQuoteOrderQty":"0.000000","cummulativeQuoteQty":"0.000000","status":"NEW","timeInForce":"GTC","type":"STOP_LOSS","side":"BUY","stopPrice":"0.960664","workingTime":-1,"selfTradePreventionMode":"NONE"}]}"#).unwrap();
@@ -6677,9 +8688,11 @@ mod tests {
             _params: OrderTestParams,
         ) -> anyhow::Result<RestApiResponse<models::OrderTestResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"standardCommissionForOrder":{"maker":"0.00000112","taker":"0.00000114"},"specialCommissionForOrder":{"maker":"0.05000000","taker":"0.06000000"},"taxCommissionForOrder":{"maker":"0.00000112","taker":"0.00000114"},"discount":{"enabledForAccount":true,"enabledForSymbol":true,"discountAsset":"BNB","discount":"0.25000000"}}"#).unwrap();
@@ -6702,9 +8715,11 @@ mod tests {
             _params: SorOrderParams,
         ) -> anyhow::Result<RestApiResponse<models::SorOrderResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"symbol":"BTCUSDT","orderId":2,"orderListId":-1,"clientOrderId":"sBI1KM6nNtOfj5tccZSKly","transactTime":1689149087774,"price":"31000.00000000","origQty":"0.50000000","executedQty":"0.50000000","origQuoteOrderQty":"0.000000","cummulativeQuoteQty":"14000.00000000","status":"FILLED","timeInForce":"GTC","type":"LIMIT","side":"BUY","workingTime":1689149087774,"fills":[{"matchType":"ONE_PARTY_TRADE_REPORT","price":"28000.00000000","qty":"0.50000000","commission":"0.00000000","commissionAsset":"BTC","tradeId":-1,"allocId":0}],"workingFloor":"SOR","selfTradePreventionMode":"NONE","usedSor":true}"#).unwrap();
@@ -6727,9 +8742,11 @@ mod tests {
             _params: SorOrderTestParams,
         ) -> anyhow::Result<RestApiResponse<models::SorOrderTestResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"standardCommissionForOrder":{"maker":"0.00000112","taker":"0.00000114"},"taxCommissionForOrder":{"maker":"0.00000112","taker":"0.00000114"},"discount":{"enabledForAccount":true,"enabledForSymbol":true,"discountAsset":"BNB","discount":"0.25000000"}}"#).unwrap();
@@ -7191,7 +9208,7 @@ mod tests {
         TOKIO_SHARED_RT.block_on(async {
             let client = MockTradeApiClient { force_error: false };
 
-            let params = OrderListOcoParams::builder("BNBUSDT".to_string(),OrderListOcoSideEnum::Buy,dec!(1.0),OrderListOcoAboveTypeEnum::StopLossLimit,OrderListOcoBelowTypeEnum::StopLoss,).list_client_order_id("list_client_order_id_example".to_string()).above_client_order_id("above_client_order_id_example".to_string()).above_iceberg_qty(1).above_price(dec!(1.0)).above_stop_price(dec!(1.0)).above_trailing_delta(1).above_time_in_force(dec!(1.0)).above_strategy_id(1).above_strategy_type(1).above_peg_price_type(OrderListOcoAbovePegPriceTypeEnum::PrimaryPeg).above_peg_offset_type(OrderListOcoAbovePegOffsetTypeEnum::PriceLevel).above_peg_offset_value(1).below_client_order_id("below_client_order_id_example".to_string()).below_iceberg_qty(1).below_price(dec!(1.0)).below_stop_price(dec!(1.0)).below_trailing_delta(1).below_time_in_force(OrderListOcoBelowTimeInForceEnum::Gtc).below_strategy_id(1).below_strategy_type(1).below_peg_price_type(OrderListOcoBelowPegPriceTypeEnum::PrimaryPeg).below_peg_offset_type(OrderListOcoBelowPegOffsetTypeEnum::PriceLevel).below_peg_offset_value(1).new_order_resp_type(OrderListOcoNewOrderRespTypeEnum::Ack).self_trade_prevention_mode(OrderListOcoSelfTradePreventionModeEnum::None).recv_window(dec!(5000.0)).build().unwrap();
+            let params = OrderListOcoParams::builder("BNBUSDT".to_string(),OrderListOcoSideEnum::Buy,dec!(1.0),OrderListOcoAboveTypeEnum::StopLossLimit,OrderListOcoBelowTypeEnum::StopLoss,).list_client_order_id("list_client_order_id_example".to_string()).above_client_order_id("above_client_order_id_example".to_string()).above_iceberg_qty(1).above_price(dec!(1.0)).above_stop_price(dec!(1.0)).above_trailing_delta(1).above_time_in_force(OrderListOcoAboveTimeInForceEnum::Gtc).above_strategy_id(1).above_strategy_type(1).above_peg_price_type(OrderListOcoAbovePegPriceTypeEnum::PrimaryPeg).above_peg_offset_type(OrderListOcoAbovePegOffsetTypeEnum::PriceLevel).above_peg_offset_value(1).below_client_order_id("below_client_order_id_example".to_string()).below_iceberg_qty(1).below_price(dec!(1.0)).below_stop_price(dec!(1.0)).below_trailing_delta(1).below_time_in_force(OrderListOcoBelowTimeInForceEnum::Gtc).below_strategy_id(1).below_strategy_type(1).below_peg_price_type(OrderListOcoBelowPegPriceTypeEnum::PrimaryPeg).below_peg_offset_type(OrderListOcoBelowPegOffsetTypeEnum::PriceLevel).below_peg_offset_value(1).new_order_resp_type(OrderListOcoNewOrderRespTypeEnum::Ack).self_trade_prevention_mode(OrderListOcoSelfTradePreventionModeEnum::None).recv_window(dec!(5000.0)).build().unwrap();
 
             let resp_json: Value = serde_json::from_str(r#"{"orderListId":1,"contingencyType":"OCO","listStatusType":"EXEC_STARTED","listOrderStatus":"EXECUTING","listClientOrderId":"lH1YDkuQKWiXVXHPSKYEIp","transactionTime":1710485608839,"symbol":"LTCBTC","orders":[{"symbol":"LTCBTC","orderId":11,"clientOrderId":"NuMp0nVYnciDiFmVqfpBqK"},{"symbol":"LTCBTC","orderId":10,"clientOrderId":"44nZvqpemY7sVYgPYbvPih"}],"orderReports":[{"symbol":"LTCBTC","orderId":11,"orderListId":1,"clientOrderId":"NuMp0nVYnciDiFmVqfpBqK","transactTime":1710485608839,"price":"3.00000000","origQty":"5.00000000","executedQty":"0.00000000","origQuoteOrderQty":"0.000000","cummulativeQuoteQty":"0.00000000","status":"NEW","timeInForce":"GTC","type":"LIMIT_MAKER","side":"SELL","workingTime":1710485608839,"selfTradePreventionMode":"NONE"},{"symbol":"LTCBTC","orderId":10,"orderListId":1,"clientOrderId":"44nZvqpemY7sVYgPYbvPih","transactTime":1710485608839,"price":"1.00000000","origQty":"5.00000000","executedQty":"0.00000000","origQuoteOrderQty":"0.000000","cummulativeQuoteQty":"0.00000000","status":"NEW","timeInForce":"GTC","type":"STOP_LOSS_LIMIT","side":"SELL","stopPrice":"1.00000000","workingTime":-1,"icebergQty":"1.00000000","selfTradePreventionMode":"NONE"}]}"#).unwrap();
             let expected_response : models::OrderListOcoResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::OrderListOcoResponse");
@@ -7219,6 +9236,126 @@ mod tests {
             .unwrap();
 
             match client.order_list_oco(params).await {
+                Ok(_) => panic!("Expected an error"),
+                Err(err) => {
+                    assert_eq!(err.to_string(), "Connector client error: ResponseError");
+                }
+            }
+        });
+    }
+
+    #[test]
+    fn order_list_opo_required_params_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockTradeApiClient { force_error: false };
+
+            let params = OrderListOpoParams::builder("BNBUSDT".to_string(),OrderListOpoWorkingTypeEnum::Limit,OrderListOpoWorkingSideEnum::Buy,dec!(1.0),dec!(1.0),OrderListOpoPendingTypeEnum::Limit,OrderListOpoPendingSideEnum::Buy,).build().unwrap();
+
+            let resp_json: Value = serde_json::from_str(r#"{"orderListId":0,"contingencyType":"OTO","listStatusType":"EXEC_STARTED","listOrderStatus":"EXECUTING","listClientOrderId":"H94qCqO27P74OEiO4X8HOG","transactionTime":1762998011671,"symbol":"BTCUSDT","orders":[{"symbol":"BTCUSDT","orderId":3,"clientOrderId":"2ZJCY0IjOhuYIMLGN8kU8S"},{"symbol":"BTCUSDT","orderId":2,"clientOrderId":"JX6xfdjo0wysiGumfHNmPu"}],"orderReports":[{"symbol":"BTCUSDT","orderId":3,"orderListId":0,"clientOrderId":"2ZJCY0IjOhuYIMLGN8kU8S","transactTime":1762998011671,"price":"0.00000000","executedQty":"0.00000000","origQuoteOrderQty":"0.00000000","cummulativeQuoteQty":"0.00000000","status":"PENDING_NEW","timeInForce":"GTC","type":"MARKET","side":"SELL","workingTime":-1,"selfTradePreventionMode":"NONE"},{"symbol":"BTCUSDT","orderId":2,"orderListId":0,"clientOrderId":"JX6xfdjo0wysiGumfHNmPu","transactTime":1762998011671,"price":"102264.00000000","origQty":"0.00060000","executedQty":"0.00000000","origQuoteOrderQty":"0.00000000","cummulativeQuoteQty":"0.00000000","status":"NEW","timeInForce":"GTC","type":"LIMIT","side":"BUY","workingTime":1762998011671,"selfTradePreventionMode":"NONE"}]}"#).unwrap();
+            let expected_response : models::OrderListOpoResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::OrderListOpoResponse");
+
+            let resp = client.order_list_opo(params).await.expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn order_list_opo_optional_params_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockTradeApiClient { force_error: false };
+
+            let params = OrderListOpoParams::builder("BNBUSDT".to_string(),OrderListOpoWorkingTypeEnum::Limit,OrderListOpoWorkingSideEnum::Buy,dec!(1.0),dec!(1.0),OrderListOpoPendingTypeEnum::Limit,OrderListOpoPendingSideEnum::Buy,).list_client_order_id("list_client_order_id_example".to_string()).new_order_resp_type(OrderListOpoNewOrderRespTypeEnum::Ack).self_trade_prevention_mode(OrderListOpoSelfTradePreventionModeEnum::None).working_client_order_id("working_client_order_id_example".to_string()).working_iceberg_qty(dec!(1.0)).working_time_in_force(OrderListOpoWorkingTimeInForceEnum::Gtc).working_strategy_id(1).working_strategy_type(1).working_peg_price_type(OrderListOpoWorkingPegPriceTypeEnum::PrimaryPeg).working_peg_offset_type(OrderListOpoWorkingPegOffsetTypeEnum::PriceLevel).working_peg_offset_value(1).pending_client_order_id("pending_client_order_id_example".to_string()).pending_price(dec!(1.0)).pending_stop_price(dec!(1.0)).pending_trailing_delta(dec!(1.0)).pending_iceberg_qty(dec!(1.0)).pending_time_in_force(OrderListOpoPendingTimeInForceEnum::Gtc).pending_strategy_id(1).pending_strategy_type(1).pending_peg_price_type(OrderListOpoPendingPegPriceTypeEnum::PrimaryPeg).pending_peg_offset_type(OrderListOpoPendingPegOffsetTypeEnum::PriceLevel).pending_peg_offset_value(1).recv_window(dec!(5000.0)).build().unwrap();
+
+            let resp_json: Value = serde_json::from_str(r#"{"orderListId":0,"contingencyType":"OTO","listStatusType":"EXEC_STARTED","listOrderStatus":"EXECUTING","listClientOrderId":"H94qCqO27P74OEiO4X8HOG","transactionTime":1762998011671,"symbol":"BTCUSDT","orders":[{"symbol":"BTCUSDT","orderId":3,"clientOrderId":"2ZJCY0IjOhuYIMLGN8kU8S"},{"symbol":"BTCUSDT","orderId":2,"clientOrderId":"JX6xfdjo0wysiGumfHNmPu"}],"orderReports":[{"symbol":"BTCUSDT","orderId":3,"orderListId":0,"clientOrderId":"2ZJCY0IjOhuYIMLGN8kU8S","transactTime":1762998011671,"price":"0.00000000","executedQty":"0.00000000","origQuoteOrderQty":"0.00000000","cummulativeQuoteQty":"0.00000000","status":"PENDING_NEW","timeInForce":"GTC","type":"MARKET","side":"SELL","workingTime":-1,"selfTradePreventionMode":"NONE"},{"symbol":"BTCUSDT","orderId":2,"orderListId":0,"clientOrderId":"JX6xfdjo0wysiGumfHNmPu","transactTime":1762998011671,"price":"102264.00000000","origQty":"0.00060000","executedQty":"0.00000000","origQuoteOrderQty":"0.00000000","cummulativeQuoteQty":"0.00000000","status":"NEW","timeInForce":"GTC","type":"LIMIT","side":"BUY","workingTime":1762998011671,"selfTradePreventionMode":"NONE"}]}"#).unwrap();
+            let expected_response : models::OrderListOpoResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::OrderListOpoResponse");
+
+            let resp = client.order_list_opo(params).await.expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn order_list_opo_response_error() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockTradeApiClient { force_error: true };
+
+            let params = OrderListOpoParams::builder(
+                "BNBUSDT".to_string(),
+                OrderListOpoWorkingTypeEnum::Limit,
+                OrderListOpoWorkingSideEnum::Buy,
+                dec!(1.0),
+                dec!(1.0),
+                OrderListOpoPendingTypeEnum::Limit,
+                OrderListOpoPendingSideEnum::Buy,
+            )
+            .build()
+            .unwrap();
+
+            match client.order_list_opo(params).await {
+                Ok(_) => panic!("Expected an error"),
+                Err(err) => {
+                    assert_eq!(err.to_string(), "Connector client error: ResponseError");
+                }
+            }
+        });
+    }
+
+    #[test]
+    fn order_list_opoco_required_params_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockTradeApiClient { force_error: false };
+
+            let params = OrderListOpocoParams::builder("BNBUSDT".to_string(),OrderListOpocoWorkingTypeEnum::Limit,OrderListOpocoWorkingSideEnum::Buy,dec!(1.0),dec!(1.0),OrderListOpocoPendingSideEnum::Buy,OrderListOpocoPendingAboveTypeEnum::StopLossLimit,).build().unwrap();
+
+            let resp_json: Value = serde_json::from_str(r#"{"orderListId":2,"contingencyType":"OTO","listStatusType":"EXEC_STARTED","listOrderStatus":"EXECUTING","listClientOrderId":"bcedxMpQG6nFrZUPQyshoL","transactionTime":1763000506354,"symbol":"BTCUSDT","orders":[{"symbol":"BTCUSDT","orderId":11,"clientOrderId":"yINkaXSJeoi3bU5vWMY8Z8"},{"symbol":"BTCUSDT","orderId":10,"clientOrderId":"mfif39yPTHsB3C0FIXznR2"},{"symbol":"BTCUSDT","orderId":9,"clientOrderId":"OLSBhMWaIlLSzZ9Zm7fnKB"}],"orderReports":[{"symbol":"BTCUSDT","orderId":11,"orderListId":2,"clientOrderId":"yINkaXSJeoi3bU5vWMY8Z8","transactTime":1763000506354,"price":"104261.00000000","executedQty":"0.00000000","origQuoteOrderQty":"0.00000000","cummulativeQuoteQty":"0.00000000","status":"PENDING_NEW","timeInForce":"GTC","type":"LIMIT_MAKER","side":"SELL","workingTime":-1,"selfTradePreventionMode":"NONE"},{"symbol":"BTCUSDT","orderId":10,"orderListId":2,"clientOrderId":"mfif39yPTHsB3C0FIXznR2","transactTime":1763000506354,"price":"101613.00000000","executedQty":"0.00000000","origQuoteOrderQty":"0.00000000","cummulativeQuoteQty":"0.00000000","status":"PENDING_NEW","timeInForce":"GTC","type":"STOP_LOSS_LIMIT","side":"SELL","stopPrice":"10100.00000000","workingTime":-1,"selfTradePreventionMode":"NONE"},{"symbol":"BTCUSDT","orderId":9,"orderListId":2,"clientOrderId":"OLSBhMWaIlLSzZ9Zm7fnKB","transactTime":1763000506354,"price":"102496.00000000","origQty":"0.00170000","executedQty":"0.00000000","origQuoteOrderQty":"0.00000000","cummulativeQuoteQty":"0.00000000","status":"NEW","timeInForce":"GTC","type":"LIMIT","side":"BUY","workingTime":1763000506354,"selfTradePreventionMode":"NONE"}]}"#).unwrap();
+            let expected_response : models::OrderListOpocoResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::OrderListOpocoResponse");
+
+            let resp = client.order_list_opoco(params).await.expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn order_list_opoco_optional_params_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockTradeApiClient { force_error: false };
+
+            let params = OrderListOpocoParams::builder("BNBUSDT".to_string(),OrderListOpocoWorkingTypeEnum::Limit,OrderListOpocoWorkingSideEnum::Buy,dec!(1.0),dec!(1.0),OrderListOpocoPendingSideEnum::Buy,OrderListOpocoPendingAboveTypeEnum::StopLossLimit,).list_client_order_id("list_client_order_id_example".to_string()).new_order_resp_type(OrderListOpocoNewOrderRespTypeEnum::Ack).self_trade_prevention_mode(OrderListOpocoSelfTradePreventionModeEnum::None).working_client_order_id("working_client_order_id_example".to_string()).working_iceberg_qty(dec!(1.0)).working_time_in_force(OrderListOpocoWorkingTimeInForceEnum::Gtc).working_strategy_id(1).working_strategy_type(1).working_peg_price_type(OrderListOpocoWorkingPegPriceTypeEnum::PrimaryPeg).working_peg_offset_type(OrderListOpocoWorkingPegOffsetTypeEnum::PriceLevel).working_peg_offset_value(1).pending_above_client_order_id("pending_above_client_order_id_example".to_string()).pending_above_price(dec!(1.0)).pending_above_stop_price(dec!(1.0)).pending_above_trailing_delta(dec!(1.0)).pending_above_iceberg_qty(dec!(1.0)).pending_above_time_in_force(OrderListOpocoPendingAboveTimeInForceEnum::Gtc).pending_above_strategy_id(1).pending_above_strategy_type(1).pending_above_peg_price_type(OrderListOpocoPendingAbovePegPriceTypeEnum::PrimaryPeg).pending_above_peg_offset_type(OrderListOpocoPendingAbovePegOffsetTypeEnum::PriceLevel).pending_above_peg_offset_value(1).pending_below_type(OrderListOpocoPendingBelowTypeEnum::StopLoss).pending_below_client_order_id("pending_below_client_order_id_example".to_string()).pending_below_price(dec!(1.0)).pending_below_stop_price(dec!(1.0)).pending_below_trailing_delta(dec!(1.0)).pending_below_iceberg_qty(dec!(1.0)).pending_below_time_in_force(OrderListOpocoPendingBelowTimeInForceEnum::Gtc).pending_below_strategy_id(1).pending_below_strategy_type(1).pending_below_peg_price_type(OrderListOpocoPendingBelowPegPriceTypeEnum::PrimaryPeg).pending_below_peg_offset_type(OrderListOpocoPendingBelowPegOffsetTypeEnum::PriceLevel).pending_below_peg_offset_value(1).recv_window(dec!(5000.0)).build().unwrap();
+
+            let resp_json: Value = serde_json::from_str(r#"{"orderListId":2,"contingencyType":"OTO","listStatusType":"EXEC_STARTED","listOrderStatus":"EXECUTING","listClientOrderId":"bcedxMpQG6nFrZUPQyshoL","transactionTime":1763000506354,"symbol":"BTCUSDT","orders":[{"symbol":"BTCUSDT","orderId":11,"clientOrderId":"yINkaXSJeoi3bU5vWMY8Z8"},{"symbol":"BTCUSDT","orderId":10,"clientOrderId":"mfif39yPTHsB3C0FIXznR2"},{"symbol":"BTCUSDT","orderId":9,"clientOrderId":"OLSBhMWaIlLSzZ9Zm7fnKB"}],"orderReports":[{"symbol":"BTCUSDT","orderId":11,"orderListId":2,"clientOrderId":"yINkaXSJeoi3bU5vWMY8Z8","transactTime":1763000506354,"price":"104261.00000000","executedQty":"0.00000000","origQuoteOrderQty":"0.00000000","cummulativeQuoteQty":"0.00000000","status":"PENDING_NEW","timeInForce":"GTC","type":"LIMIT_MAKER","side":"SELL","workingTime":-1,"selfTradePreventionMode":"NONE"},{"symbol":"BTCUSDT","orderId":10,"orderListId":2,"clientOrderId":"mfif39yPTHsB3C0FIXznR2","transactTime":1763000506354,"price":"101613.00000000","executedQty":"0.00000000","origQuoteOrderQty":"0.00000000","cummulativeQuoteQty":"0.00000000","status":"PENDING_NEW","timeInForce":"GTC","type":"STOP_LOSS_LIMIT","side":"SELL","stopPrice":"10100.00000000","workingTime":-1,"selfTradePreventionMode":"NONE"},{"symbol":"BTCUSDT","orderId":9,"orderListId":2,"clientOrderId":"OLSBhMWaIlLSzZ9Zm7fnKB","transactTime":1763000506354,"price":"102496.00000000","origQty":"0.00170000","executedQty":"0.00000000","origQuoteOrderQty":"0.00000000","cummulativeQuoteQty":"0.00000000","status":"NEW","timeInForce":"GTC","type":"LIMIT","side":"BUY","workingTime":1763000506354,"selfTradePreventionMode":"NONE"}]}"#).unwrap();
+            let expected_response : models::OrderListOpocoResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::OrderListOpocoResponse");
+
+            let resp = client.order_list_opoco(params).await.expect("Expected a response");
+            let data_future = resp.data();
+            let actual_response = data_future.await.unwrap();
+            assert_eq!(actual_response, expected_response);
+        });
+    }
+
+    #[test]
+    fn order_list_opoco_response_error() {
+        TOKIO_SHARED_RT.block_on(async {
+            let client = MockTradeApiClient { force_error: true };
+
+            let params = OrderListOpocoParams::builder(
+                "BNBUSDT".to_string(),
+                OrderListOpocoWorkingTypeEnum::Limit,
+                OrderListOpocoWorkingSideEnum::Buy,
+                dec!(1.0),
+                dec!(1.0),
+                OrderListOpocoPendingSideEnum::Buy,
+                OrderListOpocoPendingAboveTypeEnum::StopLossLimit,
+            )
+            .build()
+            .unwrap();
+
+            match client.order_list_opoco(params).await {
                 Ok(_) => panic!("Expected an error"),
                 Err(err) => {
                     assert_eq!(err.to_string(), "Connector client error: ResponseError");

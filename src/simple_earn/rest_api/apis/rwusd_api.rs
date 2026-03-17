@@ -83,8 +83,7 @@ impl RwusdApiClient {
 #[derive(Clone, Debug, Builder, Default)]
 #[builder(pattern = "owned", build_fn(error = "ParamBuildError"))]
 pub struct GetRwusdAccountParams {
-    ///
-    /// The `recv_window` parameter.
+    /// The value cannot be greater than 60000 (ms)
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -106,8 +105,7 @@ impl GetRwusdAccountParams {
 #[derive(Clone, Debug, Builder, Default)]
 #[builder(pattern = "owned", build_fn(error = "ParamBuildError"))]
 pub struct GetRwusdQuotaDetailsParams {
-    ///
-    /// The `recv_window` parameter.
+    /// The value cannot be greater than 60000 (ms)
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -141,18 +139,17 @@ pub struct GetRwusdRateHistoryParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub end_time: Option<i64>,
-    /// Currently querying the page. Start from 1. Default:1
+    /// Currently querying page. Starts from 1. Default: 1
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub current: Option<i64>,
-    /// Default:10, Max:100
+    /// Number of results per page. Default: 10, Max: 100
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub size: Option<i64>,
-    ///
-    /// The `recv_window` parameter.
+    /// The value cannot be greater than 60000 (ms)
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -186,18 +183,17 @@ pub struct GetRwusdRedemptionHistoryParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub end_time: Option<i64>,
-    /// Currently querying the page. Start from 1. Default:1
+    /// Currently querying page. Starts from 1. Default: 1
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub current: Option<i64>,
-    /// Default:10, Max:100
+    /// Number of results per page. Default: 10, Max: 100
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub size: Option<i64>,
-    ///
-    /// The `recv_window` parameter.
+    /// The value cannot be greater than 60000 (ms)
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -231,18 +227,17 @@ pub struct GetRwusdRewardsHistoryParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub end_time: Option<i64>,
-    /// Currently querying the page. Start from 1. Default:1
+    /// Currently querying page. Starts from 1. Default: 1
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub current: Option<i64>,
-    /// Default:10, Max:100
+    /// Number of results per page. Default: 10, Max: 100
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub size: Option<i64>,
-    ///
-    /// The `recv_window` parameter.
+    /// The value cannot be greater than 60000 (ms)
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -281,18 +276,17 @@ pub struct GetRwusdSubscriptionHistoryParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub end_time: Option<i64>,
-    /// Currently querying the page. Start from 1. Default:1
+    /// Currently querying page. Starts from 1. Default: 1
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub current: Option<i64>,
-    /// Default:10, Max:100
+    /// Number of results per page. Default: 10, Max: 100
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub size: Option<i64>,
-    ///
-    /// The `recv_window` parameter.
+    /// The value cannot be greater than 60000 (ms)
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -324,8 +318,7 @@ pub struct RedeemRwusdParams {
     /// This field is **required.
     #[builder(setter(into))]
     pub r#type: String,
-    ///
-    /// The `recv_window` parameter.
+    /// The value cannot be greater than 60000 (ms)
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -364,8 +357,7 @@ pub struct SubscribeRwusdParams {
     /// This field is **required.
     #[builder(setter(into))]
     pub amount: rust_decimal::Decimal,
-    ///
-    /// The `recv_window` parameter.
+    /// The value cannot be greater than 60000 (ms)
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -397,6 +389,7 @@ impl RwusdApi for RwusdApiClient {
         let GetRwusdAccountParams { recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = recv_window {
             query_params.insert("recvWindow".to_string(), json!(rw));
@@ -407,6 +400,7 @@ impl RwusdApi for RwusdApiClient {
             "/sapi/v1/rwusd/account",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -424,6 +418,7 @@ impl RwusdApi for RwusdApiClient {
         let GetRwusdQuotaDetailsParams { recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = recv_window {
             query_params.insert("recvWindow".to_string(), json!(rw));
@@ -434,6 +429,7 @@ impl RwusdApi for RwusdApiClient {
             "/sapi/v1/rwusd/quota",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -457,6 +453,7 @@ impl RwusdApi for RwusdApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = start_time {
             query_params.insert("startTime".to_string(), json!(rw));
@@ -483,6 +480,7 @@ impl RwusdApi for RwusdApiClient {
             "/sapi/v1/rwusd/history/rateHistory",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -506,6 +504,7 @@ impl RwusdApi for RwusdApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = start_time {
             query_params.insert("startTime".to_string(), json!(rw));
@@ -532,6 +531,7 @@ impl RwusdApi for RwusdApiClient {
             "/sapi/v1/rwusd/history/redemptionHistory",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -555,6 +555,7 @@ impl RwusdApi for RwusdApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = start_time {
             query_params.insert("startTime".to_string(), json!(rw));
@@ -581,6 +582,7 @@ impl RwusdApi for RwusdApiClient {
             "/sapi/v1/rwusd/history/rewardsHistory",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -605,6 +607,7 @@ impl RwusdApi for RwusdApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = asset {
             query_params.insert("asset".to_string(), json!(rw));
@@ -635,6 +638,7 @@ impl RwusdApi for RwusdApiClient {
             "/sapi/v1/rwusd/history/subscriptionHistory",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -656,6 +660,7 @@ impl RwusdApi for RwusdApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("amount".to_string(), json!(amount));
 
@@ -670,6 +675,7 @@ impl RwusdApi for RwusdApiClient {
             "/sapi/v1/rwusd/redeem",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -691,6 +697,7 @@ impl RwusdApi for RwusdApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("asset".to_string(), json!(asset));
 
@@ -705,6 +712,7 @@ impl RwusdApi for RwusdApiClient {
             "/sapi/v1/rwusd/subscribe",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -753,9 +761,11 @@ mod tests {
             _params: GetRwusdAccountParams,
         ) -> anyhow::Result<RestApiResponse<models::GetRwusdAccountResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value =
@@ -779,9 +789,11 @@ mod tests {
             _params: GetRwusdQuotaDetailsParams,
         ) -> anyhow::Result<RestApiResponse<models::GetRwusdQuotaDetailsResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"subscriptionQuota":{"assets":["USDT","USDC"],"leftQuota":"1000","minimum":"0.10000000"},"fastRedemptionQuota":{"leftQuota":"2","minimum":"0.1","fee":"0.0005","freeQuota":"100"},"standardRedemptionQuota":{"leftQuota":"2","minimum":"0.1","fee":"0.001","redeemPeriod":3},"subscribeEnable":true,"redeemEnable":true}"#).unwrap();
@@ -804,9 +816,11 @@ mod tests {
             _params: GetRwusdRateHistoryParams,
         ) -> anyhow::Result<RestApiResponse<models::GetRwusdRateHistoryResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(
@@ -832,9 +846,11 @@ mod tests {
             _params: GetRwusdRedemptionHistoryParams,
         ) -> anyhow::Result<RestApiResponse<models::GetRwusdRedemptionHistoryResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"rows":[{"time":1575018510000,"asset":"RWUSD","amount":"51","receiveAsset":"USDC","receiveAmount":"50","fee":"1","arrivalTime":1575018510000,"status":"SUCCESS"}],"total":1}"#).unwrap();
@@ -857,9 +873,11 @@ mod tests {
             _params: GetRwusdRewardsHistoryParams,
         ) -> anyhow::Result<RestApiResponse<models::GetRwusdRewardsHistoryResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"rows":[{"time":1575018510000,"rewardsAmount":"1","rwusdPosition":"100","annualPercentageRate":"0.0418"}],"total":1}"#).unwrap();
@@ -882,9 +900,11 @@ mod tests {
             _params: GetRwusdSubscriptionHistoryParams,
         ) -> anyhow::Result<RestApiResponse<models::GetRwusdSubscriptionHistoryResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"rows":[{"time":1575018510000,"asset":"USDC","amount":"100","receiveAsset":"RWUSD","receiveAmount":"100","status":"SUCCESS"}],"total":1}"#).unwrap();
@@ -907,9 +927,11 @@ mod tests {
             _params: RedeemRwusdParams,
         ) -> anyhow::Result<RestApiResponse<models::RedeemRwusdResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"success":true,"receiveAmount":"0.23092091","fee":"0.00000012","arrivalTime":1575018510000}"#).unwrap();
@@ -932,9 +954,11 @@ mod tests {
             _params: SubscribeRwusdParams,
         ) -> anyhow::Result<RestApiResponse<models::SubscribeRwusdResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value =

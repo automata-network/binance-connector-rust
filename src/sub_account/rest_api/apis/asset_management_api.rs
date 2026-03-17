@@ -498,9 +498,19 @@ impl GetSubAccountDepositHistoryParams {
 ///
 /// This struct holds all of the inputs you can pass when calling
 /// [`get_summary_of_sub_accounts_futures_account`](#method.get_summary_of_sub_accounts_futures_account).
-#[derive(Clone, Debug, Builder, Default)]
+#[derive(Clone, Debug, Builder)]
 #[builder(pattern = "owned", build_fn(error = "ParamBuildError"))]
 pub struct GetSummaryOfSubAccountsFuturesAccountParams {
+    /// Page
+    ///
+    /// This field is **required.
+    #[builder(setter(into))]
+    pub page: i64,
+    /// Limit (Max: 500)
+    ///
+    /// This field is **required.
+    #[builder(setter(into))]
+    pub limit: i64,
     ///
     /// The `recv_window` parameter.
     ///
@@ -512,9 +522,16 @@ pub struct GetSummaryOfSubAccountsFuturesAccountParams {
 impl GetSummaryOfSubAccountsFuturesAccountParams {
     /// Create a builder for [`get_summary_of_sub_accounts_futures_account`].
     ///
+    /// Required parameters:
+    ///
+    /// * `page` — Page
+    /// * `limit` — Limit (Max: 500)
+    ///
     #[must_use]
-    pub fn builder() -> GetSummaryOfSubAccountsFuturesAccountParamsBuilder {
+    pub fn builder(page: i64, limit: i64) -> GetSummaryOfSubAccountsFuturesAccountParamsBuilder {
         GetSummaryOfSubAccountsFuturesAccountParamsBuilder::default()
+            .page(page)
+            .limit(limit)
     }
 }
 /// Request parameters for the [`get_summary_of_sub_accounts_futures_account_v2`] operation.
@@ -671,7 +688,7 @@ pub struct MovePositionForSubAccountParams {
     ///
     /// This field is **required.
     #[builder(setter(into))]
-    pub order_args: Vec<serde_json::Value>,
+    pub order_args: Vec<models::MovePositionForSubAccountOrderArgsParameterInner>,
     ///
     /// The `recv_window` parameter.
     ///
@@ -695,7 +712,7 @@ impl MovePositionForSubAccountParams {
         from_user_email: String,
         to_user_email: String,
         product_type: String,
-        order_args: Vec<serde_json::Value>,
+        order_args: Vec<models::MovePositionForSubAccountOrderArgsParameterInner>,
     ) -> MovePositionForSubAccountParamsBuilder {
         MovePositionForSubAccountParamsBuilder::default()
             .from_user_email(from_user_email)
@@ -1313,6 +1330,7 @@ impl AssetManagementApi for AssetManagementApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("email".to_string(), json!(email));
 
@@ -1331,6 +1349,7 @@ impl AssetManagementApi for AssetManagementApiClient {
             "/sapi/v1/sub-account/futures/transfer",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1348,6 +1367,7 @@ impl AssetManagementApi for AssetManagementApiClient {
         let GetDetailOnSubAccountsFuturesAccountParams { email, recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("email".to_string(), json!(email));
 
@@ -1360,6 +1380,7 @@ impl AssetManagementApi for AssetManagementApiClient {
             "/sapi/v1/sub-account/futures/account",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1382,6 +1403,7 @@ impl AssetManagementApi for AssetManagementApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("email".to_string(), json!(email));
 
@@ -1396,6 +1418,7 @@ impl AssetManagementApi for AssetManagementApiClient {
             "/sapi/v2/sub-account/futures/account",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1413,6 +1436,7 @@ impl AssetManagementApi for AssetManagementApiClient {
         let GetDetailOnSubAccountsMarginAccountParams { email, recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("email".to_string(), json!(email));
 
@@ -1425,6 +1449,7 @@ impl AssetManagementApi for AssetManagementApiClient {
             "/sapi/v1/sub-account/margin/account",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1449,12 +1474,9 @@ impl AssetManagementApi for AssetManagementApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("symbol".to_string(), json!(symbol));
-
-        query_params.insert("page".to_string(), json!(page));
-
-        query_params.insert("row".to_string(), json!(row));
 
         if let Some(rw) = start_time {
             query_params.insert("startTime".to_string(), json!(rw));
@@ -1463,6 +1485,10 @@ impl AssetManagementApi for AssetManagementApiClient {
         if let Some(rw) = end_time {
             query_params.insert("endTime".to_string(), json!(rw));
         }
+
+        query_params.insert("page".to_string(), json!(page));
+
+        query_params.insert("row".to_string(), json!(row));
 
         if let Some(rw) = recv_window {
             query_params.insert("recvWindow".to_string(), json!(rw));
@@ -1473,6 +1499,7 @@ impl AssetManagementApi for AssetManagementApiClient {
             "/sapi/v1/sub-account/futures/move-position",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1496,6 +1523,7 @@ impl AssetManagementApi for AssetManagementApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("email".to_string(), json!(email));
 
@@ -1518,6 +1546,7 @@ impl AssetManagementApi for AssetManagementApiClient {
             "/sapi/v1/capital/deposit/subAddress",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1546,6 +1575,7 @@ impl AssetManagementApi for AssetManagementApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("email".to_string(), json!(email));
 
@@ -1586,6 +1616,7 @@ impl AssetManagementApi for AssetManagementApiClient {
             "/sapi/v1/capital/deposit/subHisrec",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1601,9 +1632,18 @@ impl AssetManagementApi for AssetManagementApiClient {
         params: GetSummaryOfSubAccountsFuturesAccountParams,
     ) -> anyhow::Result<RestApiResponse<models::GetSummaryOfSubAccountsFuturesAccountResponse>>
     {
-        let GetSummaryOfSubAccountsFuturesAccountParams { recv_window } = params;
+        let GetSummaryOfSubAccountsFuturesAccountParams {
+            page,
+            limit,
+            recv_window,
+        } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
+
+        query_params.insert("page".to_string(), json!(page));
+
+        query_params.insert("limit".to_string(), json!(limit));
 
         if let Some(rw) = recv_window {
             query_params.insert("recvWindow".to_string(), json!(rw));
@@ -1614,6 +1654,7 @@ impl AssetManagementApi for AssetManagementApiClient {
             "/sapi/v1/sub-account/futures/accountSummary",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1637,6 +1678,7 @@ impl AssetManagementApi for AssetManagementApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("futuresType".to_string(), json!(futures_type));
 
@@ -1657,6 +1699,7 @@ impl AssetManagementApi for AssetManagementApiClient {
             "/sapi/v2/sub-account/futures/accountSummary",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1674,6 +1717,7 @@ impl AssetManagementApi for AssetManagementApiClient {
         let GetSummaryOfSubAccountsMarginAccountParams { recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = recv_window {
             query_params.insert("recvWindow".to_string(), json!(rw));
@@ -1684,6 +1728,7 @@ impl AssetManagementApi for AssetManagementApiClient {
             "/sapi/v1/sub-account/margin/accountSummary",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1707,6 +1752,7 @@ impl AssetManagementApi for AssetManagementApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("email".to_string(), json!(email));
 
@@ -1725,6 +1771,7 @@ impl AssetManagementApi for AssetManagementApiClient {
             "/sapi/v1/sub-account/margin/transfer",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1748,6 +1795,7 @@ impl AssetManagementApi for AssetManagementApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("fromUserEmail".to_string(), json!(from_user_email));
 
@@ -1766,6 +1814,7 @@ impl AssetManagementApi for AssetManagementApiClient {
             "/sapi/v1/sub-account/futures/move-position",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1783,6 +1832,7 @@ impl AssetManagementApi for AssetManagementApiClient {
         let QuerySubAccountAssetsParams { email, recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("email".to_string(), json!(email));
 
@@ -1795,6 +1845,7 @@ impl AssetManagementApi for AssetManagementApiClient {
             "/sapi/v3/sub-account/assets",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1812,6 +1863,7 @@ impl AssetManagementApi for AssetManagementApiClient {
         let QuerySubAccountAssetsAssetManagementParams { email, recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("email".to_string(), json!(email));
 
@@ -1824,6 +1876,7 @@ impl AssetManagementApi for AssetManagementApiClient {
             "/sapi/v4/sub-account/assets",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1850,6 +1903,7 @@ impl AssetManagementApi for AssetManagementApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("email".to_string(), json!(email));
 
@@ -1880,6 +1934,7 @@ impl AssetManagementApi for AssetManagementApiClient {
             "/sapi/v1/sub-account/futures/internalTransfer",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1907,6 +1962,7 @@ impl AssetManagementApi for AssetManagementApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = from_email {
             query_params.insert("fromEmail".to_string(), json!(rw));
@@ -1941,6 +1997,7 @@ impl AssetManagementApi for AssetManagementApiClient {
             "/sapi/v1/sub-account/sub/transfer/history",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -1963,6 +2020,7 @@ impl AssetManagementApi for AssetManagementApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = email {
             query_params.insert("email".to_string(), json!(rw));
@@ -1985,6 +2043,7 @@ impl AssetManagementApi for AssetManagementApiClient {
             "/sapi/v1/sub-account/spotSummary",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2011,6 +2070,7 @@ impl AssetManagementApi for AssetManagementApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = from_email {
             query_params.insert("fromEmail".to_string(), json!(rw));
@@ -2049,6 +2109,7 @@ impl AssetManagementApi for AssetManagementApiClient {
             "/sapi/v1/sub-account/universalTransfer",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2073,6 +2134,7 @@ impl AssetManagementApi for AssetManagementApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("fromEmail".to_string(), json!(from_email));
 
@@ -2093,6 +2155,7 @@ impl AssetManagementApi for AssetManagementApiClient {
             "/sapi/v1/sub-account/futures/internalTransfer",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2118,6 +2181,7 @@ impl AssetManagementApi for AssetManagementApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = asset {
             query_params.insert("asset".to_string(), json!(rw));
@@ -2152,6 +2216,7 @@ impl AssetManagementApi for AssetManagementApiClient {
             "/sapi/v1/sub-account/transfer/subUserHistory",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2173,6 +2238,7 @@ impl AssetManagementApi for AssetManagementApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("asset".to_string(), json!(asset));
 
@@ -2187,6 +2253,7 @@ impl AssetManagementApi for AssetManagementApiClient {
             "/sapi/v1/sub-account/transfer/subToMaster",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2209,6 +2276,7 @@ impl AssetManagementApi for AssetManagementApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("toEmail".to_string(), json!(to_email));
 
@@ -2225,6 +2293,7 @@ impl AssetManagementApi for AssetManagementApiClient {
             "/sapi/v1/sub-account/transfer/subToSub",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2252,14 +2321,7 @@ impl AssetManagementApi for AssetManagementApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
-
-        query_params.insert("fromAccountType".to_string(), json!(from_account_type));
-
-        query_params.insert("toAccountType".to_string(), json!(to_account_type));
-
-        query_params.insert("asset".to_string(), json!(asset));
-
-        query_params.insert("amount".to_string(), json!(amount));
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = from_email {
             query_params.insert("fromEmail".to_string(), json!(rw));
@@ -2269,6 +2331,10 @@ impl AssetManagementApi for AssetManagementApiClient {
             query_params.insert("toEmail".to_string(), json!(rw));
         }
 
+        query_params.insert("fromAccountType".to_string(), json!(from_account_type));
+
+        query_params.insert("toAccountType".to_string(), json!(to_account_type));
+
         if let Some(rw) = client_tran_id {
             query_params.insert("clientTranId".to_string(), json!(rw));
         }
@@ -2276,6 +2342,10 @@ impl AssetManagementApi for AssetManagementApiClient {
         if let Some(rw) = symbol {
             query_params.insert("symbol".to_string(), json!(rw));
         }
+
+        query_params.insert("asset".to_string(), json!(asset));
+
+        query_params.insert("amount".to_string(), json!(amount));
 
         if let Some(rw) = recv_window {
             query_params.insert("recvWindow".to_string(), json!(rw));
@@ -2286,6 +2356,7 @@ impl AssetManagementApi for AssetManagementApiClient {
             "/sapi/v1/sub-account/universalTransfer",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -2334,9 +2405,11 @@ mod tests {
             _params: FuturesTransferForSubAccountParams,
         ) -> anyhow::Result<RestApiResponse<models::FuturesTransferForSubAccountResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"txnId":"2966662589"}"#).unwrap();
@@ -2360,9 +2433,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::GetDetailOnSubAccountsFuturesAccountResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"email":"abc@test.com","asset":"USDT","assets":[{"asset":"USDT","initialMargin":"0.00000000","maintenanceMargin":"0.00000000","marginBalance":"0.88308000","maxWithdrawAmount":"0.88308000","openOrderInitialMargin":"0.00000000","positionInitialMargin":"0.00000000","unrealizedProfit":"0.00000000","walletBalance":"0.88308000"}],"canDeposit":true,"canTrade":true,"canWithdraw":true,"feeTier":2,"maxWithdrawAmount":"0.88308000","totalInitialMargin":"0.00000000","totalMaintenanceMargin":"0.00000000","totalMarginBalance":"0.88308000","totalOpenOrderInitialMargin":"0.00000000","totalPositionInitialMargin":"0.00000000","totalUnrealizedProfit":"0.00000000","totalWalletBalance":"0.88308000","updateTime":1576756674610}"#).unwrap();
@@ -2387,9 +2462,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::GetDetailOnSubAccountsFuturesAccountV2Response>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"futureAccountResp":{"email":"abc@test.com","assets":[{"asset":"USDT","initialMargin":"0.00000000","maintenanceMargin":"0.00000000","marginBalance":"0.88308000","maxWithdrawAmount":"0.88308000","openOrderInitialMargin":"0.00000000","positionInitialMargin":"0.00000000","unrealizedProfit":"0.00000000","walletBalance":"0.88308000"}],"canDeposit":true,"canTrade":true,"canWithdraw":true,"feeTier":2,"maxWithdrawAmount":"0.88308000","totalInitialMargin":"0.00000000","totalMaintenanceMargin":"0.00000000","totalMarginBalance":"0.88308000","totalOpenOrderInitialMargin":"0.00000000","totalPositionInitialMargin":"0.00000000","totalUnrealizedProfit":"0.00000000","totalWalletBalance":"0.88308000","updateTime":1576756674610},"deliveryAccountResp":{"email":"abc@test.com","assets":[{"asset":"BTC","initialMargin":"0.00000000","maintenanceMargin":"0.00000000","marginBalance":"0.88308000","maxWithdrawAmount":"0.88308000","openOrderInitialMargin":"0.00000000","positionInitialMargin":"0.00000000","unrealizedProfit":"0.00000000","walletBalance":"0.88308000"}],"canDeposit":true,"canTrade":true,"canWithdraw":true,"feeTier":2,"updateTime":1598959682001}}"#).unwrap();
@@ -2414,9 +2491,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::GetDetailOnSubAccountsMarginAccountResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"email":"123@test.com","marginLevel":"11.64405625","totalAssetOfBtc":"6.82728457","totalLiabilityOfBtc":"0.58633215","totalNetAssetOfBtc":"6.24095242","marginTradeCoeffVo":{"forceLiquidationBar":"1.10000000","marginCallBar":"1.50000000","normalBar":"2.00000000"},"marginUserAssetVoList":[{"asset":"BTC","borrowed":"0.00000000","free":"0.00499500","interest":"0.00000000","locked":"0.00000000","netAsset":"0.00499500"},{"asset":"BNB","borrowed":"201.66666672","free":"2346.50000000","interest":"0.00000000","locked":"0.00000000","netAsset":"2144.83333328"},{"asset":"ETH","borrowed":"0.00000000","free":"0.00000000","interest":"0.00000000","locked":"0.00000000","netAsset":"0.00000000"},{"asset":"USDT","borrowed":"0.00000000","free":"0.00000000","interest":"0.00000000","locked":"0.00000000","netAsset":"0.00000000"}]}"#).unwrap();
@@ -2441,9 +2520,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::GetMovePositionHistoryForSubAccountResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"total":3,"futureMovePositionOrderVoList":[{"fromUserEmail":"testFrom@google.com","toUserEmail":"testTo@google.com","productType":"UM","symbol":"BTCUSDT","price":"105025.50981609","quantity":"0.00100000","positionSide":"BOTH","side":"SELL","timeStamp":1737544712000},{"fromUserEmail":"testFrom1@google.com","toUserEmail":"testTo1@google.com","productType":"UM","symbol":"BTCUSDT","price":"97100.00000000","quantity":"0.00100000","positionSide":"BOTH","side":"SELL","timeStamp":1740041627000},{"fromUserEmail":"testFrom2@google.com","toUserEmail":"testTo2@google.com","productType":"UM","symbol":"BTCUSDT","price":"97108.62068889","quantity":"0.00100000","positionSide":"BOTH","side":"SELL","timeStamp":1740041959000}]}"#).unwrap();
@@ -2467,9 +2548,11 @@ mod tests {
             _params: GetSubAccountDepositAddressParams,
         ) -> anyhow::Result<RestApiResponse<models::GetSubAccountDepositAddressResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"address":"TDunhSa7jkTNuKrusUTU1MUHtqXoBPKETV","coin":"USDT","tag":"","url":"https://tronscan.org/#/address/TDunhSa7jkTNuKrusUTU1MUHtqXoBPKETV"}"#).unwrap();
@@ -2493,9 +2576,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<Vec<models::GetSubAccountDepositHistoryResponseInner>>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"id":"769800519366885376","amount":"0.001","coin":"BNB","network":"BNB","status":0,"address":"bnb136ns6lfw4zs5hg4n85vdthaad7hq5m4gtkgf23","addressTag":"101764890","txId":"98A3EA560C6B3336D348B6C83F0F95ECE4F1F5919E94BD006E5BF3BF264FACFC","insertTime":1661493146000,"transferType":0,"confirmTimes":"1/1","unlockConfirm":0,"walletType":0},{"id":"769754833590042625","amount":"0.50000000","coin":"IOTA","network":"IOTA","status":1,"address":"SIZ9VLMHWATXKV99LH99CIGFJFUMLEHGWVZVNNZXRJJVWBPHYWPPBOSDORZ9EQSHCZAMPVAPGFYQAUUV9DROOXJLNW","addressTag":"","txId":"ESBFVQUTPIWQNJSPXFNHNYHSQNTGKRVKPRABQWTAXCDWOAKDKYWPTVG9BGXNVNKTLEJGESAVXIKIZ9999","insertTime":1599620082000,"transferType":0,"confirmTimes":"1/1","unlockConfirm":0,"walletType":0}]"#).unwrap();
@@ -2520,9 +2605,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::GetSummaryOfSubAccountsFuturesAccountResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"totalInitialMargin":"9.83137400","totalMaintenanceMargin":"0.41568700","totalMarginBalance":"23.03235621","totalOpenOrderInitialMargin":"9.00000000","totalPositionInitialMargin":"0.83137400","totalUnrealizedProfit":"0.03219710","totalWalletBalance":"22.15879444","asset":"USD","subAccountList":[{"email":"123@test.com","totalInitialMargin":"9.00000000","totalMaintenanceMargin":"0.00000000","totalMarginBalance":"22.12659734","totalOpenOrderInitialMargin":"9.00000000","totalPositionInitialMargin":"0.00000000","totalUnrealizedProfit":"0.00000000","totalWalletBalance":"22.12659734","asset":"USD"},{"email":"345@test.com","totalInitialMargin":"0.83137400","totalMaintenanceMargin":"0.41568700","totalMarginBalance":"0.90575887","totalOpenOrderInitialMargin":"0.00000000","totalPositionInitialMargin":"0.83137400","totalUnrealizedProfit":"0.03219710","totalWalletBalance":"0.87356177","asset":"USD"}]}"#).unwrap();
@@ -2547,9 +2634,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::GetSummaryOfSubAccountsFuturesAccountV2Response>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"futureAccountSummaryResp":{"totalInitialMargin":"9.83137400","totalMaintenanceMargin":"0.41568700","totalMarginBalance":"23.03235621","totalOpenOrderInitialMargin":"9.00000000","totalPositionInitialMargin":"0.83137400","totalUnrealizedProfit":"0.03219710","totalWalletBalance":"22.15879444","asset":"USD","subAccountList":[{"email":"123@test.com","totalInitialMargin":"9.00000000","totalMaintenanceMargin":"0.00000000","totalMarginBalance":"22.12659734","totalOpenOrderInitialMargin":"9.00000000","totalPositionInitialMargin":"0.00000000","totalUnrealizedProfit":"0.00000000","totalWalletBalance":"22.12659734","asset":"USD"},{"email":"345@test.com","totalInitialMargin":"0.83137400","totalMaintenanceMargin":"0.41568700","totalMarginBalance":"0.90575887","totalOpenOrderInitialMargin":"0.00000000","totalPositionInitialMargin":"0.83137400","totalUnrealizedProfit":"0.03219710","totalWalletBalance":"0.87356177","asset":"USD"}]},"deliveryAccountSummaryResp":{"totalMarginBalanceOfBTC":"25.03221121","totalUnrealizedProfitOfBTC":"0.12233410","totalWalletBalanceOfBTC":"22.15879444","asset":"BTC","subAccountList":[{"email":"123@test.com","totalMarginBalance":"22.12659734","totalUnrealizedProfit":"0.00000000","totalWalletBalance":"22.12659734","asset":"BTC"},{"email":"345@test.com","totalMarginBalance":"0.90575887","totalUnrealizedProfit":"0.03219710","totalWalletBalance":"0.87356177","asset":"BTC"}]}}"#).unwrap();
@@ -2574,9 +2663,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::GetSummaryOfSubAccountsMarginAccountResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"totalAssetOfBtc":"4.33333333","totalLiabilityOfBtc":"2.11111112","totalNetAssetOfBtc":"2.22222221","subAccountList":[{"email":"123@test.com","totalAssetOfBtc":"2.11111111","totalLiabilityOfBtc":"1.11111111","totalNetAssetOfBtc":"1.00000000"},{"email":"345@test.com","totalAssetOfBtc":"2.22222222","totalLiabilityOfBtc":"1.00000001","totalNetAssetOfBtc":"1.22222221"}]}"#).unwrap();
@@ -2600,9 +2691,11 @@ mod tests {
             _params: MarginTransferForSubAccountParams,
         ) -> anyhow::Result<RestApiResponse<models::MarginTransferForSubAccountResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"txnId":"2966662589"}"#).unwrap();
@@ -2625,9 +2718,11 @@ mod tests {
             _params: MovePositionForSubAccountParams,
         ) -> anyhow::Result<RestApiResponse<models::MovePositionForSubAccountResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"movePositionOrders":[{"fromUserEmail":"testFrom@google.com","toUserEmail":"testTo@google.com","productType":"UM","symbol":"BTCUSDT","priceType":"MARK_PRICE","price":"97139.00000000","quantity":"0.001","positionSide":"BOTH","side":"BUY","success":true},{"fromUserEmail":"testFrom1@google.com","toUserEmail":"1testTo@google.com","productType":"UM","symbol":"BTCUSDT","priceType":"MARK_PRICE","price":"97139.00000000","quantity":"0.0011","positionSide":"BOTH","side":"BUY","success":true}]}"#).unwrap();
@@ -2650,9 +2745,11 @@ mod tests {
             _params: QuerySubAccountAssetsParams,
         ) -> anyhow::Result<RestApiResponse<models::QuerySubAccountAssetsResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"balances":[{"freeze":0,"withdrawing":0,"asset":"ADA","free":10000,"locked":0},{"freeze":0,"withdrawing":0,"asset":"BNB","free":10003,"locked":0},{"freeze":0,"withdrawing":0,"asset":"BTC","free":11467.6399,"locked":0},{"freeze":0,"withdrawing":0,"asset":"ETH","free":10004.995,"locked":0},{"freeze":0,"withdrawing":0,"asset":"USDT","free":11652.14213,"locked":0}]}"#).unwrap();
@@ -2676,9 +2773,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::QuerySubAccountAssetsAssetManagementResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"balances":[{"freeze":"0","withdrawing":"0","asset":"ADA","free":"10000","locked":"0"},{"freeze":"0","withdrawing":"0","asset":"BNB","free":"10003","locked":"0"},{"freeze":"0","withdrawing":"0","asset":"BTC","free":"11467.6399","locked":"0"}]}"#).unwrap();
@@ -2704,9 +2803,11 @@ mod tests {
             RestApiResponse<models::QuerySubAccountFuturesAssetTransferHistoryResponse>,
         > {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"success":true,"futuresType":2,"transfers":[{"from":"aaa@test.com","to":"bbb@test.com","asset":"BTC","qty":"1","tranId":11897001102,"time":1544433328000},{"from":"bbb@test.com","to":"ccc@test.com","asset":"ETH","qty":"2","tranId":11631474902,"time":1544433328000}]}"#).unwrap();
@@ -2732,9 +2833,11 @@ mod tests {
             RestApiResponse<Vec<models::QuerySubAccountSpotAssetTransferHistoryResponseInner>>,
         > {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"from":"aaa@test.com","to":"bbb@test.com","asset":"BTC","qty":"10","status":"SUCCESS","tranId":6489943656,"time":1544433328000},{"from":"bbb@test.com","to":"ccc@test.com","asset":"ETH","qty":"2","status":"SUCCESS","tranId":6489938713,"time":1544433328000}]"#).unwrap();
@@ -2756,9 +2859,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::QuerySubAccountSpotAssetsSummaryResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"totalCount":2,"masterAccountTotalAsset":"0.23231201","spotSubUserAssetBtcVoList":[{"email":"sub123@test.com","totalAsset":"9999.00000000"},{"email":"test456@test.com","totalAsset":"0.00000000"}]}"#).unwrap();
@@ -2782,9 +2887,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::QueryUniversalTransferHistoryResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"result":[{"tranId":92275823339,"fromEmail":"abctest@gmail.com","toEmail":"deftest@gmail.com","asset":"BNB","amount":"0.01","createTimeStamp":1640317374000,"fromAccountType":"USDT_FUTURE","toAccountType":"SPOT","status":"SUCCESS","clientTranId":"test"}],"totalCount":1}"#).unwrap();
@@ -2808,9 +2915,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::SubAccountFuturesAssetTransferResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value =
@@ -2835,9 +2944,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<Vec<models::SubAccountTransferHistoryResponseInner>>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"counterParty":"master","email":"master@test.com","type":1,"asset":"BTC","qty":"1","fromAccountType":"SPOT","toAccountType":"SPOT","status":"SUCCESS","tranId":11798835829,"time":1544433325000},{"counterParty":"subAccount","email":"sub2@test.com","type":1,"asset":"ETH","qty":"2","fromAccountType":"SPOT","toAccountType":"COIN_FUTURE","status":"SUCCESS","tranId":11798829519,"time":1544433326000}]"#).unwrap();
@@ -2861,9 +2972,11 @@ mod tests {
             _params: TransferToMasterParams,
         ) -> anyhow::Result<RestApiResponse<models::TransferToMasterResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"txnId":"2966662589"}"#).unwrap();
@@ -2887,9 +3000,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::TransferToSubAccountOfSameMasterResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"txnId":"2966662589"}"#).unwrap();
@@ -2912,9 +3027,11 @@ mod tests {
             _params: UniversalTransferParams,
         ) -> anyhow::Result<RestApiResponse<models::UniversalTransferResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value =
@@ -3361,7 +3478,7 @@ mod tests {
         TOKIO_SHARED_RT.block_on(async {
             let client = MockAssetManagementApiClient { force_error: false };
 
-            let params = GetSummaryOfSubAccountsFuturesAccountParams::builder().build().unwrap();
+            let params = GetSummaryOfSubAccountsFuturesAccountParams::builder(789,789,).build().unwrap();
 
             let resp_json: Value = serde_json::from_str(r#"{"totalInitialMargin":"9.83137400","totalMaintenanceMargin":"0.41568700","totalMarginBalance":"23.03235621","totalOpenOrderInitialMargin":"9.00000000","totalPositionInitialMargin":"0.83137400","totalUnrealizedProfit":"0.03219710","totalWalletBalance":"22.15879444","asset":"USD","subAccountList":[{"email":"123@test.com","totalInitialMargin":"9.00000000","totalMaintenanceMargin":"0.00000000","totalMarginBalance":"22.12659734","totalOpenOrderInitialMargin":"9.00000000","totalPositionInitialMargin":"0.00000000","totalUnrealizedProfit":"0.00000000","totalWalletBalance":"22.12659734","asset":"USD"},{"email":"345@test.com","totalInitialMargin":"0.83137400","totalMaintenanceMargin":"0.41568700","totalMarginBalance":"0.90575887","totalOpenOrderInitialMargin":"0.00000000","totalPositionInitialMargin":"0.83137400","totalUnrealizedProfit":"0.03219710","totalWalletBalance":"0.87356177","asset":"USD"}]}"#).unwrap();
             let expected_response : models::GetSummaryOfSubAccountsFuturesAccountResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::GetSummaryOfSubAccountsFuturesAccountResponse");
@@ -3378,7 +3495,7 @@ mod tests {
         TOKIO_SHARED_RT.block_on(async {
             let client = MockAssetManagementApiClient { force_error: false };
 
-            let params = GetSummaryOfSubAccountsFuturesAccountParams::builder().recv_window(5000).build().unwrap();
+            let params = GetSummaryOfSubAccountsFuturesAccountParams::builder(789,789,).recv_window(5000).build().unwrap();
 
             let resp_json: Value = serde_json::from_str(r#"{"totalInitialMargin":"9.83137400","totalMaintenanceMargin":"0.41568700","totalMarginBalance":"23.03235621","totalOpenOrderInitialMargin":"9.00000000","totalPositionInitialMargin":"0.83137400","totalUnrealizedProfit":"0.03219710","totalWalletBalance":"22.15879444","asset":"USD","subAccountList":[{"email":"123@test.com","totalInitialMargin":"9.00000000","totalMaintenanceMargin":"0.00000000","totalMarginBalance":"22.12659734","totalOpenOrderInitialMargin":"9.00000000","totalPositionInitialMargin":"0.00000000","totalUnrealizedProfit":"0.00000000","totalWalletBalance":"22.12659734","asset":"USD"},{"email":"345@test.com","totalInitialMargin":"0.83137400","totalMaintenanceMargin":"0.41568700","totalMarginBalance":"0.90575887","totalOpenOrderInitialMargin":"0.00000000","totalPositionInitialMargin":"0.83137400","totalUnrealizedProfit":"0.03219710","totalWalletBalance":"0.87356177","asset":"USD"}]}"#).unwrap();
             let expected_response : models::GetSummaryOfSubAccountsFuturesAccountResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::GetSummaryOfSubAccountsFuturesAccountResponse");
@@ -3395,7 +3512,7 @@ mod tests {
         TOKIO_SHARED_RT.block_on(async {
             let client = MockAssetManagementApiClient { force_error: true };
 
-            let params = GetSummaryOfSubAccountsFuturesAccountParams::builder()
+            let params = GetSummaryOfSubAccountsFuturesAccountParams::builder(789, 789)
                 .build()
                 .unwrap();
 
@@ -3608,7 +3725,7 @@ mod tests {
         TOKIO_SHARED_RT.block_on(async {
             let client = MockAssetManagementApiClient { force_error: false };
 
-            let params = MovePositionForSubAccountParams::builder("from_user_email_example".to_string(),"to_user_email_example".to_string(),"product_type_example".to_string(),[].to_vec(),).build().unwrap();
+            let params = MovePositionForSubAccountParams::builder("from_user_email_example".to_string(),"to_user_email_example".to_string(),"product_type_example".to_string(),vec![],).build().unwrap();
 
             let resp_json: Value = serde_json::from_str(r#"{"movePositionOrders":[{"fromUserEmail":"testFrom@google.com","toUserEmail":"testTo@google.com","productType":"UM","symbol":"BTCUSDT","priceType":"MARK_PRICE","price":"97139.00000000","quantity":"0.001","positionSide":"BOTH","side":"BUY","success":true},{"fromUserEmail":"testFrom1@google.com","toUserEmail":"1testTo@google.com","productType":"UM","symbol":"BTCUSDT","priceType":"MARK_PRICE","price":"97139.00000000","quantity":"0.0011","positionSide":"BOTH","side":"BUY","success":true}]}"#).unwrap();
             let expected_response : models::MovePositionForSubAccountResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::MovePositionForSubAccountResponse");
@@ -3625,7 +3742,7 @@ mod tests {
         TOKIO_SHARED_RT.block_on(async {
             let client = MockAssetManagementApiClient { force_error: false };
 
-            let params = MovePositionForSubAccountParams::builder("from_user_email_example".to_string(),"to_user_email_example".to_string(),"product_type_example".to_string(),[].to_vec(),).recv_window(5000).build().unwrap();
+            let params = MovePositionForSubAccountParams::builder("from_user_email_example".to_string(),"to_user_email_example".to_string(),"product_type_example".to_string(),vec![],).recv_window(5000).build().unwrap();
 
             let resp_json: Value = serde_json::from_str(r#"{"movePositionOrders":[{"fromUserEmail":"testFrom@google.com","toUserEmail":"testTo@google.com","productType":"UM","symbol":"BTCUSDT","priceType":"MARK_PRICE","price":"97139.00000000","quantity":"0.001","positionSide":"BOTH","side":"BUY","success":true},{"fromUserEmail":"testFrom1@google.com","toUserEmail":"1testTo@google.com","productType":"UM","symbol":"BTCUSDT","priceType":"MARK_PRICE","price":"97139.00000000","quantity":"0.0011","positionSide":"BOTH","side":"BUY","success":true}]}"#).unwrap();
             let expected_response : models::MovePositionForSubAccountResponse = serde_json::from_value(resp_json.clone()).expect("should parse into models::MovePositionForSubAccountResponse");
@@ -3646,7 +3763,7 @@ mod tests {
                 "from_user_email_example".to_string(),
                 "to_user_email_example".to_string(),
                 "product_type_example".to_string(),
-                [].to_vec(),
+                vec![],
             )
             .build()
             .unwrap();

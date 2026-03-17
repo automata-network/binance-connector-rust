@@ -125,6 +125,7 @@ impl MarketDataApi for MarketDataApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("optionType".to_string(), json!(option_type));
 
@@ -149,6 +150,7 @@ impl MarketDataApi for MarketDataApiClient {
             "/sapi/v1/dci/product/list",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -197,9 +199,11 @@ mod tests {
             _params: GetDualInvestmentProductListParams,
         ) -> anyhow::Result<RestApiResponse<models::GetDualInvestmentProductListResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"total":1,"list":[{"id":"741590","investCoin":"USDT","exercisedCoin":"BNB","strikePrice":"380","duration":4,"settleDate":1709020800000,"purchaseDecimal":8,"purchaseEndTime":1708934400000,"canPurchase":true,"apr":"0.6076","orderId":8257205859,"minAmount":"0.1","maxAmount":"25265.7","createTimestamp":1708560084000,"optionType":"PUT","isAutoCompoundEnable":true,"autoCompoundPlanList":["STANDARD","ADVANCE"]}]}"#).unwrap();

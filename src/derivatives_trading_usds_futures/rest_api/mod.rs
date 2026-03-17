@@ -63,7 +63,8 @@ impl RestApi {
     ///
     /// * `endpoint` - The API endpoint to send the request to
     /// * `method` - The HTTP method to use for the request
-    /// * `params` - A map of parameters to send with the request
+    /// * `query_params` - A map of query parameters to send with the request
+    /// * `body_params` - A map of body parameters to send with the request
     ///
     /// # Returns
     ///
@@ -76,9 +77,19 @@ impl RestApi {
         &self,
         endpoint: &str,
         method: Method,
-        params: BTreeMap<String, Value>,
+        query_params: BTreeMap<String, Value>,
+        body_params: BTreeMap<String, Value>,
     ) -> anyhow::Result<RestApiResponse<R>> {
-        send_request::<R>(&self.configuration, endpoint, method, params, None, false).await
+        send_request::<R>(
+            &self.configuration,
+            endpoint,
+            method,
+            query_params,
+            body_params,
+            None,
+            false,
+        )
+        .await
     }
 
     /// Send a signed request to the API
@@ -87,7 +98,8 @@ impl RestApi {
     ///
     /// * `endpoint` - The API endpoint to send the request to
     /// * `method` - The HTTP method to use for the request
-    /// * `params` - A map of parameters to send with the request
+    /// * `query_params` - A map of query parameters to send with the request
+    /// * `body_params` - A map of body parameters to send with the request
     ///
     /// # Returns
     ///
@@ -100,9 +112,19 @@ impl RestApi {
         &self,
         endpoint: &str,
         method: Method,
-        params: BTreeMap<String, Value>,
+        query_params: BTreeMap<String, Value>,
+        body_params: BTreeMap<String, Value>,
     ) -> anyhow::Result<RestApiResponse<R>> {
-        send_request::<R>(&self.configuration, endpoint, method, params, None, true).await
+        send_request::<R>(
+            &self.configuration,
+            endpoint,
+            method,
+            query_params,
+            body_params,
+            None,
+            true,
+        )
+        .await
     }
 
     /// Account Information `V2(USER_DATA)`
@@ -1242,6 +1264,51 @@ impl RestApi {
         self.convert_api_client.send_quote_request(params).await
     }
 
+    /// ADL Risk
+    ///
+    /// Query the symbol-level ADL risk rating.
+    /// The ADL risk rating measures the likelihood of ADL during liquidation, and the rating takes into account the insurance fund balance, position concentration on the symbol, order book depth, price volatility, average leverage, unrealized `PnL`, and margin utilization at the symbol level.
+    /// The rating can be high, medium and low, and is updated every 30 minutes.
+    ///
+    /// Weight: 1
+    ///
+    /// # Arguments
+    ///
+    /// - `params`: [`AdlRiskParams`]
+    ///   The parameters for this operation.
+    ///
+    /// # Returns
+    ///
+    /// [`RestApiResponse<models::AdlRiskResponse>`] on success.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an [`anyhow::Error`] if:
+    /// - the HTTP request fails
+    /// - any parameter is invalid
+    /// - the response cannot be parsed
+    /// - or one of the following occurs:
+    ///   - `RequiredError`
+    ///   - `ConnectorClientError`
+    ///   - `UnauthorizedError`
+    ///   - `ForbiddenError`
+    ///   - `TooManyRequestsError`
+    ///   - `RateLimitBanError`
+    ///   - `ServerError`
+    ///   - `NotFoundError`
+    ///   - `NetworkError`
+    ///   - `BadRequestError`
+    ///
+    ///
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/usds-margined-futures/market-data/rest-api/ADL-Risk).
+    ///
+    pub async fn adl_risk(
+        &self,
+        params: AdlRiskParams,
+    ) -> anyhow::Result<RestApiResponse<models::AdlRiskResponse>> {
+        self.market_data_api_client.adl_risk(params).await
+    }
+
     /// Basis
     ///
     /// Query future basis
@@ -1383,6 +1450,7 @@ impl RestApi {
     /// Get compressed, aggregate market trades. Market trades that fill in 100ms with the same price and the same taking side will have the quantity aggregated.
     ///
     ///
+    /// Retail Price Improvement(RPI) orders are aggregated and without special tags to be distinguished.
     /// * support querying futures trade histories that are not older than one year
     /// * If both `startTime` and `endTime` are sent, time between `startTime` and `endTime` must be less than 1 hour.
     /// * If `fromId`, `startTime`, and `endTime` are not sent, the most recent aggregate trades will be returned.
@@ -1441,6 +1509,7 @@ impl RestApi {
     /// * PERPETUAL
     /// * `CURRENT_QUARTER`
     /// * `NEXT_QUARTER`
+    /// * `TRADIFI_PERPETUAL`
     ///
     /// Weight: based on parameter LIMIT
     /// | LIMIT       | weight |
@@ -1588,7 +1657,7 @@ impl RestApi {
     /// Query funding rate info for symbols that had `FundingRateCap`/ `FundingRateFloor` / fundingIntervalHours adjustment
     ///
     /// Weight: 0
-    /// share 500/5min/IP rate limit with GET /fapi/v1/fundingInfo
+    /// share 500/5min/IP rate limit with GET /fapi/v1/fundingRate
     ///
     /// # Arguments
     ///
@@ -1789,7 +1858,7 @@ impl RestApi {
     ///
     /// Mark Price and Funding Rate
     ///
-    /// Weight: 1
+    /// Weight: 1 with symbol, 10 without symbol
     ///
     /// # Arguments
     ///
@@ -2071,6 +2140,8 @@ impl RestApi {
     ///
     /// Query symbol orderbook
     ///
+    /// Retail Price Improvement(RPI) orders are not visible and excluded in the response message.
+    ///
     /// Weight: Adjusted based on the limit:
     /// | Limit         | Weight |
     /// | ------------- | ------ |
@@ -2221,6 +2292,11 @@ impl RestApi {
     ///
     /// Query index price constituents
     ///
+    ///
+    /// **Note**:
+    ///
+    /// Prices from constituents of `TradFi` perps will be hiden and displayed as -1.
+    ///
     /// Weight: 2
     ///
     /// # Arguments
@@ -2352,10 +2428,59 @@ impl RestApi {
         self.market_data_api_client.recent_trades_list(params).await
     }
 
+    /// RPI Order Book
+    ///
+    /// Query symbol orderbook with RPI orders
+    ///
+    /// RPI(Retail Price Improvement) orders are included and aggreated in the response message. Crossed price levels are hidden and invisible.
+    ///
+    /// Weight: Adjusted based on the limit:
+    /// | Limit         | Weight |
+    /// | ------------- | ------ |
+    /// | 1000          | 20     |
+    ///
+    /// # Arguments
+    ///
+    /// - `params`: [`RpiOrderBookParams`]
+    ///   The parameters for this operation.
+    ///
+    /// # Returns
+    ///
+    /// [`RestApiResponse<models::RpiOrderBookResponse>`] on success.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an [`anyhow::Error`] if:
+    /// - the HTTP request fails
+    /// - any parameter is invalid
+    /// - the response cannot be parsed
+    /// - or one of the following occurs:
+    ///   - `RequiredError`
+    ///   - `ConnectorClientError`
+    ///   - `UnauthorizedError`
+    ///   - `ForbiddenError`
+    ///   - `TooManyRequestsError`
+    ///   - `RateLimitBanError`
+    ///   - `ServerError`
+    ///   - `NotFoundError`
+    ///   - `NetworkError`
+    ///   - `BadRequestError`
+    ///
+    ///
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/usds-margined-futures/market-data/rest-api/Order-Book-RPI).
+    ///
+    pub async fn rpi_order_book(
+        &self,
+        params: RpiOrderBookParams,
+    ) -> anyhow::Result<RestApiResponse<models::RpiOrderBookResponse>> {
+        self.market_data_api_client.rpi_order_book(params).await
+    }
+
     /// Symbol Order Book Ticker
     ///
     /// Best price/qty on the order book for a symbol or symbols.
     ///
+    /// Retail Price Improvement(RPI) orders are not visible and excluded in the response message.
     /// * If the symbol is not sent, bookTickers for all symbols will be returned in an array.
     /// * The field `X-MBX-USED-WEIGHT-1M` in response header is not accurate from this endpoint, please ignore.
     ///
@@ -2401,7 +2526,7 @@ impl RestApi {
             .await
     }
 
-    /// Symbol Price Ticker(Deprecated)
+    /// Symbol Price Ticker
     ///
     /// Latest price for a symbol or symbols.
     ///
@@ -2440,6 +2565,10 @@ impl RestApi {
     ///
     /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/usds-margined-futures/market-data/rest-api/Symbol-Price-Ticker).
     ///
+    /// # Deprecation
+    ///
+    /// **Deprecated:** This method may be removed in a future version.
+    #[deprecated]
     pub async fn symbol_price_ticker(
         &self,
         params: SymbolPriceTickerParams,
@@ -2742,6 +2871,48 @@ impl RestApi {
             .await
     }
 
+    /// Trading Schedule
+    ///
+    /// Trading session schedules for the underlying assets of `TradFi` Perps are provided for a one-week period starting from the day prior to the query time, covering both the U.S. equity and commodity markets. Equity market session types include "`PRE_MARKET`", "REGULAR", "`AFTER_MARKET`", "OVERNIGHT", and "`NO_TRADING`", while commodity market session types include "REGULAR" and "`NO_TRADING`".
+    ///
+    /// Weight: 5
+    ///
+    /// # Arguments
+    ///
+    /// - `params`: [`TradingScheduleParams`]
+    ///   The parameters for this operation.
+    ///
+    /// # Returns
+    ///
+    /// [`RestApiResponse<models::TradingScheduleResponse>`] on success.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an [`anyhow::Error`] if:
+    /// - the HTTP request fails
+    /// - any parameter is invalid
+    /// - the response cannot be parsed
+    /// - or one of the following occurs:
+    ///   - `RequiredError`
+    ///   - `ConnectorClientError`
+    ///   - `UnauthorizedError`
+    ///   - `ForbiddenError`
+    ///   - `TooManyRequestsError`
+    ///   - `RateLimitBanError`
+    ///   - `ServerError`
+    ///   - `NotFoundError`
+    ///   - `NetworkError`
+    ///   - `BadRequestError`
+    ///
+    ///
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/usds-margined-futures/market-data/rest-api/Trading-Schedule).
+    ///
+    pub async fn trading_schedule(
+        &self,
+    ) -> anyhow::Result<RestApiResponse<models::TradingScheduleResponse>> {
+        self.market_data_api_client.trading_schedule().await
+    }
+
     /// Classic Portfolio Margin Account Information (`USER_DATA`)
     ///
     /// Get Classic Portfolio Margin current account information.
@@ -2939,6 +3110,96 @@ impl RestApi {
     ) -> anyhow::Result<RestApiResponse<models::AutoCancelAllOpenOrdersResponse>> {
         self.trade_api_client
             .auto_cancel_all_open_orders(params)
+            .await
+    }
+
+    /// Cancel Algo Order (TRADE)
+    ///
+    /// Cancel an active algo order.
+    ///
+    /// * Either `algoId` or `clientAlgoId` must be sent.
+    ///
+    /// Weight: 1
+    ///
+    /// # Arguments
+    ///
+    /// - `params`: [`CancelAlgoOrderParams`]
+    ///   The parameters for this operation.
+    ///
+    /// # Returns
+    ///
+    /// [`RestApiResponse<models::CancelAlgoOrderResponse>`] on success.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an [`anyhow::Error`] if:
+    /// - the HTTP request fails
+    /// - any parameter is invalid
+    /// - the response cannot be parsed
+    /// - or one of the following occurs:
+    ///   - `RequiredError`
+    ///   - `ConnectorClientError`
+    ///   - `UnauthorizedError`
+    ///   - `ForbiddenError`
+    ///   - `TooManyRequestsError`
+    ///   - `RateLimitBanError`
+    ///   - `ServerError`
+    ///   - `NotFoundError`
+    ///   - `NetworkError`
+    ///   - `BadRequestError`
+    ///
+    ///
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/usds-margined-futures/trade/rest-api/Cancel-Algo-Order).
+    ///
+    pub async fn cancel_algo_order(
+        &self,
+        params: CancelAlgoOrderParams,
+    ) -> anyhow::Result<RestApiResponse<models::CancelAlgoOrderResponse>> {
+        self.trade_api_client.cancel_algo_order(params).await
+    }
+
+    /// Cancel All Algo Open Orders (TRADE)
+    ///
+    /// Cancel All Algo Open Orders
+    ///
+    /// Weight: 1
+    ///
+    /// # Arguments
+    ///
+    /// - `params`: [`CancelAllAlgoOpenOrdersParams`]
+    ///   The parameters for this operation.
+    ///
+    /// # Returns
+    ///
+    /// [`RestApiResponse<models::CancelAllAlgoOpenOrdersResponse>`] on success.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an [`anyhow::Error`] if:
+    /// - the HTTP request fails
+    /// - any parameter is invalid
+    /// - the response cannot be parsed
+    /// - or one of the following occurs:
+    ///   - `RequiredError`
+    ///   - `ConnectorClientError`
+    ///   - `UnauthorizedError`
+    ///   - `ForbiddenError`
+    ///   - `TooManyRequestsError`
+    ///   - `RateLimitBanError`
+    ///   - `ServerError`
+    ///   - `NotFoundError`
+    ///   - `NetworkError`
+    ///   - `BadRequestError`
+    ///
+    ///
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/usds-margined-futures/trade/rest-api/Cancel-All-Algo-Open-Orders).
+    ///
+    pub async fn cancel_all_algo_open_orders(
+        &self,
+        params: CancelAllAlgoOpenOrdersParams,
+    ) -> anyhow::Result<RestApiResponse<models::CancelAllAlgoOpenOrdersResponse>> {
+        self.trade_api_client
+            .cancel_all_algo_open_orders(params)
             .await
     }
 
@@ -3247,6 +3508,54 @@ impl RestApi {
         self.trade_api_client.change_position_mode(params).await
     }
 
+    /// Current All Algo Open Orders (`USER_DATA`)
+    ///
+    /// Get all algo open orders on a symbol.
+    ///
+    /// * If the symbol is not sent, orders for all symbols will be returned in an array.
+    ///
+    /// Weight: 1 for a single symbol; 40 when the symbol parameter is omitted
+    /// Careful when accessing this with no symbol.
+    ///
+    /// # Arguments
+    ///
+    /// - `params`: [`CurrentAllAlgoOpenOrdersParams`]
+    ///   The parameters for this operation.
+    ///
+    /// # Returns
+    ///
+    /// [`RestApiResponse<Vec<models::CurrentAllAlgoOpenOrdersResponseInner>>`] on success.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an [`anyhow::Error`] if:
+    /// - the HTTP request fails
+    /// - any parameter is invalid
+    /// - the response cannot be parsed
+    /// - or one of the following occurs:
+    ///   - `RequiredError`
+    ///   - `ConnectorClientError`
+    ///   - `UnauthorizedError`
+    ///   - `ForbiddenError`
+    ///   - `TooManyRequestsError`
+    ///   - `RateLimitBanError`
+    ///   - `ServerError`
+    ///   - `NotFoundError`
+    ///   - `NetworkError`
+    ///   - `BadRequestError`
+    ///
+    ///
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/usds-margined-futures/trade/rest-api/Current-All-Algo-Open-Orders).
+    ///
+    pub async fn current_all_algo_open_orders(
+        &self,
+        params: CurrentAllAlgoOpenOrdersParams,
+    ) -> anyhow::Result<RestApiResponse<Vec<models::CurrentAllAlgoOpenOrdersResponseInner>>> {
+        self.trade_api_client
+            .current_all_algo_open_orders(params)
+            .await
+    }
+
     /// Current All Open Orders (`USER_DATA`)
     ///
     /// Get all open orders on a symbol.
@@ -3291,6 +3600,51 @@ impl RestApi {
         params: CurrentAllOpenOrdersParams,
     ) -> anyhow::Result<RestApiResponse<Vec<models::AllOrdersResponseInner>>> {
         self.trade_api_client.current_all_open_orders(params).await
+    }
+
+    /// Futures `TradFi` Perps `Contract(USER_DATA)`
+    ///
+    /// Sign TradFi-Perps agreement contract
+    ///
+    /// Weight: 0
+    ///
+    /// # Arguments
+    ///
+    /// - `params`: [`FuturesTradfiPerpsContractParams`]
+    ///   The parameters for this operation.
+    ///
+    /// # Returns
+    ///
+    /// [`RestApiResponse<models::FuturesTradfiPerpsContractResponse>`] on success.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an [`anyhow::Error`] if:
+    /// - the HTTP request fails
+    /// - any parameter is invalid
+    /// - the response cannot be parsed
+    /// - or one of the following occurs:
+    ///   - `RequiredError`
+    ///   - `ConnectorClientError`
+    ///   - `UnauthorizedError`
+    ///   - `ForbiddenError`
+    ///   - `TooManyRequestsError`
+    ///   - `RateLimitBanError`
+    ///   - `ServerError`
+    ///   - `NotFoundError`
+    ///   - `NetworkError`
+    ///   - `BadRequestError`
+    ///
+    ///
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/usds-margined-futures/trade/rest-api/Futures-TradFi-Perps-Contract).
+    ///
+    pub async fn futures_tradfi_perps_contract(
+        &self,
+        params: FuturesTradfiPerpsContractParams,
+    ) -> anyhow::Result<RestApiResponse<models::FuturesTradfiPerpsContractResponse>> {
+        self.trade_api_client
+            .futures_tradfi_perps_contract(params)
+            .await
     }
 
     /// Get Order Modify History (`USER_DATA`)
@@ -3501,7 +3855,7 @@ impl RestApi {
     ///
     /// Weight: 1 on 10s order rate limit(X-MBX-ORDER-COUNT-10S);
     /// 1 on 1min order rate limit(X-MBX-ORDER-COUNT-1M);
-    /// 1 on IP rate limit(x-mbx-used-weight-1m)
+    /// 0 on IP rate limit(x-mbx-used-weight-1m)
     ///
     /// # Arguments
     ///
@@ -3540,37 +3894,33 @@ impl RestApi {
         self.trade_api_client.modify_order(params).await
     }
 
-    /// New Order(TRADE)
+    /// New Algo Order(TRADE)
     ///
-    /// Send in a new order.
+    /// Send in a new Algo order.
     ///
-    /// * Order with type `STOP`,  parameter `timeInForce` can be sent ( default `GTC`).
-    /// * Order with type `TAKE_PROFIT`,  parameter `timeInForce` can be sent ( default `GTC`).
+    /// * Algo order with type `STOP`,  parameter `timeInForce` can be sent ( default `GTC`).
+    /// * Algo order with type `TAKE_PROFIT`,  parameter `timeInForce` can be sent ( default `GTC`).
     /// * Condition orders will be triggered when:
     ///
     /// * If parameter`priceProtect`is sent as true:
-    /// * when price reaches the `stopPrice` ，the difference rate between "`MARK_PRICE`" and "`CONTRACT_PRICE`" cannot be larger than the "triggerProtect" of the symbol
+    /// * when price reaches the `triggerPrice` ，the difference rate between "`MARK_PRICE`" and "`CONTRACT_PRICE`" cannot be larger than the "triggerProtect" of the symbol
     /// * "triggerProtect" of a symbol can be got from `GET /fapi/v1/exchangeInfo`
     ///
     /// * `STOP`, `STOP_MARKET`:
-    /// * BUY: latest price ("`MARK_PRICE`" or "`CONTRACT_PRICE`") >= `stopPrice`
-    /// * SELL: latest price ("`MARK_PRICE`" or "`CONTRACT_PRICE`") <= `stopPrice`
+    /// * BUY: latest price ("`MARK_PRICE`" or "`CONTRACT_PRICE`") >= `triggerPrice`
+    /// * SELL: latest price ("`MARK_PRICE`" or "`CONTRACT_PRICE`") <= `triggerPrice`
     /// * `TAKE_PROFIT`, `TAKE_PROFIT_MARKET`:
-    /// * BUY: latest price ("`MARK_PRICE`" or "`CONTRACT_PRICE`") <= `stopPrice`
-    /// * SELL: latest price ("`MARK_PRICE`" or "`CONTRACT_PRICE`") >= `stopPrice`
+    /// * BUY: latest price ("`MARK_PRICE`" or "`CONTRACT_PRICE`") <= `triggerPrice`
+    /// * SELL: latest price ("`MARK_PRICE`" or "`CONTRACT_PRICE`") >= `triggerPrice`
     /// * `TRAILING_STOP_MARKET`:
-    /// * BUY: the lowest price after order placed `<= `activationPrice`, and the latest price >`= the lowest price * (1 + `callbackRate`)
-    /// * SELL: the highest price after order placed >= `activationPrice`, and the latest price <= the highest price * (1 - `callbackRate`)
+    /// * BUY: the lowest price after order placed <= `activatePrice`, and the latest price >= the lowest price * (1 + `callbackRate`)
+    /// * SELL: the highest price after order placed >= `activatePrice`, and the latest price <= the highest price * (1 - `callbackRate`)
     ///
     /// * For `TRAILING_STOP_MARKET`, if you got such error code.
     /// ``{"code": -2021, "msg": "Order would immediately trigger."}``
     /// means that the parameters you send do not meet the following requirements:
-    /// * BUY: `activationPrice` should be smaller than latest price.
-    /// * SELL: `activationPrice` should be larger than latest price.
-    ///
-    /// * If `newOrderRespType ` is sent as `RESULT` :
-    /// * `MARKET` order: the final FILLED result of the order will be return directly.
-    /// * `LIMIT` order with special `timeInForce`: the final status result of the order(FILLED or EXPIRED) will be returned directly.
+    /// * BUY: `activatePrice` should be smaller than latest price.
+    /// * SELL: `activatePrice` should be larger than latest price.
     ///
     /// * `STOP_MARKET`, `TAKE_PROFIT_MARKET` with `closePosition`=`true`:
     /// * Follow the same rules for condition orders.
@@ -3578,6 +3928,55 @@ impl RestApi {
     /// * Cannot be used with `quantity` paremeter
     /// * Cannot be used with `reduceOnly` parameter
     /// * In Hedge Mode,cannot be used with `BUY` orders in `LONG` position side. and cannot be used with `SELL` orders in `SHORT` position side
+    /// * `selfTradePreventionMode` is only effective when `timeInForce` set to `IOC` or `GTC` or `GTD`.
+    ///
+    /// Weight: 0 on IP rate limit(x-mbx-used-weight-1m)
+    ///
+    /// # Arguments
+    ///
+    /// - `params`: [`NewAlgoOrderParams`]
+    ///   The parameters for this operation.
+    ///
+    /// # Returns
+    ///
+    /// [`RestApiResponse<models::NewAlgoOrderResponse>`] on success.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an [`anyhow::Error`] if:
+    /// - the HTTP request fails
+    /// - any parameter is invalid
+    /// - the response cannot be parsed
+    /// - or one of the following occurs:
+    ///   - `RequiredError`
+    ///   - `ConnectorClientError`
+    ///   - `UnauthorizedError`
+    ///   - `ForbiddenError`
+    ///   - `TooManyRequestsError`
+    ///   - `RateLimitBanError`
+    ///   - `ServerError`
+    ///   - `NotFoundError`
+    ///   - `NetworkError`
+    ///   - `BadRequestError`
+    ///
+    ///
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/usds-margined-futures/trade/rest-api/New-Algo-Order).
+    ///
+    pub async fn new_algo_order(
+        &self,
+        params: NewAlgoOrderParams,
+    ) -> anyhow::Result<RestApiResponse<models::NewAlgoOrderResponse>> {
+        self.trade_api_client.new_algo_order(params).await
+    }
+
+    /// New Order(TRADE)
+    ///
+    /// Send in a new order.
+    ///
+    /// * If `newOrderRespType ` is sent as `RESULT` :
+    /// * `MARKET` order: the final FILLED result of the order will be return directly.
+    /// * `LIMIT` order with special `timeInForce`: the final status result of the order(FILLED or EXPIRED) will be returned directly.
+    ///
     /// * `selfTradePreventionMode` is only effective when `timeInForce` set to `IOC` or `GTC` or `GTD`.
     /// * In extreme market conditions, timeInForce `GTD` order auto cancel time might be delayed comparing to `goodTillDate`
     ///
@@ -3824,6 +4223,106 @@ impl RestApi {
         params: PositionInformationV3Params,
     ) -> anyhow::Result<RestApiResponse<Vec<models::PositionInformationV3ResponseInner>>> {
         self.trade_api_client.position_information_v3(params).await
+    }
+
+    /// Query Algo Order (`USER_DATA`)
+    ///
+    /// Check an algo order's status.
+    ///
+    /// * These orders will not be found:
+    /// * order status is `CANCELED` or `EXPIRED` **AND** order has NO filled trade **AND** created time + 3 days < current time
+    /// * order create time + 90 days < current time
+    ///
+    /// * Either `algoId` or `clientAlgoId` must be sent.
+    /// * `algoId` is self-increment for each specific `symbol`
+    ///
+    /// Weight: 1
+    ///
+    /// # Arguments
+    ///
+    /// - `params`: [`QueryAlgoOrderParams`]
+    ///   The parameters for this operation.
+    ///
+    /// # Returns
+    ///
+    /// [`RestApiResponse<models::QueryAlgoOrderResponse>`] on success.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an [`anyhow::Error`] if:
+    /// - the HTTP request fails
+    /// - any parameter is invalid
+    /// - the response cannot be parsed
+    /// - or one of the following occurs:
+    ///   - `RequiredError`
+    ///   - `ConnectorClientError`
+    ///   - `UnauthorizedError`
+    ///   - `ForbiddenError`
+    ///   - `TooManyRequestsError`
+    ///   - `RateLimitBanError`
+    ///   - `ServerError`
+    ///   - `NotFoundError`
+    ///   - `NetworkError`
+    ///   - `BadRequestError`
+    ///
+    ///
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/usds-margined-futures/trade/rest-api/Query-Algo-Order).
+    ///
+    pub async fn query_algo_order(
+        &self,
+        params: QueryAlgoOrderParams,
+    ) -> anyhow::Result<RestApiResponse<models::QueryAlgoOrderResponse>> {
+        self.trade_api_client.query_algo_order(params).await
+    }
+
+    /// Query All Algo Orders (`USER_DATA`)
+    ///
+    /// Get all algo orders; active, CANCELED, TRIGGERED or FINISHED .
+    ///
+    /// * These orders will not be found:
+    /// * order status is `CANCELED` or `EXPIRED` **AND** order has NO filled trade **AND** created time + 3 days < current time
+    /// * order create time + 90 days < current time
+    ///
+    /// * If `algoId` is set, it will get orders >= that `algoId`. Otherwise most recent orders are returned.
+    /// * The query time period must be less then 7 days( default as the recent 7 days).
+    ///
+    /// Weight: 5
+    ///
+    /// # Arguments
+    ///
+    /// - `params`: [`QueryAllAlgoOrdersParams`]
+    ///   The parameters for this operation.
+    ///
+    /// # Returns
+    ///
+    /// [`RestApiResponse<Vec<models::QueryAllAlgoOrdersResponseInner>>`] on success.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an [`anyhow::Error`] if:
+    /// - the HTTP request fails
+    /// - any parameter is invalid
+    /// - the response cannot be parsed
+    /// - or one of the following occurs:
+    ///   - `RequiredError`
+    ///   - `ConnectorClientError`
+    ///   - `UnauthorizedError`
+    ///   - `ForbiddenError`
+    ///   - `TooManyRequestsError`
+    ///   - `RateLimitBanError`
+    ///   - `ServerError`
+    ///   - `NotFoundError`
+    ///   - `NetworkError`
+    ///   - `BadRequestError`
+    ///
+    ///
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/usds-margined-futures/trade/rest-api/Query-All-Algo-Orders).
+    ///
+    pub async fn query_all_algo_orders(
+        &self,
+        params: QueryAllAlgoOrdersParams,
+    ) -> anyhow::Result<RestApiResponse<Vec<models::QueryAllAlgoOrdersResponseInner>>> {
+        self.trade_api_client.query_all_algo_orders(params).await
     }
 
     /// Query Current Open Order (`USER_DATA`)

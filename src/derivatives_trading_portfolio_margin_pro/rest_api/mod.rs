@@ -50,7 +50,8 @@ impl RestApi {
     ///
     /// * `endpoint` - The API endpoint to send the request to
     /// * `method` - The HTTP method to use for the request
-    /// * `params` - A map of parameters to send with the request
+    /// * `query_params` - A map of query parameters to send with the request
+    /// * `body_params` - A map of body parameters to send with the request
     ///
     /// # Returns
     ///
@@ -63,9 +64,19 @@ impl RestApi {
         &self,
         endpoint: &str,
         method: Method,
-        params: BTreeMap<String, Value>,
+        query_params: BTreeMap<String, Value>,
+        body_params: BTreeMap<String, Value>,
     ) -> anyhow::Result<RestApiResponse<R>> {
-        send_request::<R>(&self.configuration, endpoint, method, params, None, false).await
+        send_request::<R>(
+            &self.configuration,
+            endpoint,
+            method,
+            query_params,
+            body_params,
+            None,
+            false,
+        )
+        .await
     }
 
     /// Send a signed request to the API
@@ -74,7 +85,8 @@ impl RestApi {
     ///
     /// * `endpoint` - The API endpoint to send the request to
     /// * `method` - The HTTP method to use for the request
-    /// * `params` - A map of parameters to send with the request
+    /// * `query_params` - A map of query parameters to send with the request
+    /// * `body_params` - A map of body parameters to send with the request
     ///
     /// # Returns
     ///
@@ -87,9 +99,19 @@ impl RestApi {
         &self,
         endpoint: &str,
         method: Method,
-        params: BTreeMap<String, Value>,
+        query_params: BTreeMap<String, Value>,
+        body_params: BTreeMap<String, Value>,
     ) -> anyhow::Result<RestApiResponse<R>> {
-        send_request::<R>(&self.configuration, endpoint, method, params, None, true).await
+        send_request::<R>(
+            &self.configuration,
+            endpoint,
+            method,
+            query_params,
+            body_params,
+            None,
+            true,
+        )
+        .await
     }
 
     /// BNB `transfer(USER_DATA)`
@@ -321,6 +343,49 @@ impl RestApi {
             .await
     }
 
+    /// Get Delta Mode `Status(USER_DATA)`
+    ///
+    /// Query the Delta mode status of current account.
+    ///
+    /// Weight: 1500
+    ///
+    /// # Arguments
+    ///
+    /// - `params`: [`GetDeltaModeStatusParams`]
+    ///   The parameters for this operation.
+    ///
+    /// # Returns
+    ///
+    /// [`RestApiResponse<models::GetDeltaModeStatusResponse>`] on success.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an [`anyhow::Error`] if:
+    /// - the HTTP request fails
+    /// - any parameter is invalid
+    /// - the response cannot be parsed
+    /// - or one of the following occurs:
+    ///   - `RequiredError`
+    ///   - `ConnectorClientError`
+    ///   - `UnauthorizedError`
+    ///   - `ForbiddenError`
+    ///   - `TooManyRequestsError`
+    ///   - `RateLimitBanError`
+    ///   - `ServerError`
+    ///   - `NotFoundError`
+    ///   - `NetworkError`
+    ///   - `BadRequestError`
+    ///
+    ///
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/portfolio-margin-pro/account/Get-Delta-Mode-Status).
+    ///
+    pub async fn get_delta_mode_status(
+        &self,
+        params: GetDeltaModeStatusParams,
+    ) -> anyhow::Result<RestApiResponse<models::GetDeltaModeStatusResponse>> {
+        self.account_api_client.get_delta_mode_status(params).await
+    }
+
     /// Get Portfolio Margin Pro Account `Balance(USER_DATA)`
     ///
     /// Query Portfolio Margin Pro account balance
@@ -505,54 +570,11 @@ impl RestApi {
             .await
     }
 
-    /// Mint BFUSD for Portfolio Margin(TRADE)
-    ///
-    /// Mint BFUSD for all types of Portfolio Margin account
-    ///
-    /// Weight: 1500
-    ///
-    /// # Arguments
-    ///
-    /// - `params`: [`MintBfusdForPortfolioMarginParams`]
-    ///   The parameters for this operation.
-    ///
-    /// # Returns
-    ///
-    /// [`RestApiResponse<models::MintBfusdForPortfolioMarginResponse>`] on success.
-    ///
-    /// # Errors
-    ///
-    /// This function will return an [`anyhow::Error`] if:
-    /// - the HTTP request fails
-    /// - any parameter is invalid
-    /// - the response cannot be parsed
-    /// - or one of the following occurs:
-    ///   - `RequiredError`
-    ///   - `ConnectorClientError`
-    ///   - `UnauthorizedError`
-    ///   - `ForbiddenError`
-    ///   - `TooManyRequestsError`
-    ///   - `RateLimitBanError`
-    ///   - `ServerError`
-    ///   - `NotFoundError`
-    ///   - `NetworkError`
-    ///   - `BadRequestError`
-    ///
-    ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/portfolio-margin-pro/account/Mint-BFUSD-Portfolio-Margin).
-    ///
-    pub async fn mint_bfusd_for_portfolio_margin(
-        &self,
-        params: MintBfusdForPortfolioMarginParams,
-    ) -> anyhow::Result<RestApiResponse<models::MintBfusdForPortfolioMarginResponse>> {
-        self.account_api_client
-            .mint_bfusd_for_portfolio_margin(params)
-            .await
-    }
-
     /// Portfolio Margin Pro Bankruptcy Loan Repay
     ///
     /// Repay Portfolio Margin Pro Bankruptcy Loan
+    ///
+    /// * Please note that the API Key has enabled Spot & Margin Trading permissions to access this endpoint.
     ///
     /// Weight: 3000
     ///
@@ -745,51 +767,6 @@ impl RestApi {
             .await
     }
 
-    /// Redeem BFUSD for Portfolio Margin(TRADE)
-    ///
-    /// Redeem BFUSD for all types of Portfolio Margin account
-    ///
-    /// Weight: 1500
-    ///
-    /// # Arguments
-    ///
-    /// - `params`: [`RedeemBfusdForPortfolioMarginParams`]
-    ///   The parameters for this operation.
-    ///
-    /// # Returns
-    ///
-    /// [`RestApiResponse<models::RedeemBfusdForPortfolioMarginResponse>`] on success.
-    ///
-    /// # Errors
-    ///
-    /// This function will return an [`anyhow::Error`] if:
-    /// - the HTTP request fails
-    /// - any parameter is invalid
-    /// - the response cannot be parsed
-    /// - or one of the following occurs:
-    ///   - `RequiredError`
-    ///   - `ConnectorClientError`
-    ///   - `UnauthorizedError`
-    ///   - `ForbiddenError`
-    ///   - `TooManyRequestsError`
-    ///   - `RateLimitBanError`
-    ///   - `ServerError`
-    ///   - `NotFoundError`
-    ///   - `NetworkError`
-    ///   - `BadRequestError`
-    ///
-    ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/portfolio-margin-pro/account/Redeem-BFUSD-Portfolio-Margin).
-    ///
-    pub async fn redeem_bfusd_for_portfolio_margin(
-        &self,
-        params: RedeemBfusdForPortfolioMarginParams,
-    ) -> anyhow::Result<RestApiResponse<models::RedeemBfusdForPortfolioMarginResponse>> {
-        self.account_api_client
-            .redeem_bfusd_for_portfolio_margin(params)
-            .await
-    }
-
     /// Repay futures Negative `Balance(USER_DATA)`
     ///
     /// Repay futures Negative Balance
@@ -835,20 +812,63 @@ impl RestApi {
             .await
     }
 
-    /// Transfer LDUSDT for Portfolio Margin(TRADE)
+    /// Switch Delta Mode(TRADE)
     ///
-    /// Transfer LDUSDT as collateral for all types of Portfolio Margin account
+    /// Switch the Delta mode for existing PM PRO / PM RETAIL accounts.
     ///
     /// Weight: 1500
     ///
     /// # Arguments
     ///
-    /// - `params`: [`TransferLdusdtForPortfolioMarginParams`]
+    /// - `params`: [`SwitchDeltaModeParams`]
     ///   The parameters for this operation.
     ///
     /// # Returns
     ///
-    /// [`RestApiResponse<models::TransferLdusdtForPortfolioMarginResponse>`] on success.
+    /// [`RestApiResponse<models::SwitchDeltaModeResponse>`] on success.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an [`anyhow::Error`] if:
+    /// - the HTTP request fails
+    /// - any parameter is invalid
+    /// - the response cannot be parsed
+    /// - or one of the following occurs:
+    ///   - `RequiredError`
+    ///   - `ConnectorClientError`
+    ///   - `UnauthorizedError`
+    ///   - `ForbiddenError`
+    ///   - `TooManyRequestsError`
+    ///   - `RateLimitBanError`
+    ///   - `ServerError`
+    ///   - `NotFoundError`
+    ///   - `NetworkError`
+    ///   - `BadRequestError`
+    ///
+    ///
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/portfolio-margin-pro/account/Switch-Delta-Mode).
+    ///
+    pub async fn switch_delta_mode(
+        &self,
+        params: SwitchDeltaModeParams,
+    ) -> anyhow::Result<RestApiResponse<models::SwitchDeltaModeResponse>> {
+        self.account_api_client.switch_delta_mode(params).await
+    }
+
+    /// Transfer LDUSDT/RWUSD for Portfolio Margin(TRADE)
+    ///
+    /// Transfer LDUSDT/RWUSD as collateral for all types of Portfolio Margin account
+    ///
+    /// Weight: 1500
+    ///
+    /// # Arguments
+    ///
+    /// - `params`: [`TransferLdusdtRwusdForPortfolioMarginParams`]
+    ///   The parameters for this operation.
+    ///
+    /// # Returns
+    ///
+    /// [`RestApiResponse<models::TransferLdusdtRwusdForPortfolioMarginResponse>`] on success.
     ///
     /// # Errors
     ///
@@ -871,12 +891,13 @@ impl RestApi {
     ///
     /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/portfolio-margin-pro/account/Transfer-LDUSDT-Portfolio-Margin).
     ///
-    pub async fn transfer_ldusdt_for_portfolio_margin(
+    pub async fn transfer_ldusdt_rwusd_for_portfolio_margin(
         &self,
-        params: TransferLdusdtForPortfolioMarginParams,
-    ) -> anyhow::Result<RestApiResponse<models::TransferLdusdtForPortfolioMarginResponse>> {
+        params: TransferLdusdtRwusdForPortfolioMarginParams,
+    ) -> anyhow::Result<RestApiResponse<models::TransferLdusdtRwusdForPortfolioMarginResponse>>
+    {
         self.account_api_client
-            .transfer_ldusdt_for_portfolio_margin(params)
+            .transfer_ldusdt_rwusd_for_portfolio_margin(params)
             .await
     }
 

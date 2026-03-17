@@ -59,7 +59,8 @@ impl RestApi {
     ///
     /// * `endpoint` - The API endpoint to send the request to
     /// * `method` - The HTTP method to use for the request
-    /// * `params` - A map of parameters to send with the request
+    /// * `query_params` - A map of query parameters to send with the request
+    /// * `body_params` - A map of body parameters to send with the request
     ///
     /// # Returns
     ///
@@ -72,9 +73,19 @@ impl RestApi {
         &self,
         endpoint: &str,
         method: Method,
-        params: BTreeMap<String, Value>,
+        query_params: BTreeMap<String, Value>,
+        body_params: BTreeMap<String, Value>,
     ) -> anyhow::Result<RestApiResponse<R>> {
-        send_request::<R>(&self.configuration, endpoint, method, params, None, false).await
+        send_request::<R>(
+            &self.configuration,
+            endpoint,
+            method,
+            query_params,
+            body_params,
+            None,
+            false,
+        )
+        .await
     }
 
     /// Send a signed request to the API
@@ -83,7 +94,8 @@ impl RestApi {
     ///
     /// * `endpoint` - The API endpoint to send the request to
     /// * `method` - The HTTP method to use for the request
-    /// * `params` - A map of parameters to send with the request
+    /// * `query_params` - A map of query parameters to send with the request
+    /// * `body_params` - A map of body parameters to send with the request
     ///
     /// # Returns
     ///
@@ -96,9 +108,19 @@ impl RestApi {
         &self,
         endpoint: &str,
         method: Method,
-        params: BTreeMap<String, Value>,
+        query_params: BTreeMap<String, Value>,
+        body_params: BTreeMap<String, Value>,
     ) -> anyhow::Result<RestApiResponse<R>> {
-        send_request::<R>(&self.configuration, endpoint, method, params, None, true).await
+        send_request::<R>(
+            &self.configuration,
+            endpoint,
+            method,
+            query_params,
+            body_params,
+            None,
+            true,
+        )
+        .await
     }
 
     /// Account API Trading Status (`USER_DATA`)
@@ -506,6 +528,92 @@ impl RestApi {
         self.asset_api_client.asset_dividend_record(params).await
     }
 
+    /// Dust Convert (`USER_DATA`)
+    ///
+    /// Convert dust assets
+    ///
+    /// Weight: 10
+    ///
+    /// # Arguments
+    ///
+    /// - `params`: [`DustConvertParams`]
+    ///   The parameters for this operation.
+    ///
+    /// # Returns
+    ///
+    /// [`RestApiResponse<models::DustConvertResponse>`] on success.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an [`anyhow::Error`] if:
+    /// - the HTTP request fails
+    /// - any parameter is invalid
+    /// - the response cannot be parsed
+    /// - or one of the following occurs:
+    ///   - `RequiredError`
+    ///   - `ConnectorClientError`
+    ///   - `UnauthorizedError`
+    ///   - `ForbiddenError`
+    ///   - `TooManyRequestsError`
+    ///   - `RateLimitBanError`
+    ///   - `ServerError`
+    ///   - `NotFoundError`
+    ///   - `NetworkError`
+    ///   - `BadRequestError`
+    ///
+    ///
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/wallet/asset/Dust-Convert).
+    ///
+    pub async fn dust_convert(
+        &self,
+        params: DustConvertParams,
+    ) -> anyhow::Result<RestApiResponse<models::DustConvertResponse>> {
+        self.asset_api_client.dust_convert(params).await
+    }
+
+    /// Dust Convertible Assets (`USER_DATA`)
+    ///
+    /// Query dust convertible assets
+    ///
+    /// Weight: 1
+    ///
+    /// # Arguments
+    ///
+    /// - `params`: [`DustConvertibleAssetsParams`]
+    ///   The parameters for this operation.
+    ///
+    /// # Returns
+    ///
+    /// [`RestApiResponse<models::DustConvertibleAssetsResponse>`] on success.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an [`anyhow::Error`] if:
+    /// - the HTTP request fails
+    /// - any parameter is invalid
+    /// - the response cannot be parsed
+    /// - or one of the following occurs:
+    ///   - `RequiredError`
+    ///   - `ConnectorClientError`
+    ///   - `UnauthorizedError`
+    ///   - `ForbiddenError`
+    ///   - `TooManyRequestsError`
+    ///   - `RateLimitBanError`
+    ///   - `ServerError`
+    ///   - `NotFoundError`
+    ///   - `NetworkError`
+    ///   - `BadRequestError`
+    ///
+    ///
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/wallet/asset/Dust-Convertible-Assets).
+    ///
+    pub async fn dust_convertible_assets(
+        &self,
+        params: DustConvertibleAssetsParams,
+    ) -> anyhow::Result<RestApiResponse<models::DustConvertibleAssetsResponse>> {
+        self.asset_api_client.dust_convertible_assets(params).await
+    }
+
     /// Dust Transfer (`USER_DATA`)
     ///
     /// Convert dust assets to BNB.
@@ -782,8 +890,6 @@ impl RestApi {
     /// Query User Delegation History(For Master `Account)(USER_DATA`)
     ///
     /// Query User Delegation History
-    ///
-    /// * You need to open Enable Spot & Margin Trading permission for the API Key which requests this endpoint
     ///
     /// Weight: 60
     ///
@@ -1741,6 +1847,7 @@ impl RestApi {
     ///
     /// * Please notice the default `startTime` and `endTime` to make sure that time interval is within
     /// * If both ``startTime`` and ``endTime`` are sent, time between ``startTime`` and ``endTime`` must
+    /// * Please, note that due to network-specific characteristics, the returned source address may be inaccurate. If multiple source addresses are found, only the first one will be returned.
     ///
     /// Weight: 1
     ///
@@ -1789,6 +1896,7 @@ impl RestApi {
     ///
     /// * Please notice the default `startTime` and `endTime` to make sure that time interval is within
     /// * If both ``startTime`` and ``endTime`` are sent, time between ``startTime`` and ``endTime`` must
+    /// * Please, note that due to network-specific characteristics, the returned source address may be inaccurate. If multiple source addresses are found, only the first one will be returned.
     ///
     /// Weight: 1
     ///
@@ -1972,6 +2080,56 @@ impl RestApi {
     ) -> anyhow::Result<RestApiResponse<models::SubmitDepositQuestionnaireTravelRuleResponse>> {
         self.travel_rule_api_client
             .submit_deposit_questionnaire_travel_rule(params)
+            .await
+    }
+
+    /// Submit Deposit Questionnaire V2 (For local entities that require travel rule) (supporting network) (`USER_DATA`)
+    ///
+    /// Submit questionnaire for local entities that require travel rule.
+    /// The questionnaire is only applies to transactions from unhosted wallets or VASPs that are not
+    /// yet onboarded with GTR.
+    ///
+    /// * Questionnaire is different for each local entity, please refer
+    /// * If getting error like `Questionnaire format not valid.` or `Questionnaire must not be blank`,
+    ///
+    /// Weight: 600
+    ///
+    /// # Arguments
+    ///
+    /// - `params`: [`SubmitDepositQuestionnaireV2Params`]
+    ///   The parameters for this operation.
+    ///
+    /// # Returns
+    ///
+    /// [`RestApiResponse<models::SubmitDepositQuestionnaireV2Response>`] on success.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an [`anyhow::Error`] if:
+    /// - the HTTP request fails
+    /// - any parameter is invalid
+    /// - the response cannot be parsed
+    /// - or one of the following occurs:
+    ///   - `RequiredError`
+    ///   - `ConnectorClientError`
+    ///   - `UnauthorizedError`
+    ///   - `ForbiddenError`
+    ///   - `TooManyRequestsError`
+    ///   - `RateLimitBanError`
+    ///   - `ServerError`
+    ///   - `NotFoundError`
+    ///   - `NetworkError`
+    ///   - `BadRequestError`
+    ///
+    ///
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/wallet/travel-rule/deposit-provide-info-v2).
+    ///
+    pub async fn submit_deposit_questionnaire_v2(
+        &self,
+        params: SubmitDepositQuestionnaireV2Params,
+    ) -> anyhow::Result<RestApiResponse<models::SubmitDepositQuestionnaireV2Response>> {
+        self.travel_rule_api_client
+            .submit_deposit_questionnaire_v2(params)
             .await
     }
 

@@ -47,6 +47,14 @@ pub trait MarketApi: Send + Sync {
         &self,
         params: KlinesParams,
     ) -> anyhow::Result<WebsocketApiResponse<Vec<Vec<models::KlinesItemInner>>>>;
+    async fn reference_price(
+        &self,
+        params: ReferencePriceParams,
+    ) -> anyhow::Result<WebsocketApiResponse<Box<models::ReferencePriceResponseResult>>>;
+    async fn reference_price_calculation(
+        &self,
+        params: ReferencePriceCalculationParams,
+    ) -> anyhow::Result<WebsocketApiResponse<Box<models::ReferencePriceCalculationResponseResult>>>;
     async fn ticker(
         &self,
         params: TickerParams,
@@ -93,6 +101,49 @@ pub struct MarketApiClient {
 impl MarketApiClient {
     pub fn new(websocket_api_base: Arc<WebsocketApi>) -> Self {
         Self { websocket_api_base }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum DepthSymbolStatusEnum {
+    #[serde(rename = "TRADING")]
+    Trading,
+    #[serde(rename = "END_OF_DAY")]
+    EndOfDay,
+    #[serde(rename = "HALT")]
+    Halt,
+    #[serde(rename = "BREAK")]
+    Break,
+    #[serde(rename = "NON_REPRESENTABLE")]
+    NonRepresentable,
+}
+
+impl DepthSymbolStatusEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Trading => "TRADING",
+            Self::EndOfDay => "END_OF_DAY",
+            Self::Halt => "HALT",
+            Self::Break => "BREAK",
+            Self::NonRepresentable => "NON_REPRESENTABLE",
+        }
+    }
+}
+
+impl std::str::FromStr for DepthSymbolStatusEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "TRADING" => Ok(Self::Trading),
+            "END_OF_DAY" => Ok(Self::EndOfDay),
+            "HALT" => Ok(Self::Halt),
+            "BREAK" => Ok(Self::Break),
+            "NON_REPRESENTABLE" => Ok(Self::NonRepresentable),
+            other => Err(format!("invalid DepthSymbolStatusEnum: {}", other).into()),
+        }
     }
 }
 
@@ -179,6 +230,53 @@ impl std::str::FromStr for KlinesIntervalEnum {
             "1w" => Ok(Self::Interval1w),
             "1M" => Ok(Self::Interval1M),
             other => Err(format!("invalid KlinesIntervalEnum: {}", other).into()),
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum ReferencePriceCalculationSymbolStatusEnum {
+    #[serde(rename = "TRADING")]
+    Trading,
+    #[serde(rename = "END_OF_DAY")]
+    EndOfDay,
+    #[serde(rename = "HALT")]
+    Halt,
+    #[serde(rename = "BREAK")]
+    Break,
+    #[serde(rename = "NON_REPRESENTABLE")]
+    NonRepresentable,
+}
+
+impl ReferencePriceCalculationSymbolStatusEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Trading => "TRADING",
+            Self::EndOfDay => "END_OF_DAY",
+            Self::Halt => "HALT",
+            Self::Break => "BREAK",
+            Self::NonRepresentable => "NON_REPRESENTABLE",
+        }
+    }
+}
+
+impl std::str::FromStr for ReferencePriceCalculationSymbolStatusEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "TRADING" => Ok(Self::Trading),
+            "END_OF_DAY" => Ok(Self::EndOfDay),
+            "HALT" => Ok(Self::Halt),
+            "BREAK" => Ok(Self::Break),
+            "NON_REPRESENTABLE" => Ok(Self::NonRepresentable),
+            other => Err(format!(
+                "invalid ReferencePriceCalculationSymbolStatusEnum: {}",
+                other
+            )
+            .into()),
         }
     }
 }
@@ -591,6 +689,49 @@ impl std::str::FromStr for TickerWindowSizeEnum {
 
 #[allow(non_camel_case_types)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum TickerSymbolStatusEnum {
+    #[serde(rename = "TRADING")]
+    Trading,
+    #[serde(rename = "END_OF_DAY")]
+    EndOfDay,
+    #[serde(rename = "HALT")]
+    Halt,
+    #[serde(rename = "BREAK")]
+    Break,
+    #[serde(rename = "NON_REPRESENTABLE")]
+    NonRepresentable,
+}
+
+impl TickerSymbolStatusEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Trading => "TRADING",
+            Self::EndOfDay => "END_OF_DAY",
+            Self::Halt => "HALT",
+            Self::Break => "BREAK",
+            Self::NonRepresentable => "NON_REPRESENTABLE",
+        }
+    }
+}
+
+impl std::str::FromStr for TickerSymbolStatusEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "TRADING" => Ok(Self::Trading),
+            "END_OF_DAY" => Ok(Self::EndOfDay),
+            "HALT" => Ok(Self::Halt),
+            "BREAK" => Ok(Self::Break),
+            "NON_REPRESENTABLE" => Ok(Self::NonRepresentable),
+            other => Err(format!("invalid TickerSymbolStatusEnum: {}", other).into()),
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Ticker24hrTypeEnum {
     #[serde(rename = "FULL")]
     Full,
@@ -622,6 +763,135 @@ impl std::str::FromStr for Ticker24hrTypeEnum {
 
 #[allow(non_camel_case_types)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum Ticker24hrSymbolStatusEnum {
+    #[serde(rename = "TRADING")]
+    Trading,
+    #[serde(rename = "END_OF_DAY")]
+    EndOfDay,
+    #[serde(rename = "HALT")]
+    Halt,
+    #[serde(rename = "BREAK")]
+    Break,
+    #[serde(rename = "NON_REPRESENTABLE")]
+    NonRepresentable,
+}
+
+impl Ticker24hrSymbolStatusEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Trading => "TRADING",
+            Self::EndOfDay => "END_OF_DAY",
+            Self::Halt => "HALT",
+            Self::Break => "BREAK",
+            Self::NonRepresentable => "NON_REPRESENTABLE",
+        }
+    }
+}
+
+impl std::str::FromStr for Ticker24hrSymbolStatusEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "TRADING" => Ok(Self::Trading),
+            "END_OF_DAY" => Ok(Self::EndOfDay),
+            "HALT" => Ok(Self::Halt),
+            "BREAK" => Ok(Self::Break),
+            "NON_REPRESENTABLE" => Ok(Self::NonRepresentable),
+            other => Err(format!("invalid Ticker24hrSymbolStatusEnum: {}", other).into()),
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum TickerBookSymbolStatusEnum {
+    #[serde(rename = "TRADING")]
+    Trading,
+    #[serde(rename = "END_OF_DAY")]
+    EndOfDay,
+    #[serde(rename = "HALT")]
+    Halt,
+    #[serde(rename = "BREAK")]
+    Break,
+    #[serde(rename = "NON_REPRESENTABLE")]
+    NonRepresentable,
+}
+
+impl TickerBookSymbolStatusEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Trading => "TRADING",
+            Self::EndOfDay => "END_OF_DAY",
+            Self::Halt => "HALT",
+            Self::Break => "BREAK",
+            Self::NonRepresentable => "NON_REPRESENTABLE",
+        }
+    }
+}
+
+impl std::str::FromStr for TickerBookSymbolStatusEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "TRADING" => Ok(Self::Trading),
+            "END_OF_DAY" => Ok(Self::EndOfDay),
+            "HALT" => Ok(Self::Halt),
+            "BREAK" => Ok(Self::Break),
+            "NON_REPRESENTABLE" => Ok(Self::NonRepresentable),
+            other => Err(format!("invalid TickerBookSymbolStatusEnum: {}", other).into()),
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum TickerPriceSymbolStatusEnum {
+    #[serde(rename = "TRADING")]
+    Trading,
+    #[serde(rename = "END_OF_DAY")]
+    EndOfDay,
+    #[serde(rename = "HALT")]
+    Halt,
+    #[serde(rename = "BREAK")]
+    Break,
+    #[serde(rename = "NON_REPRESENTABLE")]
+    NonRepresentable,
+}
+
+impl TickerPriceSymbolStatusEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Trading => "TRADING",
+            Self::EndOfDay => "END_OF_DAY",
+            Self::Halt => "HALT",
+            Self::Break => "BREAK",
+            Self::NonRepresentable => "NON_REPRESENTABLE",
+        }
+    }
+}
+
+impl std::str::FromStr for TickerPriceSymbolStatusEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "TRADING" => Ok(Self::Trading),
+            "END_OF_DAY" => Ok(Self::EndOfDay),
+            "HALT" => Ok(Self::Halt),
+            "BREAK" => Ok(Self::Break),
+            "NON_REPRESENTABLE" => Ok(Self::NonRepresentable),
+            other => Err(format!("invalid TickerPriceSymbolStatusEnum: {}", other).into()),
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum TickerTradingDayTypeEnum {
     #[serde(rename = "FULL")]
     Full,
@@ -647,6 +917,49 @@ impl std::str::FromStr for TickerTradingDayTypeEnum {
             "FULL" => Ok(Self::Full),
             "MINI" => Ok(Self::Mini),
             other => Err(format!("invalid TickerTradingDayTypeEnum: {}", other).into()),
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum TickerTradingDaySymbolStatusEnum {
+    #[serde(rename = "TRADING")]
+    Trading,
+    #[serde(rename = "END_OF_DAY")]
+    EndOfDay,
+    #[serde(rename = "HALT")]
+    Halt,
+    #[serde(rename = "BREAK")]
+    Break,
+    #[serde(rename = "NON_REPRESENTABLE")]
+    NonRepresentable,
+}
+
+impl TickerTradingDaySymbolStatusEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Trading => "TRADING",
+            Self::EndOfDay => "END_OF_DAY",
+            Self::Halt => "HALT",
+            Self::Break => "BREAK",
+            Self::NonRepresentable => "NON_REPRESENTABLE",
+        }
+    }
+}
+
+impl std::str::FromStr for TickerTradingDaySymbolStatusEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "TRADING" => Ok(Self::Trading),
+            "END_OF_DAY" => Ok(Self::EndOfDay),
+            "HALT" => Ok(Self::Halt),
+            "BREAK" => Ok(Self::Break),
+            "NON_REPRESENTABLE" => Ok(Self::NonRepresentable),
+            other => Err(format!("invalid TickerTradingDaySymbolStatusEnum: {}", other).into()),
         }
     }
 }
@@ -793,6 +1106,12 @@ pub struct DepthParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub limit: Option<i32>,
+    ///
+    /// The `symbol_status` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub symbol_status: Option<DepthSymbolStatusEnum>,
 }
 
 impl DepthParams {
@@ -870,6 +1189,76 @@ impl KlinesParams {
             .interval(interval)
     }
 }
+/// Request parameters for the [`reference_price`] operation.
+///
+/// This struct holds all of the inputs you can pass when calling
+/// [`reference_price`](#method.reference_price).
+#[derive(Clone, Debug, Builder)]
+#[builder(pattern = "owned", build_fn(error = "ParamBuildError"))]
+pub struct ReferencePriceParams {
+    ///
+    /// The `symbol` parameter.
+    ///
+    /// This field is **required.
+    #[builder(setter(into))]
+    pub symbol: String,
+    /// Unique WebSocket request ID.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub id: Option<String>,
+}
+
+impl ReferencePriceParams {
+    /// Create a builder for [`reference_price`].
+    ///
+    /// Required parameters:
+    ///
+    /// * `symbol` — String
+    ///
+    #[must_use]
+    pub fn builder(symbol: String) -> ReferencePriceParamsBuilder {
+        ReferencePriceParamsBuilder::default().symbol(symbol)
+    }
+}
+/// Request parameters for the [`reference_price_calculation`] operation.
+///
+/// This struct holds all of the inputs you can pass when calling
+/// [`reference_price_calculation`](#method.reference_price_calculation).
+#[derive(Clone, Debug, Builder)]
+#[builder(pattern = "owned", build_fn(error = "ParamBuildError"))]
+pub struct ReferencePriceCalculationParams {
+    ///
+    /// The `symbol` parameter.
+    ///
+    /// This field is **required.
+    #[builder(setter(into))]
+    pub symbol: String,
+    /// Unique WebSocket request ID.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub id: Option<String>,
+    ///
+    /// The `symbol_status` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub symbol_status: Option<ReferencePriceCalculationSymbolStatusEnum>,
+}
+
+impl ReferencePriceCalculationParams {
+    /// Create a builder for [`reference_price_calculation`].
+    ///
+    /// Required parameters:
+    ///
+    /// * `symbol` — String
+    ///
+    #[must_use]
+    pub fn builder(symbol: String) -> ReferencePriceCalculationParamsBuilder {
+        ReferencePriceCalculationParamsBuilder::default().symbol(symbol)
+    }
+}
 /// Request parameters for the [`ticker`] operation.
 ///
 /// This struct holds all of the inputs you can pass when calling
@@ -904,6 +1293,12 @@ pub struct TickerParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub window_size: Option<TickerWindowSizeEnum>,
+    ///
+    /// The `symbol_status` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub symbol_status: Option<TickerSymbolStatusEnum>,
 }
 
 impl TickerParams {
@@ -942,6 +1337,12 @@ pub struct Ticker24hrParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub r#type: Option<Ticker24hrTypeEnum>,
+    ///
+    /// The `symbol_status` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub symbol_status: Option<Ticker24hrSymbolStatusEnum>,
 }
 
 impl Ticker24hrParams {
@@ -974,6 +1375,12 @@ pub struct TickerBookParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub symbols: Option<Vec<String>>,
+    ///
+    /// The `symbol_status` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub symbol_status: Option<TickerBookSymbolStatusEnum>,
 }
 
 impl TickerBookParams {
@@ -1006,6 +1413,12 @@ pub struct TickerPriceParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub symbols: Option<Vec<String>>,
+    ///
+    /// The `symbol_status` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub symbol_status: Option<TickerPriceSymbolStatusEnum>,
 }
 
 impl TickerPriceParams {
@@ -1049,6 +1462,12 @@ pub struct TickerTradingDayParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub r#type: Option<TickerTradingDayTypeEnum>,
+    ///
+    /// The `symbol_status` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub symbol_status: Option<TickerTradingDaySymbolStatusEnum>,
 }
 
 impl TickerTradingDayParams {
@@ -1081,7 +1500,7 @@ pub struct TradesAggregateParams {
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
-    pub from_id: Option<i32>,
+    pub from_id: Option<i64>,
     ///
     /// The `start_time` parameter.
     ///
@@ -1094,11 +1513,11 @@ pub struct TradesAggregateParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub end_time: Option<i64>,
-    /// Default: 100; Maximum: 5000
+    /// Default: 500; Maximum: 1000
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
-    pub limit: Option<i32>,
+    pub limit: Option<i64>,
 }
 
 impl TradesAggregateParams {
@@ -1131,7 +1550,7 @@ pub struct TradesHistoricalParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub id: Option<String>,
-    /// Aggregate trade ID to begin at
+    /// Trade ID to begin at
     ///
     /// This field is **optional.
     #[builder(setter(into), default)]
@@ -1289,7 +1708,12 @@ impl MarketApi for MarketApiClient {
         &self,
         params: DepthParams,
     ) -> anyhow::Result<WebsocketApiResponse<Box<models::DepthResponseResult>>> {
-        let DepthParams { symbol, id, limit } = params;
+        let DepthParams {
+            symbol,
+            id,
+            limit,
+            symbol_status,
+        } = params;
 
         let mut payload: BTreeMap<String, Value> = BTreeMap::new();
         payload.insert("symbol".to_string(), serde_json::json!(symbol));
@@ -1298,6 +1722,9 @@ impl MarketApi for MarketApiClient {
         }
         if let Some(value) = limit {
             payload.insert("limit".to_string(), serde_json::json!(value));
+        }
+        if let Some(value) = symbol_status {
+            payload.insert("symbolStatus".to_string(), serde_json::json!(value));
         }
         let payload = remove_empty_value(payload);
 
@@ -1363,6 +1790,68 @@ impl MarketApi for MarketApiClient {
             .map_err(anyhow::Error::from)
     }
 
+    async fn reference_price(
+        &self,
+        params: ReferencePriceParams,
+    ) -> anyhow::Result<WebsocketApiResponse<Box<models::ReferencePriceResponseResult>>> {
+        let ReferencePriceParams { symbol, id } = params;
+
+        let mut payload: BTreeMap<String, Value> = BTreeMap::new();
+        payload.insert("symbol".to_string(), serde_json::json!(symbol));
+        if let Some(value) = id {
+            payload.insert("id".to_string(), serde_json::json!(value));
+        }
+        let payload = remove_empty_value(payload);
+
+        self.websocket_api_base
+            .send_message::<Box<models::ReferencePriceResponseResult>>(
+                "/referencePrice".trim_start_matches('/'),
+                payload,
+                WebsocketMessageSendOptions::new(),
+            )
+            .await
+            .map_err(anyhow::Error::from)?
+            .into_iter()
+            .next()
+            .ok_or(WebsocketError::NoResponse)
+            .map_err(anyhow::Error::from)
+    }
+
+    async fn reference_price_calculation(
+        &self,
+        params: ReferencePriceCalculationParams,
+    ) -> anyhow::Result<WebsocketApiResponse<Box<models::ReferencePriceCalculationResponseResult>>>
+    {
+        let ReferencePriceCalculationParams {
+            symbol,
+            id,
+            symbol_status,
+        } = params;
+
+        let mut payload: BTreeMap<String, Value> = BTreeMap::new();
+        payload.insert("symbol".to_string(), serde_json::json!(symbol));
+        if let Some(value) = id {
+            payload.insert("id".to_string(), serde_json::json!(value));
+        }
+        if let Some(value) = symbol_status {
+            payload.insert("symbolStatus".to_string(), serde_json::json!(value));
+        }
+        let payload = remove_empty_value(payload);
+
+        self.websocket_api_base
+            .send_message::<Box<models::ReferencePriceCalculationResponseResult>>(
+                "/referencePrice.calculation".trim_start_matches('/'),
+                payload,
+                WebsocketMessageSendOptions::new(),
+            )
+            .await
+            .map_err(anyhow::Error::from)?
+            .into_iter()
+            .next()
+            .ok_or(WebsocketError::NoResponse)
+            .map_err(anyhow::Error::from)
+    }
+
     async fn ticker(
         &self,
         params: TickerParams,
@@ -1373,6 +1862,7 @@ impl MarketApi for MarketApiClient {
             symbols,
             r#type,
             window_size,
+            symbol_status,
         } = params;
 
         let mut payload: BTreeMap<String, Value> = BTreeMap::new();
@@ -1390,6 +1880,9 @@ impl MarketApi for MarketApiClient {
         }
         if let Some(value) = window_size {
             payload.insert("windowSize".to_string(), serde_json::json!(value));
+        }
+        if let Some(value) = symbol_status {
+            payload.insert("symbolStatus".to_string(), serde_json::json!(value));
         }
         let payload = remove_empty_value(payload);
 
@@ -1416,6 +1909,7 @@ impl MarketApi for MarketApiClient {
             symbol,
             symbols,
             r#type,
+            symbol_status,
         } = params;
 
         let mut payload: BTreeMap<String, Value> = BTreeMap::new();
@@ -1430,6 +1924,9 @@ impl MarketApi for MarketApiClient {
         }
         if let Some(value) = r#type {
             payload.insert("type".to_string(), serde_json::json!(value));
+        }
+        if let Some(value) = symbol_status {
+            payload.insert("symbolStatus".to_string(), serde_json::json!(value));
         }
         let payload = remove_empty_value(payload);
 
@@ -1455,6 +1952,7 @@ impl MarketApi for MarketApiClient {
             id,
             symbol,
             symbols,
+            symbol_status,
         } = params;
 
         let mut payload: BTreeMap<String, Value> = BTreeMap::new();
@@ -1466,6 +1964,9 @@ impl MarketApi for MarketApiClient {
         }
         if let Some(value) = symbols {
             payload.insert("symbols".to_string(), serde_json::json!(value));
+        }
+        if let Some(value) = symbol_status {
+            payload.insert("symbolStatus".to_string(), serde_json::json!(value));
         }
         let payload = remove_empty_value(payload);
 
@@ -1491,6 +1992,7 @@ impl MarketApi for MarketApiClient {
             id,
             symbol,
             symbols,
+            symbol_status,
         } = params;
 
         let mut payload: BTreeMap<String, Value> = BTreeMap::new();
@@ -1502,6 +2004,9 @@ impl MarketApi for MarketApiClient {
         }
         if let Some(value) = symbols {
             payload.insert("symbols".to_string(), serde_json::json!(value));
+        }
+        if let Some(value) = symbol_status {
+            payload.insert("symbolStatus".to_string(), serde_json::json!(value));
         }
         let payload = remove_empty_value(payload);
 
@@ -1530,6 +2035,7 @@ impl MarketApi for MarketApiClient {
             symbols,
             time_zone,
             r#type,
+            symbol_status,
         } = params;
 
         let mut payload: BTreeMap<String, Value> = BTreeMap::new();
@@ -1547,6 +2053,9 @@ impl MarketApi for MarketApiClient {
         }
         if let Some(value) = r#type {
             payload.insert("type".to_string(), serde_json::json!(value));
+        }
+        if let Some(value) = symbol_status {
+            payload.insert("symbolStatus".to_string(), serde_json::json!(value));
         }
         let payload = remove_empty_value(payload);
 
@@ -2133,6 +2642,268 @@ mod tests {
                         .build()
                         .unwrap();
                 client.klines(params).await
+            });
+
+            let sent = timeout(Duration::from_secs(1), rx.recv())
+                .await
+                .expect("send should occur")
+                .expect("channel closed");
+            let Message::Text(text) = sent else {
+                panic!("expected Message Text")
+            };
+
+            let _: Value = serde_json::from_str(&text).unwrap();
+
+            let result = handle.await.expect("task completed");
+            match result {
+                Err(e) => {
+                    if let Some(inner) = e.downcast_ref::<WebsocketError>() {
+                        assert!(matches!(inner, WebsocketError::Timeout));
+                    } else {
+                        panic!("Unexpected error type: {:?}", e);
+                    }
+                }
+                Ok(_) => panic!("Expected timeout error"),
+            }
+        });
+    }
+
+    #[test]
+    fn reference_price_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let (ws_api, conn, mut rx) = setup().await;
+            let client = MarketApiClient::new(ws_api.clone());
+
+            let handle = spawn(async move {
+                let params = ReferencePriceParams::builder("BNBUSDT".to_string(),).build().unwrap();
+                client.reference_price(params).await
+            });
+
+            let sent = timeout(Duration::from_secs(1), rx.recv()).await.expect("send should occur").expect("channel closed");
+            let Message::Text(text) = sent else { panic!() };
+            let v: Value = serde_json::from_str(&text).unwrap();
+            let id = v["id"].as_str().unwrap();
+            assert_eq!(v["method"], "/referencePrice".trim_start_matches('/'));
+
+            let mut resp_json: Value = serde_json::from_str(r#"{"id":"5132affb-0aba-4821-b475-f262504556b43","status":200,"result":{"symbol":"BAZUSD","referencePrice":"0.00501900","timestamp":1770946889251}}"#).unwrap();
+            resp_json["id"] = id.into();
+
+            let raw_data = resp_json.get("result").or_else(|| resp_json.get("response")).expect("no response in JSON");
+            let expected_data: Box<models::ReferencePriceResponseResult> = serde_json::from_value(raw_data.clone()).expect("should parse raw response");
+            let empty_array = Value::Array(vec![]);
+            let raw_rate_limits = resp_json.get("rateLimits").unwrap_or(&empty_array);
+            let expected_rate_limits: Option<Vec<WebsocketApiRateLimit>> =
+                match raw_rate_limits.as_array() {
+                    Some(arr) if arr.is_empty() => None,
+                    Some(_) => Some(serde_json::from_value(raw_rate_limits.clone()).expect("should parse rateLimits array")),
+                    None => None,
+                };
+
+            WebsocketHandler::on_message(&*ws_api, resp_json.to_string(), conn.clone()).await;
+
+            let response = timeout(Duration::from_secs(1), handle).await.expect("task done").expect("no panic").expect("no error");
+
+
+            let response_rate_limits = response.rate_limits.clone();
+            let response_data = response.data().expect("deserialize data");
+
+            assert_eq!(response_rate_limits, expected_rate_limits);
+            assert_eq!(response_data, expected_data);
+        });
+    }
+
+    #[test]
+    fn reference_price_error_response() {
+        TOKIO_SHARED_RT.block_on(async {
+            let (ws_api, conn, mut rx) = setup().await;
+            let client = MarketApiClient::new(ws_api.clone());
+
+            let handle = tokio::spawn(async move {
+                let params = ReferencePriceParams::builder("BNBUSDT".to_string(),).build().unwrap();
+                client.reference_price(params).await
+            });
+
+            let sent = timeout(Duration::from_secs(1), rx.recv()).await.unwrap().unwrap();
+            let Message::Text(text) = sent else { panic!() };
+            let v: Value = serde_json::from_str(&text).unwrap();
+            let id = v["id"].as_str().unwrap().to_string();
+
+            let resp_json = json!({
+                "id": id,
+                "status": 400,
+                    "error": {
+                        "code": -2010,
+                        "msg": "Account has insufficient balance for requested action.",
+                    },
+                    "rateLimits": [
+                        {
+                            "rateLimitType": "ORDERS",
+                            "interval": "SECOND",
+                            "intervalNum": 10,
+                            "limit": 50,
+                            "count": 13
+                        },
+                    ],
+            });
+            WebsocketHandler::on_message(&*ws_api, resp_json.to_string(), conn.clone()).await;
+
+            let join = timeout(Duration::from_secs(1), handle).await.unwrap();
+            match join {
+                Ok(Err(e)) => {
+                    let msg = e.to_string();
+                    assert!(
+                        msg.contains("Server‐side response error (code -2010): Account has insufficient balance for requested action."),
+                        "Expected error msg to contain server error, got: {msg}"
+                    );
+                }
+                Ok(Ok(_)) => panic!("Expected error"),
+                Err(_) => panic!("Task panicked"),
+            }
+        });
+    }
+
+    #[test]
+    fn reference_price_request_timeout() {
+        TOKIO_SHARED_RT.block_on(async {
+            let (ws_api, _conn, mut rx) = setup().await;
+            let client = MarketApiClient::new(ws_api.clone());
+
+            let handle = spawn(async move {
+                let params = ReferencePriceParams::builder("BNBUSDT".to_string())
+                    .build()
+                    .unwrap();
+                client.reference_price(params).await
+            });
+
+            let sent = timeout(Duration::from_secs(1), rx.recv())
+                .await
+                .expect("send should occur")
+                .expect("channel closed");
+            let Message::Text(text) = sent else {
+                panic!("expected Message Text")
+            };
+
+            let _: Value = serde_json::from_str(&text).unwrap();
+
+            let result = handle.await.expect("task completed");
+            match result {
+                Err(e) => {
+                    if let Some(inner) = e.downcast_ref::<WebsocketError>() {
+                        assert!(matches!(inner, WebsocketError::Timeout));
+                    } else {
+                        panic!("Unexpected error type: {:?}", e);
+                    }
+                }
+                Ok(_) => panic!("Expected timeout error"),
+            }
+        });
+    }
+
+    #[test]
+    fn reference_price_calculation_success() {
+        TOKIO_SHARED_RT.block_on(async {
+            let (ws_api, conn, mut rx) = setup().await;
+            let client = MarketApiClient::new(ws_api.clone());
+
+            let handle = spawn(async move {
+                let params = ReferencePriceCalculationParams::builder("BNBUSDT".to_string(),).build().unwrap();
+                client.reference_price_calculation(params).await
+            });
+
+            let sent = timeout(Duration::from_secs(1), rx.recv()).await.expect("send should occur").expect("channel closed");
+            let Message::Text(text) = sent else { panic!() };
+            let v: Value = serde_json::from_str(&text).unwrap();
+            let id = v["id"].as_str().unwrap();
+            assert_eq!(v["method"], "/referencePrice.calculation".trim_start_matches('/'));
+
+            let mut resp_json: Value = serde_json::from_str(r#"{"id":"5132affa-0aba-4831-b475-f262504556b41","status":200,"result":{"symbol":"BAZUSD","calculationType":"EXTERNAL","bucketCount":10,"bucketWidthMs":1000,"externalCalculationId":42}}"#).unwrap();
+            resp_json["id"] = id.into();
+
+            let raw_data = resp_json.get("result").or_else(|| resp_json.get("response")).expect("no response in JSON");
+            let expected_data: Box<models::ReferencePriceCalculationResponseResult> = serde_json::from_value(raw_data.clone()).expect("should parse raw response");
+            let empty_array = Value::Array(vec![]);
+            let raw_rate_limits = resp_json.get("rateLimits").unwrap_or(&empty_array);
+            let expected_rate_limits: Option<Vec<WebsocketApiRateLimit>> =
+                match raw_rate_limits.as_array() {
+                    Some(arr) if arr.is_empty() => None,
+                    Some(_) => Some(serde_json::from_value(raw_rate_limits.clone()).expect("should parse rateLimits array")),
+                    None => None,
+                };
+
+            WebsocketHandler::on_message(&*ws_api, resp_json.to_string(), conn.clone()).await;
+
+            let response = timeout(Duration::from_secs(1), handle).await.expect("task done").expect("no panic").expect("no error");
+
+
+            let response_rate_limits = response.rate_limits.clone();
+            let response_data = response.data().expect("deserialize data");
+
+            assert_eq!(response_rate_limits, expected_rate_limits);
+            assert_eq!(response_data, expected_data);
+        });
+    }
+
+    #[test]
+    fn reference_price_calculation_error_response() {
+        TOKIO_SHARED_RT.block_on(async {
+            let (ws_api, conn, mut rx) = setup().await;
+            let client = MarketApiClient::new(ws_api.clone());
+
+            let handle = tokio::spawn(async move {
+                let params = ReferencePriceCalculationParams::builder("BNBUSDT".to_string(),).build().unwrap();
+                client.reference_price_calculation(params).await
+            });
+
+            let sent = timeout(Duration::from_secs(1), rx.recv()).await.unwrap().unwrap();
+            let Message::Text(text) = sent else { panic!() };
+            let v: Value = serde_json::from_str(&text).unwrap();
+            let id = v["id"].as_str().unwrap().to_string();
+
+            let resp_json = json!({
+                "id": id,
+                "status": 400,
+                    "error": {
+                        "code": -2010,
+                        "msg": "Account has insufficient balance for requested action.",
+                    },
+                    "rateLimits": [
+                        {
+                            "rateLimitType": "ORDERS",
+                            "interval": "SECOND",
+                            "intervalNum": 10,
+                            "limit": 50,
+                            "count": 13
+                        },
+                    ],
+            });
+            WebsocketHandler::on_message(&*ws_api, resp_json.to_string(), conn.clone()).await;
+
+            let join = timeout(Duration::from_secs(1), handle).await.unwrap();
+            match join {
+                Ok(Err(e)) => {
+                    let msg = e.to_string();
+                    assert!(
+                        msg.contains("Server‐side response error (code -2010): Account has insufficient balance for requested action."),
+                        "Expected error msg to contain server error, got: {msg}"
+                    );
+                }
+                Ok(Ok(_)) => panic!("Expected error"),
+                Err(_) => panic!("Task panicked"),
+            }
+        });
+    }
+
+    #[test]
+    fn reference_price_calculation_request_timeout() {
+        TOKIO_SHARED_RT.block_on(async {
+            let (ws_api, _conn, mut rx) = setup().await;
+            let client = MarketApiClient::new(ws_api.clone());
+
+            let handle = spawn(async move {
+                let params = ReferencePriceCalculationParams::builder("BNBUSDT".to_string())
+                    .build()
+                    .unwrap();
+                client.reference_price_calculation(params).await
             });
 
             let sent = timeout(Duration::from_secs(1), rx.recv())

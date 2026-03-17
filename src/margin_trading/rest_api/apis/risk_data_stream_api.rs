@@ -84,12 +84,14 @@ impl KeepaliveUserDataStreamParams {
 impl RiskDataStreamApi for RiskDataStreamApiClient {
     async fn close_user_data_stream(&self) -> anyhow::Result<RestApiResponse<Value>> {
         let query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         send_request::<Value>(
             &self.configuration,
             "/sapi/v1/margin/listen-key",
             reqwest::Method::DELETE,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -107,6 +109,7 @@ impl RiskDataStreamApi for RiskDataStreamApiClient {
         let KeepaliveUserDataStreamParams { listen_key } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("listenKey".to_string(), json!(listen_key));
 
@@ -115,6 +118,7 @@ impl RiskDataStreamApi for RiskDataStreamApiClient {
             "/sapi/v1/margin/listen-key",
             reqwest::Method::PUT,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -129,12 +133,14 @@ impl RiskDataStreamApi for RiskDataStreamApiClient {
         &self,
     ) -> anyhow::Result<RestApiResponse<models::StartUserDataStreamResponse>> {
         let query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         send_request::<models::StartUserDataStreamResponse>(
             &self.configuration,
             "/sapi/v1/margin/listen-key",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -180,9 +186,11 @@ mod tests {
     impl RiskDataStreamApi for MockRiskDataStreamApiClient {
         async fn close_user_data_stream(&self) -> anyhow::Result<RestApiResponse<Value>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let dummy_response = Value::Null;
@@ -202,9 +210,11 @@ mod tests {
             _params: KeepaliveUserDataStreamParams,
         ) -> anyhow::Result<RestApiResponse<Value>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let dummy_response = Value::Null;
@@ -223,9 +233,11 @@ mod tests {
             &self,
         ) -> anyhow::Result<RestApiResponse<models::StartUserDataStreamResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(

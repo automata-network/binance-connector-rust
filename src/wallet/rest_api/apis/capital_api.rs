@@ -445,6 +445,7 @@ impl CapitalApi for CapitalApiClient {
         let AllCoinsInformationParams { recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = recv_window {
             query_params.insert("recvWindow".to_string(), json!(rw));
@@ -455,6 +456,7 @@ impl CapitalApi for CapitalApiClient {
             "/sapi/v1/capital/config/getall",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -477,6 +479,7 @@ impl CapitalApi for CapitalApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("coin".to_string(), json!(coin));
 
@@ -497,6 +500,7 @@ impl CapitalApi for CapitalApiClient {
             "/sapi/v1/capital/deposit/address",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -524,6 +528,7 @@ impl CapitalApi for CapitalApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = include_source {
             query_params.insert("includeSource".to_string(), json!(rw));
@@ -566,6 +571,7 @@ impl CapitalApi for CapitalApiClient {
             "/sapi/v1/capital/deposit/hisrec",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -584,6 +590,7 @@ impl CapitalApi for CapitalApiClient {
         let FetchDepositAddressListWithNetworkParams { coin, network } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("coin".to_string(), json!(coin));
 
@@ -596,6 +603,7 @@ impl CapitalApi for CapitalApiClient {
             "/sapi/v1/capital/deposit/address/list",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -610,12 +618,14 @@ impl CapitalApi for CapitalApiClient {
         &self,
     ) -> anyhow::Result<RestApiResponse<Vec<models::FetchWithdrawAddressListResponseInner>>> {
         let query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         send_request::<Vec<models::FetchWithdrawAddressListResponseInner>>(
             &self.configuration,
             "/sapi/v1/capital/withdraw/address/list",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -630,12 +640,14 @@ impl CapitalApi for CapitalApiClient {
         &self,
     ) -> anyhow::Result<RestApiResponse<models::FetchWithdrawQuotaResponse>> {
         let query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         send_request::<models::FetchWithdrawQuotaResponse>(
             &self.configuration,
             "/sapi/v1/capital/withdraw/quota",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -658,6 +670,7 @@ impl CapitalApi for CapitalApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = deposit_id {
             query_params.insert("depositId".to_string(), json!(rw));
@@ -680,6 +693,7 @@ impl CapitalApi for CapitalApiClient {
             "/sapi/v1/capital/deposit/credit-apply",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -708,12 +722,9 @@ impl CapitalApi for CapitalApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("coin".to_string(), json!(coin));
-
-        query_params.insert("address".to_string(), json!(address));
-
-        query_params.insert("amount".to_string(), json!(amount));
 
         if let Some(rw) = withdraw_order_id {
             query_params.insert("withdrawOrderId".to_string(), json!(rw));
@@ -723,9 +734,13 @@ impl CapitalApi for CapitalApiClient {
             query_params.insert("network".to_string(), json!(rw));
         }
 
+        query_params.insert("address".to_string(), json!(address));
+
         if let Some(rw) = address_tag {
             query_params.insert("addressTag".to_string(), json!(rw));
         }
+
+        query_params.insert("amount".to_string(), json!(amount));
 
         if let Some(rw) = transaction_fee_flag {
             query_params.insert("transactionFeeFlag".to_string(), json!(rw));
@@ -748,6 +763,7 @@ impl CapitalApi for CapitalApiClient {
             "/sapi/v1/capital/withdraw/apply",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -775,6 +791,7 @@ impl CapitalApi for CapitalApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = coin {
             query_params.insert("coin".to_string(), json!(rw));
@@ -817,6 +834,7 @@ impl CapitalApi for CapitalApiClient {
             "/sapi/v1/capital/withdraw/history",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -866,9 +884,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<Vec<models::AllCoinsInformationResponseInner>>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"coin":"1MBABYDOGE","depositAllEnable":true,"withdrawAllEnable":true,"name":"1M x BABYDOGE","free":"34941.1","locked":"0","freeze":"0","withdrawing":"0","ipoing":"0","ipoable":"0","storage":"0","isLegalMoney":false,"trading":true,"networkList":[{"network":"BSC","coin":"1MBABYDOGE","withdrawIntegerMultiple":"0.01","isDefault":false,"depositEnable":true,"withdrawEnable":true,"depositDesc":"","withdrawDesc":"","specialTips":"","specialWithdrawTips":"","name":"BNB Smart Chain (BEP20)","resetAddressStatus":false,"addressRegex":"^(0x)[0-9A-Fa-f]{40}$","memoRegex":"","withdrawFee":"10","withdrawMin":"20","withdrawMax":"9999999999","withdrawInternalMin":"0.01","depositDust":"0.01","minConfirm":5,"unLockConfirm":0,"sameAddress":false,"withdrawTag":false,"estimatedArrivalTime":1,"busy":false,"contractAddressUrl":"https://bscscan.com/token/","contractAddress":"0xc748673057861a797275cd8a068abb95a902e8de","denomination":1000000},{"network":"ETH","coin":"1MBABYDOGE","withdrawIntegerMultiple":"0.01","isDefault":true,"depositEnable":true,"withdrawEnable":true,"depositDesc":"","withdrawDesc":"","specialTips":"","specialWithdrawTips":"","name":"Ethereum (ERC20)","resetAddressStatus":false,"addressRegex":"^(0x)[0-9A-Fa-f]{40}$","memoRegex":"","withdrawFee":"1511","withdrawMin":"3022","withdrawMax":"9999999999","withdrawInternalMin":"0.01","depositDust":"0.01","minConfirm":6,"unLockConfirm":64,"sameAddress":false,"withdrawTag":false,"estimatedArrivalTime":2,"busy":false,"contractAddressUrl":"https://etherscan.io/address/","contractAddress":"0xac57de9c1a09fec648e93eb98875b212db0d460b","denomination":1000000}]}]"#).unwrap();
@@ -891,9 +911,11 @@ mod tests {
             _params: DepositAddressParams,
         ) -> anyhow::Result<RestApiResponse<models::DepositAddressResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"address":"1HPn8Rx2y6nNSfagQBKy27GB99Vbzg89wv","coin":"BTC","tag":"","url":"https://btc.com/1HPn8Rx2y6nNSfagQBKy27GB99Vbzg89wv"}"#).unwrap();
@@ -916,9 +938,11 @@ mod tests {
             _params: DepositHistoryParams,
         ) -> anyhow::Result<RestApiResponse<Vec<models::DepositHistoryResponseInner>>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"id":"769800519366885376","amount":"0.001","coin":"BNB","network":"BNB","status":1,"address":"bnb136ns6lfw4zs5hg4n85vdthaad7hq5m4gtkgf23","addressTag":"101764890","txId":"98A3EA560C6B3336D348B6C83F0F95ECE4F1F5919E94BD006E5BF3BF264FACFC","insertTime":1661493146000,"completeTime":1661493146000,"transferType":0,"confirmTimes":"1/1","unlockConfirm":0,"walletType":0,"travelRuleStatus":0},{"id":"769754833590042625","amount":"0.50000000","coin":"IOTA","network":"IOTA","status":1,"address":"SIZ9VLMHWATXKV99LH99CIGFJFUMLEHGWVZVNNZXRJJVWBPHYWPPBOSDORZ9EQSHCZAMPVAPGFYQAUUV9DROOXJLNW","addressTag":"","txId":"ESBFVQUTPIWQNJSPXFNHNYHSQNTGKRVKPRABQWTAXCDWOAKDKYWPTVG9BGXNVNKTLEJGESAVXIKIZ9999","insertTime":1599620082000,"completeTime":1661493146000,"transferType":0,"confirmTimes":"1/1","unlockConfirm":0,"walletType":0,"travelRuleStatus":1}]"#).unwrap();
@@ -943,9 +967,11 @@ mod tests {
             RestApiResponse<Vec<models::FetchDepositAddressListWithNetworkResponseInner>>,
         > {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"coin":"ETH","address":"0xD316E95Fd9E8E237Cb11f8200Babbc5D8D177BA4","tag":"","isDefault":0},{"coin":"ETH","address":"0xD316E95Fd9E8E237Cb11f8200Babbc5D8D177BA4","tag":"","isDefault":0},{"coin":"ETH","address":"0x00003ada75e7da97ba0db2fcde72131f712455e2","tag":"","isDefault":1}]"#).unwrap();
@@ -966,9 +992,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<Vec<models::FetchWithdrawAddressListResponseInner>>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"address":"1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa","addressTag":"","coin":"BTC","name":"Satoshi","network":"BTC","origin":"bla","originType":"others","whiteStatus":true}]"#).unwrap();
@@ -990,9 +1018,11 @@ mod tests {
             &self,
         ) -> anyhow::Result<RestApiResponse<models::FetchWithdrawQuotaResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value =
@@ -1016,9 +1046,11 @@ mod tests {
             _params: OneClickArrivalDepositApplyParams,
         ) -> anyhow::Result<RestApiResponse<models::OneClickArrivalDepositApplyResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(
@@ -1044,9 +1076,11 @@ mod tests {
             _params: WithdrawParams,
         ) -> anyhow::Result<RestApiResponse<models::WithdrawResponse>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value =
@@ -1070,9 +1104,11 @@ mod tests {
             _params: WithdrawHistoryParams,
         ) -> anyhow::Result<RestApiResponse<Vec<models::WithdrawHistoryResponseInner>>> {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"[{"id":"b6ae22b3aa844210a7041aee7589627c","amount":"8.91000000","transactionFee":"0.004","coin":"USDT","status":6,"address":"0x94df8b352de7f46f64b01d3666bf6e936e44ce60","txId":"0xb5ef8c13b968a406cc62a93a8bd80f9e9a906ef1b3fcf20a2e48573c17659268","applyTime":"2019-10-12 11:12:02","network":"ETH","transferType":0,"withdrawOrderId":"WITHDRAWtest123","info":"The address is not valid. Please confirm with the recipient","confirmNo":3,"walletType":1,"txKey":"","completeTime":"2023-03-23 16:52:41"},{"id":"156ec387f49b41df8724fa744fa82719","amount":"0.00150000","transactionFee":"0.004","coin":"BTC","status":6,"address":"1FZdVHtiBqMrWdjPyRPULCUceZPJ2WLCsB","txId":"60fd9007ebfddc753455f95fafa808c4302c836e4d1eebc5a132c36c1d8ac354","applyTime":"2019-09-24 12:43:45","network":"BTC","transferType":0,"info":"","confirmNo":2,"walletType":1,"txKey":"","completeTime":"2023-03-23 16:52:41"}]"#).unwrap();

@@ -1,13 +1,13 @@
 pub mod rest_api;
 
 use crate::common::{
-    config::ConfigurationRestApi, constants::COPY_TRADING_REST_API_PROD_URL, logger,
+    config::ConfigurationRestApi, constants::COPY_TRADING_REST_API_PROD_URL,
     utils::build_user_agent,
 };
 
 /// Represents the `CopyTrading` REST API client for interacting with the Binance `CopyTrading` REST API.
 ///
-/// This struct provides methods to create REST API clients for the production environment.
+/// This struct provides methods to create REST API clients for production  environments.
 pub struct CopyTradingRestApi {}
 
 impl CopyTradingRestApi {
@@ -24,8 +24,6 @@ impl CopyTradingRestApi {
     /// A new REST API client configured with the provided settings
     #[must_use]
     pub fn from_config(mut config: ConfigurationRestApi) -> rest_api::RestApi {
-        logger::init();
-
         config.user_agent = build_user_agent("copy-trading");
         if config.base_path.is_none() {
             config.base_path = Some(COPY_TRADING_REST_API_PROD_URL.to_string());

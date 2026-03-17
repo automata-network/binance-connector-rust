@@ -225,6 +225,7 @@ impl ApiManagementApi for ApiManagementApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("email".to_string(), json!(email));
 
@@ -245,6 +246,7 @@ impl ApiManagementApi for ApiManagementApiClient {
             "/sapi/v2/sub-account/subAccountApi/ipRestriction",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -267,6 +269,7 @@ impl ApiManagementApi for ApiManagementApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("email".to_string(), json!(email));
 
@@ -283,6 +286,7 @@ impl ApiManagementApi for ApiManagementApiClient {
             "/sapi/v1/sub-account/subAccountApi/ipRestriction/ipList",
             reqwest::Method::DELETE,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -304,6 +308,7 @@ impl ApiManagementApi for ApiManagementApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("email".to_string(), json!(email));
 
@@ -318,6 +323,7 @@ impl ApiManagementApi for ApiManagementApiClient {
             "/sapi/v1/sub-account/subAccountApi/ipRestriction",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -367,9 +373,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::AddIpRestrictionForSubAccountApiKeyResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"status":"2","ipList":["69.210.67.14","8.34.21.10"],"updateTime":1636371437000,"apiKey":"k5V49ldtn4tszj6W3hystegdfvmGbqDzjmkCtpTvC0G74WhK7yd4rfCTo4lShf"}"#).unwrap();
@@ -394,9 +402,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::DeleteIpListForASubAccountApiKeyResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"ipRestrict":"true","ipList":["69.210.67.14","8.34.21.10"],"updateTime":1636371437000,"apiKey":"k5V49ldtn4tszj6W3hystegdfvmGbqDzjmkCtpTvC0G74WhK7yd4rfCTo4lShf"}"#).unwrap();
@@ -420,9 +430,11 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::GetIpRestrictionForASubAccountApiKeyResponse>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(r#"{"ipRestrict":"true","ipList":["69.210.67.14","8.34.21.10"],"updateTime":1636371437000,"apiKey":"k5V49ldtn4tszj6W3hystegdfvmGbqDzjmkCtpTvC0G74WhK7yd4rfCTo4lShf"}"#).unwrap();

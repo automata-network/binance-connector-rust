@@ -116,6 +116,7 @@ impl MarketDataApi for MarketDataApiClient {
         } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = from_asset {
             query_params.insert("fromAsset".to_string(), json!(rw));
@@ -130,6 +131,7 @@ impl MarketDataApi for MarketDataApiClient {
             "/sapi/v1/convert/exchangeInfo",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -149,6 +151,7 @@ impl MarketDataApi for MarketDataApiClient {
         let QueryOrderQuantityPrecisionPerAssetParams { recv_window } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         if let Some(rw) = recv_window {
             query_params.insert("recvWindow".to_string(), json!(rw));
@@ -159,6 +162,7 @@ impl MarketDataApi for MarketDataApiClient {
             "/sapi/v1/convert/assetInfo",
             reqwest::Method::GET,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -208,12 +212,14 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<Vec<models::ListAllConvertPairsResponseInner>>>
         {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
-            let resp_json: Value = serde_json::from_str(r#"[{"fromAsset":"BTC","toAsset":"USDT","fromAssetMinAmount":"0.0004","fromAssetMaxAmount":"50","toAssetMinAmount":"20","toAssetMaxAmount":"2500000"}]"#).unwrap();
+            let resp_json: Value = serde_json::from_str(r#"[{"fromAsset":"BTC","toAsset":"USDT","fromAssetMinAmount":"0.0004","fromAssetMaxAmount":"50","toAssetMinAmount":"20","toAssetMaxAmount":"9E+24"}]"#).unwrap();
             let dummy_response: Vec<models::ListAllConvertPairsResponseInner> =
                 serde_json::from_value(resp_json.clone())
                     .expect("should parse into Vec<models::ListAllConvertPairsResponseInner>");
@@ -235,9 +241,11 @@ mod tests {
             RestApiResponse<Vec<models::QueryOrderQuantityPrecisionPerAssetResponseInner>>,
         > {
             if self.force_error {
-                return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
-                );
+                return Err(ConnectorError::ConnectorClientError {
+                    msg: "ResponseError".to_string(),
+                    code: None,
+                }
+                .into());
             }
 
             let resp_json: Value = serde_json::from_str(
@@ -264,7 +272,7 @@ mod tests {
 
             let params = ListAllConvertPairsParams::builder().build().unwrap();
 
-            let resp_json: Value = serde_json::from_str(r#"[{"fromAsset":"BTC","toAsset":"USDT","fromAssetMinAmount":"0.0004","fromAssetMaxAmount":"50","toAssetMinAmount":"20","toAssetMaxAmount":"2500000"}]"#).unwrap();
+            let resp_json: Value = serde_json::from_str(r#"[{"fromAsset":"BTC","toAsset":"USDT","fromAssetMinAmount":"0.0004","fromAssetMaxAmount":"50","toAssetMinAmount":"20","toAssetMaxAmount":"9E+24"}]"#).unwrap();
             let expected_response : Vec<models::ListAllConvertPairsResponseInner> = serde_json::from_value(resp_json.clone()).expect("should parse into Vec<models::ListAllConvertPairsResponseInner>");
 
             let resp = client.list_all_convert_pairs(params).await.expect("Expected a response");
@@ -281,7 +289,7 @@ mod tests {
 
             let params = ListAllConvertPairsParams::builder().from_asset("from_asset_example".to_string()).to_asset("to_asset_example".to_string()).build().unwrap();
 
-            let resp_json: Value = serde_json::from_str(r#"[{"fromAsset":"BTC","toAsset":"USDT","fromAssetMinAmount":"0.0004","fromAssetMaxAmount":"50","toAssetMinAmount":"20","toAssetMaxAmount":"2500000"}]"#).unwrap();
+            let resp_json: Value = serde_json::from_str(r#"[{"fromAsset":"BTC","toAsset":"USDT","fromAssetMinAmount":"0.0004","fromAssetMaxAmount":"50","toAssetMinAmount":"20","toAssetMaxAmount":"9E+24"}]"#).unwrap();
             let expected_response : Vec<models::ListAllConvertPairsResponseInner> = serde_json::from_value(resp_json.clone()).expect("should parse into Vec<models::ListAllConvertPairsResponseInner>");
 
             let resp = client.list_all_convert_pairs(params).await.expect("Expected a response");

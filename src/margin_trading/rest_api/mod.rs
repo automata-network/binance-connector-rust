@@ -33,7 +33,6 @@ pub struct RestApi {
     market_data_api_client: MarketDataApiClient,
     risk_data_stream_api_client: RiskDataStreamApiClient,
     trade_api_client: TradeApiClient,
-    trade_data_stream_api_client: TradeDataStreamApiClient,
     transfer_api_client: TransferApiClient,
 }
 
@@ -44,7 +43,6 @@ impl RestApi {
         let market_data_api_client = MarketDataApiClient::new(configuration.clone());
         let risk_data_stream_api_client = RiskDataStreamApiClient::new(configuration.clone());
         let trade_api_client = TradeApiClient::new(configuration.clone());
-        let trade_data_stream_api_client = TradeDataStreamApiClient::new(configuration.clone());
         let transfer_api_client = TransferApiClient::new(configuration.clone());
 
         Self {
@@ -54,7 +52,6 @@ impl RestApi {
             market_data_api_client,
             risk_data_stream_api_client,
             trade_api_client,
-            trade_data_stream_api_client,
             transfer_api_client,
         }
     }
@@ -65,7 +62,8 @@ impl RestApi {
     ///
     /// * `endpoint` - The API endpoint to send the request to
     /// * `method` - The HTTP method to use for the request
-    /// * `params` - A map of parameters to send with the request
+    /// * `query_params` - A map of query parameters to send with the request
+    /// * `body_params` - A map of body parameters to send with the request
     ///
     /// # Returns
     ///
@@ -78,9 +76,19 @@ impl RestApi {
         &self,
         endpoint: &str,
         method: Method,
-        params: BTreeMap<String, Value>,
+        query_params: BTreeMap<String, Value>,
+        body_params: BTreeMap<String, Value>,
     ) -> anyhow::Result<RestApiResponse<R>> {
-        send_request::<R>(&self.configuration, endpoint, method, params, None, false).await
+        send_request::<R>(
+            &self.configuration,
+            endpoint,
+            method,
+            query_params,
+            body_params,
+            None,
+            false,
+        )
+        .await
     }
 
     /// Send a signed request to the API
@@ -89,7 +97,8 @@ impl RestApi {
     ///
     /// * `endpoint` - The API endpoint to send the request to
     /// * `method` - The HTTP method to use for the request
-    /// * `params` - A map of parameters to send with the request
+    /// * `query_params` - A map of query parameters to send with the request
+    /// * `body_params` - A map of body parameters to send with the request
     ///
     /// # Returns
     ///
@@ -102,9 +111,19 @@ impl RestApi {
         &self,
         endpoint: &str,
         method: Method,
-        params: BTreeMap<String, Value>,
+        query_params: BTreeMap<String, Value>,
+        body_params: BTreeMap<String, Value>,
     ) -> anyhow::Result<RestApiResponse<R>> {
-        send_request::<R>(&self.configuration, endpoint, method, params, None, true).await
+        send_request::<R>(
+            &self.configuration,
+            endpoint,
+            method,
+            query_params,
+            body_params,
+            None,
+            true,
+        )
+        .await
     }
 
     /// Adjust cross margin max leverage (`USER_DATA`)
@@ -1215,6 +1234,96 @@ impl RestApi {
         self.market_data_api_client.get_list_schedule(params).await
     }
 
+    /// Get Margin Asset Risk-Based Liquidation Ratio (`MARKET_DATA`)
+    ///
+    /// Get Margin Asset Risk-Based Liquidation Ratio
+    ///
+    /// Weight: 1
+    ///
+    /// # Arguments
+    ///
+    /// - `params`: [`GetMarginAssetRiskBasedLiquidationRatioParams`]
+    ///   The parameters for this operation.
+    ///
+    /// # Returns
+    ///
+    /// [`RestApiResponse<Vec<models::GetMarginAssetRiskBasedLiquidationRatioResponseInner>>`] on success.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an [`anyhow::Error`] if:
+    /// - the HTTP request fails
+    /// - any parameter is invalid
+    /// - the response cannot be parsed
+    /// - or one of the following occurs:
+    ///   - `RequiredError`
+    ///   - `ConnectorClientError`
+    ///   - `UnauthorizedError`
+    ///   - `ForbiddenError`
+    ///   - `TooManyRequestsError`
+    ///   - `RateLimitBanError`
+    ///   - `ServerError`
+    ///   - `NotFoundError`
+    ///   - `NetworkError`
+    ///   - `BadRequestError`
+    ///
+    ///
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/margin_trading/market-data/Get-Margin-Asset-Risk-Based-Liquidation-Ratio).
+    ///
+    pub async fn get_margin_asset_risk_based_liquidation_ratio(
+        &self,
+    ) -> anyhow::Result<
+        RestApiResponse<Vec<models::GetMarginAssetRiskBasedLiquidationRatioResponseInner>>,
+    > {
+        self.market_data_api_client
+            .get_margin_asset_risk_based_liquidation_ratio()
+            .await
+    }
+
+    /// Get Margin Restricted Assets (`MARKET_DATA`)
+    ///
+    /// Get Margin Restricted Assets
+    ///
+    /// Weight: 1
+    ///
+    /// # Arguments
+    ///
+    /// - `params`: [`GetMarginRestrictedAssetsParams`]
+    ///   The parameters for this operation.
+    ///
+    /// # Returns
+    ///
+    /// [`RestApiResponse<models::GetMarginRestrictedAssetsResponse>`] on success.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an [`anyhow::Error`] if:
+    /// - the HTTP request fails
+    /// - any parameter is invalid
+    /// - the response cannot be parsed
+    /// - or one of the following occurs:
+    ///   - `RequiredError`
+    ///   - `ConnectorClientError`
+    ///   - `UnauthorizedError`
+    ///   - `ForbiddenError`
+    ///   - `TooManyRequestsError`
+    ///   - `RateLimitBanError`
+    ///   - `ServerError`
+    ///   - `NotFoundError`
+    ///   - `NetworkError`
+    ///   - `BadRequestError`
+    ///
+    ///
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/margin_trading/market-data/Get-Margin-Restricted-Assets).
+    ///
+    pub async fn get_margin_restricted_assets(
+        &self,
+    ) -> anyhow::Result<RestApiResponse<models::GetMarginRestrictedAssetsResponse>> {
+        self.market_data_api_client
+            .get_margin_restricted_assets()
+            .await
+    }
+
     /// Query Isolated Margin Tier Data (`USER_DATA`)
     ///
     /// Get isolated margin tier data collection with any tier as <https://www.binance.com/en/margin-data>
@@ -1532,9 +1641,18 @@ impl RestApi {
 
     /// Create Special Key(Low-Latency Trading)(TRADE)
     ///
-    /// **Binance Margin offers low-latency trading through a [special key](https://www.binance.com/en/support/faq/frequently-asked-questions-on-margin-special-api-key-3208663e900d4d2e9fec4140e1832f4e), available exclusively to users with VIP level 4 or higher. **
+    /// - Binance Margin offers low-latency trading through a [special key](https://www.binance.com/en/support/faq/frequently-asked-questions-on-margin-special-api-key-3208663e900d4d2e9fec4140e1832f4e), available exclusively to users with VIP level 7 or higher.
+    /// - If you are VIP level 6 or below, please contact your VIP manager for eligibility criterias.
     ///
-    /// **If you are VIP level 3 or below, please contact your VIP manager for eligibility criterias.**
+    /// **Supported Products:**
+    ///
+    /// - Cross Margin
+    /// - Isolated Margin
+    /// - Portfolio Margin Pro
+    ///
+    /// **Unsupported Products:**
+    ///
+    /// - Portfolio Margin
     ///
     /// We support several types of API keys:
     ///
@@ -1543,10 +1661,6 @@ impl RestApi {
     /// * RSA
     ///
     /// We recommend to **use Ed25519 API keys** as it should provide the best performance and security out of all supported key types. We accept PKCS#8 (BEGIN PUBLIC KEY). For how to generate an RSA key pair to send API requests on Binance. Please refer to the document below [FAQ](https://www.binance.com/en/support/faq/how-to-generate-an-rsa-key-pair-to-send-api-requests-on-binance-2b79728f331e43079b27440d9d15c5db) .
-    ///
-    /// Read [REST API](https://github.com/binance/binance-spot-api-docs/blob/master/rest-api.md#signed-trade-and-user_data-endpoint-security) or [WebSocket API](https://github.com/binance/binance-spot-api-docs/blob/master/web-socket-api.md#request-security) documentation to learn how to use different API keys
-    ///
-    /// You need to enable Permits “Enable Spot & Margin Trading” option for the API Key which requests this endpoint.
     ///
     /// Weight: 1(UID)
     ///
@@ -2581,6 +2695,48 @@ impl RestApi {
             .await
     }
 
+    /// Query Prevented `Matches(USER_DATA)`
+    ///
+    ///
+    /// Weight: 10(IP)
+    ///
+    /// # Arguments
+    ///
+    /// - `params`: [`QueryPreventedMatchesParams`]
+    ///   The parameters for this operation.
+    ///
+    /// # Returns
+    ///
+    /// [`RestApiResponse<Vec<models::QueryPreventedMatchesResponseInner>>`] on success.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an [`anyhow::Error`] if:
+    /// - the HTTP request fails
+    /// - any parameter is invalid
+    /// - the response cannot be parsed
+    /// - or one of the following occurs:
+    ///   - `RequiredError`
+    ///   - `ConnectorClientError`
+    ///   - `UnauthorizedError`
+    ///   - `ForbiddenError`
+    ///   - `TooManyRequestsError`
+    ///   - `RateLimitBanError`
+    ///   - `ServerError`
+    ///   - `NotFoundError`
+    ///   - `NetworkError`
+    ///   - `BadRequestError`
+    ///
+    ///
+    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/margin_trading/trade/Query-Margin-Prevented-Matches).
+    ///
+    pub async fn query_prevented_matches(
+        &self,
+        params: QueryPreventedMatchesParams,
+    ) -> anyhow::Result<RestApiResponse<Vec<models::QueryPreventedMatchesResponseInner>>> {
+        self.trade_api_client.query_prevented_matches(params).await
+    }
+
     /// Query Special key(Low Latency Trading)(TRADE)
     ///
     /// Query Special Key Information.
@@ -2714,275 +2870,6 @@ impl RestApi {
         params: SmallLiabilityExchangeParams,
     ) -> anyhow::Result<RestApiResponse<Value>> {
         self.trade_api_client.small_liability_exchange(params).await
-    }
-
-    /// Close Isolated Margin User Data Stream (`USER_STREAM`)
-    ///
-    /// Close out a isolated margin user data stream.
-    ///
-    /// Weight: 3000
-    ///
-    /// # Arguments
-    ///
-    /// - `params`: [`CloseIsolatedMarginUserDataStreamParams`]
-    ///   The parameters for this operation.
-    ///
-    /// # Returns
-    ///
-    /// [`RestApiResponse<Value>`] on success.
-    ///
-    /// # Errors
-    ///
-    /// This function will return an [`anyhow::Error`] if:
-    /// - the HTTP request fails
-    /// - any parameter is invalid
-    /// - the response cannot be parsed
-    /// - or one of the following occurs:
-    ///   - `RequiredError`
-    ///   - `ConnectorClientError`
-    ///   - `UnauthorizedError`
-    ///   - `ForbiddenError`
-    ///   - `TooManyRequestsError`
-    ///   - `RateLimitBanError`
-    ///   - `ServerError`
-    ///   - `NotFoundError`
-    ///   - `NetworkError`
-    ///   - `BadRequestError`
-    ///
-    ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/margin_trading/trade-data-stream/Close-Isolated-Margin-User-Data-Stream).
-    ///
-    pub async fn close_isolated_margin_user_data_stream(
-        &self,
-        params: CloseIsolatedMarginUserDataStreamParams,
-    ) -> anyhow::Result<RestApiResponse<Value>> {
-        self.trade_data_stream_api_client
-            .close_isolated_margin_user_data_stream(params)
-            .await
-    }
-
-    /// Close Margin User Data Stream (`USER_STREAM`)
-    ///
-    /// Close out a Margin user data stream.
-    ///
-    /// Weight: 3000
-    ///
-    /// # Arguments
-    ///
-    /// - `params`: [`CloseMarginUserDataStreamParams`]
-    ///   The parameters for this operation.
-    ///
-    /// # Returns
-    ///
-    /// [`RestApiResponse<Value>`] on success.
-    ///
-    /// # Errors
-    ///
-    /// This function will return an [`anyhow::Error`] if:
-    /// - the HTTP request fails
-    /// - any parameter is invalid
-    /// - the response cannot be parsed
-    /// - or one of the following occurs:
-    ///   - `RequiredError`
-    ///   - `ConnectorClientError`
-    ///   - `UnauthorizedError`
-    ///   - `ForbiddenError`
-    ///   - `TooManyRequestsError`
-    ///   - `RateLimitBanError`
-    ///   - `ServerError`
-    ///   - `NotFoundError`
-    ///   - `NetworkError`
-    ///   - `BadRequestError`
-    ///
-    ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/margin_trading/trade-data-stream/Close-Margin-User-Data-Stream).
-    ///
-    pub async fn close_margin_user_data_stream(
-        &self,
-        params: CloseMarginUserDataStreamParams,
-    ) -> anyhow::Result<RestApiResponse<Value>> {
-        self.trade_data_stream_api_client
-            .close_margin_user_data_stream(params)
-            .await
-    }
-
-    /// Keepalive Isolated Margin User Data Stream (`USER_STREAM`)
-    ///
-    /// Keepalive an isolated margin user data stream to prevent a time out.
-    ///
-    /// Weight: 1
-    ///
-    /// # Arguments
-    ///
-    /// - `params`: [`KeepaliveIsolatedMarginUserDataStreamParams`]
-    ///   The parameters for this operation.
-    ///
-    /// # Returns
-    ///
-    /// [`RestApiResponse<Value>`] on success.
-    ///
-    /// # Errors
-    ///
-    /// This function will return an [`anyhow::Error`] if:
-    /// - the HTTP request fails
-    /// - any parameter is invalid
-    /// - the response cannot be parsed
-    /// - or one of the following occurs:
-    ///   - `RequiredError`
-    ///   - `ConnectorClientError`
-    ///   - `UnauthorizedError`
-    ///   - `ForbiddenError`
-    ///   - `TooManyRequestsError`
-    ///   - `RateLimitBanError`
-    ///   - `ServerError`
-    ///   - `NotFoundError`
-    ///   - `NetworkError`
-    ///   - `BadRequestError`
-    ///
-    ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/margin_trading/trade-data-stream/Keepalive-Isolated-Margin-User-Data-Stream).
-    ///
-    pub async fn keepalive_isolated_margin_user_data_stream(
-        &self,
-        params: KeepaliveIsolatedMarginUserDataStreamParams,
-    ) -> anyhow::Result<RestApiResponse<Value>> {
-        self.trade_data_stream_api_client
-            .keepalive_isolated_margin_user_data_stream(params)
-            .await
-    }
-
-    /// Keepalive Margin User Data Stream (`USER_STREAM`)
-    ///
-    /// Keepalive a margin user data stream to prevent a time out.
-    ///
-    /// Weight: 1
-    ///
-    /// # Arguments
-    ///
-    /// - `params`: [`KeepaliveMarginUserDataStreamParams`]
-    ///   The parameters for this operation.
-    ///
-    /// # Returns
-    ///
-    /// [`RestApiResponse<Value>`] on success.
-    ///
-    /// # Errors
-    ///
-    /// This function will return an [`anyhow::Error`] if:
-    /// - the HTTP request fails
-    /// - any parameter is invalid
-    /// - the response cannot be parsed
-    /// - or one of the following occurs:
-    ///   - `RequiredError`
-    ///   - `ConnectorClientError`
-    ///   - `UnauthorizedError`
-    ///   - `ForbiddenError`
-    ///   - `TooManyRequestsError`
-    ///   - `RateLimitBanError`
-    ///   - `ServerError`
-    ///   - `NotFoundError`
-    ///   - `NetworkError`
-    ///   - `BadRequestError`
-    ///
-    ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/margin_trading/trade-data-stream/Keepalive-Margin-User-Data-Stream).
-    ///
-    pub async fn keepalive_margin_user_data_stream(
-        &self,
-        params: KeepaliveMarginUserDataStreamParams,
-    ) -> anyhow::Result<RestApiResponse<Value>> {
-        self.trade_data_stream_api_client
-            .keepalive_margin_user_data_stream(params)
-            .await
-    }
-
-    /// Start Isolated Margin User Data Stream (`USER_STREAM`)
-    ///
-    /// Start a new isolated margin user data stream. The stream will close after 60 minutes unless a keepalive is sent. If the account has an active listenKey, that listenKey will be returned and its validity will be extended for 60 minutes.
-    ///
-    /// Weight: 1
-    ///
-    /// # Arguments
-    ///
-    /// - `params`: [`StartIsolatedMarginUserDataStreamParams`]
-    ///   The parameters for this operation.
-    ///
-    /// # Returns
-    ///
-    /// [`RestApiResponse<models::StartIsolatedMarginUserDataStreamResponse>`] on success.
-    ///
-    /// # Errors
-    ///
-    /// This function will return an [`anyhow::Error`] if:
-    /// - the HTTP request fails
-    /// - any parameter is invalid
-    /// - the response cannot be parsed
-    /// - or one of the following occurs:
-    ///   - `RequiredError`
-    ///   - `ConnectorClientError`
-    ///   - `UnauthorizedError`
-    ///   - `ForbiddenError`
-    ///   - `TooManyRequestsError`
-    ///   - `RateLimitBanError`
-    ///   - `ServerError`
-    ///   - `NotFoundError`
-    ///   - `NetworkError`
-    ///   - `BadRequestError`
-    ///
-    ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/margin_trading/trade-data-stream/Start-Isolated-Margin-User-Data-Stream).
-    ///
-    pub async fn start_isolated_margin_user_data_stream(
-        &self,
-        params: StartIsolatedMarginUserDataStreamParams,
-    ) -> anyhow::Result<RestApiResponse<models::StartIsolatedMarginUserDataStreamResponse>> {
-        self.trade_data_stream_api_client
-            .start_isolated_margin_user_data_stream(params)
-            .await
-    }
-
-    /// Start Margin User Data Stream (`USER_STREAM`)
-    ///
-    /// Start a new margin user data stream. The stream will close after 60 minutes unless a keepalive is sent. If the account has an active listenKey, that listenKey will be returned and its validity will be extended for 60 minutes.
-    ///
-    /// Weight: 1
-    ///
-    /// # Arguments
-    ///
-    /// - `params`: [`StartMarginUserDataStreamParams`]
-    ///   The parameters for this operation.
-    ///
-    /// # Returns
-    ///
-    /// [`RestApiResponse<models::StartMarginUserDataStreamResponse>`] on success.
-    ///
-    /// # Errors
-    ///
-    /// This function will return an [`anyhow::Error`] if:
-    /// - the HTTP request fails
-    /// - any parameter is invalid
-    /// - the response cannot be parsed
-    /// - or one of the following occurs:
-    ///   - `RequiredError`
-    ///   - `ConnectorClientError`
-    ///   - `UnauthorizedError`
-    ///   - `ForbiddenError`
-    ///   - `TooManyRequestsError`
-    ///   - `RateLimitBanError`
-    ///   - `ServerError`
-    ///   - `NotFoundError`
-    ///   - `NetworkError`
-    ///   - `BadRequestError`
-    ///
-    ///
-    /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/margin_trading/trade-data-stream/Start-Margin-User-Data-Stream).
-    ///
-    pub async fn start_margin_user_data_stream(
-        &self,
-    ) -> anyhow::Result<RestApiResponse<models::StartMarginUserDataStreamResponse>> {
-        self.trade_data_stream_api_client
-            .start_margin_user_data_stream()
-            .await
     }
 
     /// Get Cross Margin Transfer History (`USER_DATA`)

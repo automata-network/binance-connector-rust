@@ -37,6 +37,8 @@ pub struct QueryOrderResponse {
     pub reduce_only: Option<bool>,
     #[serde(rename = "side", skip_serializing_if = "Option::is_none")]
     pub side: Option<String>,
+    #[serde(rename = "positionSide", skip_serializing_if = "Option::is_none")]
+    pub position_side: Option<String>,
     #[serde(rename = "status", skip_serializing_if = "Option::is_none")]
     pub status: Option<String>,
     #[serde(rename = "stopPrice", skip_serializing_if = "Option::is_none")]
@@ -86,6 +88,7 @@ impl QueryOrderResponse {
             price: None,
             reduce_only: None,
             side: None,
+            position_side: None,
             status: None,
             stop_price: None,
             close_position: None,
