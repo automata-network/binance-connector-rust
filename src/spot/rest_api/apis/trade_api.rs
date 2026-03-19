@@ -6430,6 +6430,7 @@ impl TradeApi for TradeApiClient {
             "/api/v1/allOpenOrders",
             reqwest::Method::DELETE,
             query_params,
+            BTreeMap::new(),
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -8288,6 +8289,7 @@ impl TradeApi for TradeApiClient {
             "/api/v1/userTrades",
             reqwest::Method::GET,
             query_params,
+            BTreeMap::new(),
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -8337,7 +8339,7 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::CancelAllOpenOrdersResponse>> {
             if self.force_error {
                 return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
+                    ConnectorError::ConnectorClientError { msg: "ResponseError".to_string(), code: None }.into(),
                 );
             }
 
@@ -8770,7 +8772,7 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<Vec<models::UserTradesResponseInner>>> {
             if self.force_error {
                 return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
+                    ConnectorError::ConnectorClientError { msg: "ResponseError".to_string(), code: None }.into(),
                 );
             }
 

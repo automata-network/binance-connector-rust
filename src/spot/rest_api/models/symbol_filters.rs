@@ -55,6 +55,8 @@ pub enum SymbolFilters {
     MaxNumOrderLists(Box<models::MaxNumOrderListsFilter>),
     #[serde(rename = "MAX_NUM_ORDER_AMENDS")]
     MaxNumOrderAmends(Box<models::MaxNumOrderAmendsFilter>),
+    #[serde(rename = "MAX_NOTIONAL")]
+    MaxNotional(Box<models::MaxNotionalFilter>),
 }
 
 impl Default for SymbolFilters {

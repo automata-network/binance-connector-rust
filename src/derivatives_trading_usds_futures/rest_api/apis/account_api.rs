@@ -39,6 +39,10 @@ pub trait AccountApi: Send + Sync {
         &self,
         params: AccountInformationV3Params,
     ) -> anyhow::Result<RestApiResponse<models::AccountInformationV3Response>>;
+    async fn account_information_v4(
+        &self,
+        params: AccountInformationV4Params,
+    ) -> anyhow::Result<RestApiResponse<models::AccountInformationV3Response>>;
     async fn futures_account_balance_v2(
         &self,
         params: FuturesAccountBalanceV2Params,
@@ -172,6 +176,20 @@ impl AccountInformationV3Params {
     #[must_use]
     pub fn builder() -> AccountInformationV3ParamsBuilder {
         AccountInformationV3ParamsBuilder::default()
+    }
+}
+/// Request parameters for the [`account_information_v4`] operation.
+#[derive(Clone, Debug, Builder, Default)]
+#[builder(pattern = "owned", build_fn(error = "ParamBuildError"))]
+pub struct AccountInformationV4Params {
+    #[builder(setter(into), default)]
+    pub recv_window: Option<i64>,
+}
+
+impl AccountInformationV4Params {
+    #[must_use]
+    pub fn builder() -> AccountInformationV4ParamsBuilder {
+        AccountInformationV4ParamsBuilder::default()
     }
 }
 /// Request parameters for the [`futures_account_balance_v2`] operation.
@@ -820,6 +838,35 @@ impl AccountApi for AccountApiClient {
         send_request::<models::AccountInformationV3Response>(
             &self.configuration,
             "/fapi/v3/account",
+            reqwest::Method::GET,
+            query_params,
+            body_params,
+            if HAS_TIME_UNIT {
+                self.configuration.time_unit
+            } else {
+                None
+            },
+            true,
+        )
+        .await
+    }
+
+    async fn account_information_v4(
+        &self,
+        params: AccountInformationV4Params,
+    ) -> anyhow::Result<RestApiResponse<models::AccountInformationV3Response>> {
+        let AccountInformationV4Params { recv_window } = params;
+
+        let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
+
+        if let Some(rw) = recv_window {
+            query_params.insert("recvWindow".to_string(), json!(rw));
+        }
+
+        send_request::<models::AccountInformationV3Response>(
+            &self.configuration,
+            "/fapi/v4/account",
             reqwest::Method::GET,
             query_params,
             body_params,
@@ -1575,6 +1622,15 @@ mod tests {
             };
 
             Ok(dummy.into())
+        }
+
+        async fn account_information_v4(
+            &self,
+            _params: AccountInformationV4Params,
+        ) -> anyhow::Result<RestApiResponse<models::AccountInformationV3Response>> {
+            // Reuse the same mock response as v3
+            self.account_information_v3(AccountInformationV3Params::default())
+                .await
         }
 
         async fn futures_account_balance_v2(

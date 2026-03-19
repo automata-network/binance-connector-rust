@@ -10,6 +10,7 @@ use binance_sdk::derivatives_trading_usds_futures::{
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    tracing_subscriber::fmt::init();
     // Load V3 credentials from env
     let user = env::var("ASTER_USER").context("ASTER_USER must be set")?;
     let signer = env::var("ASTER_SIGNER").context("ASTER_SIGNER must be set")?;
@@ -32,9 +33,10 @@ async fn main() -> Result<()> {
         NewOrderSideEnum::Buy,
         "LIMIT".to_string(),
     );
-    params = params.quantity(rust_decimal::Decimal::new(1, 2)); // 0.01
-    params = params.price(rust_decimal::Decimal::new(2_000, 0));
+    params = params.quantity(rust_decimal::Decimal::new(1, 2)); // 0.005
+    params = params.price(rust_decimal::Decimal::new(1_000, 0));
     params = params.time_in_force(NewOrderTimeInForceEnum::Gtc);
+    params = params.new_client_order_id("abcde12345".to_string());
     let params = params.build()?;
 
     // Make the API call

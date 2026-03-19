@@ -285,3 +285,5 @@ pub mod user_commission_rate_response;
 pub use self::user_commission_rate_response::UserCommissionRateResponse;
 pub mod users_force_orders_response_inner;
 pub use self::users_force_orders_response_inner::UsersForceOrdersResponseInner;
+pub mod wallet_transfer_response;
+pub use self::wallet_transfer_response::WalletTransferResponse;

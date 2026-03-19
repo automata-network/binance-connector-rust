@@ -56,6 +56,8 @@ impl UserDataStreamsApi for UserDataStreamsApiClient {
     async fn close_user_data_stream(&self) -> anyhow::Result<RestApiResponse<Value>> {
         let query_params = BTreeMap::new();
         let body_params = BTreeMap::new();
+        // V3: USER_STREAM requires signer+signature; V1: uses API key header only
+        let is_signed = self.configuration.signature_gen.is_v3();
 
         send_request::<Value>(
             &self.configuration,
@@ -68,7 +70,7 @@ impl UserDataStreamsApi for UserDataStreamsApiClient {
             } else {
                 None
             },
-            false,
+            is_signed,
         )
         .await
     }
@@ -78,6 +80,7 @@ impl UserDataStreamsApi for UserDataStreamsApiClient {
     ) -> anyhow::Result<RestApiResponse<models::KeepaliveUserDataStreamResponse>> {
         let query_params = BTreeMap::new();
         let body_params = BTreeMap::new();
+        let is_signed = self.configuration.signature_gen.is_v3();
 
         send_request::<models::KeepaliveUserDataStreamResponse>(
             &self.configuration,
@@ -90,7 +93,7 @@ impl UserDataStreamsApi for UserDataStreamsApiClient {
             } else {
                 None
             },
-            false,
+            is_signed,
         )
         .await
     }
@@ -100,6 +103,7 @@ impl UserDataStreamsApi for UserDataStreamsApiClient {
     ) -> anyhow::Result<RestApiResponse<models::StartUserDataStreamResponse>> {
         let query_params = BTreeMap::new();
         let body_params = BTreeMap::new();
+        let is_signed = self.configuration.signature_gen.is_v3();
 
         send_request::<models::StartUserDataStreamResponse>(
             &self.configuration,
@@ -112,7 +116,7 @@ impl UserDataStreamsApi for UserDataStreamsApiClient {
             } else {
                 None
             },
-            false,
+            is_signed,
         )
         .await
     }

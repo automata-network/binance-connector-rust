@@ -4542,7 +4542,17 @@ mod tests {
                     let tx = conn.state.lock().await.ws_write_tx.clone().unwrap();
                     tx.send(Message::Text("ping".into())).unwrap();
 
-                    sleep(Duration::from_millis(50)).await;
+                    // Poll until the server task has received the message (up to 2s).
+                    let deadline = tokio::time::Instant::now() + Duration::from_secs(2);
+                    loop {
+                        if received.lock().await.is_some() {
+                            break;
+                        }
+                        if tokio::time::Instant::now() >= deadline {
+                            panic!("timed out waiting for server to receive message");
+                        }
+                        sleep(Duration::from_millis(10)).await;
+                    }
 
                     let lock = received.lock().await;
                     assert_eq!(lock.as_deref(), Some("ping"));

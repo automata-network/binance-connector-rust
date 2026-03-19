@@ -1,5 +1,4 @@
 use alloy_primitives::{Address, keccak256};
-use alloy_sol_types::SolValue;
 use anyhow::{Context, Result};
 #[cfg(feature = "openssl-tls")]
 use base64::{Engine as _, engine::general_purpose};
@@ -317,7 +316,8 @@ impl SignatureGenerator {
                 .as_ref()
                 .ok_or_else(|| anyhow::anyhow!("No signer_private_key provided"))?;
             let key_hex = key_hex.strip_prefix("0x").unwrap_or(key_hex);
-            let key_bytes = hex::decode(key_hex).context("Failed to decode signer private key hex")?;
+            let key_bytes =
+                hex::decode(key_hex).context("Failed to decode signer private key hex")?;
             Secp256k1SigningKey::from_slice(&key_bytes)
                 .map_err(|e| anyhow::anyhow!("Failed to parse secp256k1 private key: {}", e))
         })
@@ -328,35 +328,28 @@ impl SignatureGenerator {
     /// # Errors
     ///
     /// Returns an error if user/signer are not configured or if signing fails.
-    pub fn get_signature_v3(
-        &self,
-        params: &BTreeMap<String, Value>,
-        nonce: u64,
-    ) -> Result<String> {
-        let user_addr = self
-            .user
-            .as_ref()
-            .ok_or_else(|| anyhow::anyhow!("V3 signing requires 'user' address"))?;
-        let signer_addr = self
-            .signer
-            .as_ref()
-            .ok_or_else(|| anyhow::anyhow!("V3 signing requires 'signer' address"))?;
+    /// V3 EIP-712 signature.
+    ///
+    /// `params` must already contain `user`, `signer`, and `nonce` —
+    /// these are part of the signed payload per the Aster V3 spec.
+    /// The params are URL-encoded, then signed as an EIP-712 `Message { msg }`.
+    pub fn get_signature_v3(&self, params: &BTreeMap<String, Value>) -> Result<String> {
+        let msg = url_encode_params(params);
 
-        let json_str = normalize_params_to_json(params);
+        // EIP-712 domain separator:
+        //   name = "AsterSignTransaction", version = "1", chainId = 1666,
+        //   verifyingContract = 0x0000000000000000000000000000000000000000
+        let domain_separator = eip712_domain_separator();
 
-        let user_address: Address = user_addr.parse().context("Invalid user address")?;
-        let signer_address: Address = signer_addr.parse().context("Invalid signer address")?;
-        let nonce_u256 = alloy_primitives::U256::from(nonce);
+        // structHash = keccak256(keccak256("Message(string msg)") || keccak256(msg))
+        let struct_hash = eip712_message_hash(&msg);
 
-        let abi_encoded =
-            (json_str, user_address, signer_address, nonce_u256).abi_encode_params();
-
-        let hash = keccak256(&abi_encoded);
-
-        let mut prefixed = Vec::with_capacity(28 + 32);
-        prefixed.extend_from_slice(b"\x19Ethereum Signed Message:\n32");
-        prefixed.extend_from_slice(hash.as_ref());
-        let msg_hash = keccak256(&prefixed);
+        // EIP-712 final hash: keccak256("\x19\x01" || domainSeparator || structHash)
+        let mut digest_input = Vec::with_capacity(2 + 32 + 32);
+        digest_input.extend_from_slice(b"\x19\x01");
+        digest_input.extend_from_slice(domain_separator.as_ref());
+        digest_input.extend_from_slice(struct_hash.as_ref());
+        let msg_hash = keccak256(&digest_input);
 
         let signing_key = self.get_secp256k1_signing_key()?;
         let (sig, recid) = signing_key
@@ -380,29 +373,63 @@ pub fn get_nonce() -> u64 {
         .as_micros() as u64
 }
 
-/// Normalizes params for V3 signing: all values converted to strings, sorted by key, compact JSON.
-pub fn normalize_params_to_json(params: &BTreeMap<String, Value>) -> String {
-    let string_map: BTreeMap<&str, String> = params
-        .iter()
-        .map(|(k, v)| {
-            let s = match v {
-                Value::String(s) => s.clone(),
-                Value::Bool(b) => if *b { "true" } else { "false" }.to_string(),
-                Value::Number(n) => n.to_string(),
-                Value::Null => String::new(),
-                _ => v.to_string(),
-            };
-            (k.as_str(), s)
-        })
-        .collect();
-    serde_json::to_string(&string_map).expect("BTreeMap serialization should not fail")
+/// URL-encodes params for V3 signing (matching Python's `urllib.parse.urlencode`).
+/// All values are converted to their string representation first.
+pub(crate) fn url_encode_params(params: &BTreeMap<String, Value>) -> String {
+    let mut serializer = Serializer::new(String::new());
+    for (key, value) in params {
+        let val_str = match value {
+            Value::String(s) => s.clone(),
+            _ => value.to_string(),
+        };
+        serializer.append_pair(key, &val_str);
+    }
+    serializer.finish()
+}
+
+/// Computes the EIP-712 domain separator for Aster V3.
+///
+/// domain = { name: "AsterSignTransaction", version: "1", chainId: 1666, verifyingContract: 0x000...0 }
+fn eip712_domain_separator() -> alloy_primitives::B256 {
+    // EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)
+    let type_hash = keccak256(
+        b"EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)",
+    );
+    let name_hash = keccak256(b"AsterSignTransaction");
+    let version_hash = keccak256(b"1");
+    let chain_id = alloy_primitives::U256::from(1666);
+    let verifying_contract = Address::ZERO;
+
+    let mut encoded = Vec::with_capacity(5 * 32);
+    encoded.extend_from_slice(type_hash.as_ref());
+    encoded.extend_from_slice(name_hash.as_ref());
+    encoded.extend_from_slice(version_hash.as_ref());
+    encoded.extend_from_slice(&chain_id.to_be_bytes::<32>());
+    encoded.extend_from_slice(verifying_contract.into_word().as_ref());
+    keccak256(&encoded)
+}
+
+/// Computes the EIP-712 struct hash for `Message { msg: string }`.
+fn eip712_message_hash(msg: &str) -> alloy_primitives::B256 {
+    // Message(string msg)
+    let type_hash = keccak256(b"Message(string msg)");
+    let msg_hash = keccak256(msg.as_bytes());
+
+    let mut encoded = Vec::with_capacity(2 * 32);
+    encoded.extend_from_slice(type_hash.as_ref());
+    encoded.extend_from_slice(msg_hash.as_ref());
+    keccak256(&encoded)
 }
 
 /// Rewrites an endpoint path from `/v1/` or `/v2/` to `/v3/` for V3 API.
-/// If the path already contains `/v3/`, it is returned unchanged.
+/// If the path already contains `/v3/` or `/v4/`, it is returned unchanged.
+/// Endpoints in the skip list are also returned unchanged (no V3 equivalent).
 fn rewrite_endpoint_to_v3(endpoint: &str) -> String {
+    const SKIP_REWRITE: &[&str] = &[
+        "/fapi/v1/remainingOpenableNotionalValue",
+    ];
     static V_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"/v[12]/").unwrap());
-    if endpoint.contains("/v3/") {
+    if endpoint.contains("/v3/") || SKIP_REWRITE.iter().any(|&s| endpoint == s) {
         endpoint.to_string()
     } else {
         V_RE.replace(endpoint, "/v3/").into_owned()
@@ -437,7 +464,10 @@ fn append_params_to_url(url: &mut Url, params: &BTreeMap<String, Value>) {
 }
 
 /// Builds common HTTP headers for REST API requests.
-fn build_common_headers(configuration: &ConfigurationRestApi, time_unit: Option<TimeUnit>) -> Result<HeaderMap> {
+fn build_common_headers(
+    configuration: &ConfigurationRestApi,
+    time_unit: Option<TimeUnit>,
+) -> Result<HeaderMap> {
     let mut headers = HeaderMap::new();
 
     let forbidden = ["host", "authorization", "cookie", ":method", ":path"]
@@ -1006,8 +1036,9 @@ pub async fn send_request<T: DeserializeOwned + Send + 'static>(
     time_unit: Option<TimeUnit>,
     is_signed: bool,
 ) -> anyhow::Result<RestApiResponse<T>> {
-    let is_v3 = is_signed && configuration.signature_gen.is_v3();
-    let endpoint = if is_v3 {
+    let is_v3_config = configuration.signature_gen.is_v3();
+    // URL rewrite: always when V3 config is active (applies to all endpoints, not just signed)
+    let endpoint = if is_v3_config {
         rewrite_endpoint_to_v3(endpoint)
     } else {
         endpoint.to_string()
@@ -1019,14 +1050,19 @@ pub async fn send_request<T: DeserializeOwned + Send + 'static>(
         .context("Failed to join base URL and endpoint")?
         .to_string();
 
+    tracing::debug!(%full_url, %method, is_signed, is_v3_config, "send_request");
+
     let mut headers = build_common_headers(configuration, time_unit)?;
 
-    if is_v3 {
-        // V3 signing path
+    if is_v3_config && is_signed {
+        // V3 signing path: merge query + body into a single params map
+        let mut params: BTreeMap<String, Value> = query_params;
+        params.extend(body_params);
+
         let timestamp = get_timestamp().to_string();
-        params.insert("recvWindow".to_string(), json!("50000"));
         params.insert("timestamp".to_string(), json!(timestamp));
 
+        // Resolve nonce: use caller-provided value or generate one
         let nonce = if let Some(n) = params.get("nonce") {
             n.as_u64()
                 .or_else(|| n.as_str().and_then(|s| s.parse::<u64>().ok()))
@@ -1035,10 +1071,8 @@ pub async fn send_request<T: DeserializeOwned + Send + 'static>(
             get_nonce()
         };
 
-        let signature = configuration
-            .signature_gen
-            .get_signature_v3(&params, nonce)?;
-
+        // user, signer, nonce must be in params BEFORE signing (part of the signed payload)
+        params.insert("nonce".to_string(), json!(nonce.to_string()));
         params.insert(
             "user".to_string(),
             json!(configuration.signature_gen.user().unwrap_or("")),
@@ -1047,7 +1081,11 @@ pub async fn send_request<T: DeserializeOwned + Send + 'static>(
             "signer".to_string(),
             json!(configuration.signature_gen.signer().unwrap_or("")),
         );
-        params.insert("nonce".to_string(), json!(nonce));
+
+        let signature = configuration
+            .signature_gen
+            .get_signature_v3(&params)?;
+
         params.insert("signature".to_string(), json!(signature));
 
         // V3: no X-MBX-APIKEY header
@@ -1076,15 +1114,20 @@ pub async fn send_request<T: DeserializeOwned + Send + 'static>(
 
         Ok(http_request::<T>(req, configuration).await?)
     } else if is_signed {
-        // V1 signing path (existing logic)
+        // V1 signing path
         let timestamp = get_timestamp();
-        params.insert("timestamp".to_string(), json!(timestamp));
-        let signature = configuration.signature_gen.get_signature(&params)?;
+        query_params.insert("timestamp".to_string(), json!(timestamp));
+        let body_ref = if body_params.is_empty() {
+            None
+        } else {
+            Some(&body_params)
+        };
+        let signature = configuration.signature_gen.get_signature(&query_params, body_ref)?;
 
         let mut url = Url::parse(&full_url)?;
-        if !params.is_empty() || true {
+        {
             let mut pairs = url.query_pairs_mut();
-            for (key, value) in &params {
+            for (key, value) in &query_params {
                 let val_str = match value {
                     Value::String(s) => s.clone(),
                     _ => value.to_string(),
@@ -1094,21 +1137,41 @@ pub async fn send_request<T: DeserializeOwned + Send + 'static>(
             pairs.append_pair("signature", &signature);
         }
 
-        headers.insert("Content-Type", HeaderValue::from_static("application/json"));
+        if body_params.is_empty() {
+            headers.insert("Content-Type", HeaderValue::from_static("application/json"));
+        } else {
+            headers.insert(
+                "Content-Type",
+                HeaderValue::from_static("application/x-www-form-urlencoded"),
+            );
+        }
         if let Some(api_key) = &configuration.api_key {
             headers.insert("X-MBX-APIKEY", HeaderValue::from_str(api_key)?);
         }
 
-        let req_builder = configuration.client.request(method, url).headers(headers);
+        let mut req_builder = configuration.client.request(method, url).headers(headers);
+
+        if !body_params.is_empty() {
+            let mut serializer = form_urlencoded::Serializer::new(String::new());
+            for (key, value) in body_params {
+                let val_str = match value {
+                    Value::String(s) => s,
+                    _ => value.to_string(),
+                };
+                serializer.append_pair(&key, &val_str);
+            }
+            req_builder = req_builder.body(serializer.finish());
+        }
+
         let req = req_builder.build()?;
 
         Ok(http_request::<T>(req, configuration).await?)
     } else {
         // Unsigned request
         let mut url = Url::parse(&full_url)?;
-        if !params.is_empty() {
+        if !query_params.is_empty() {
             let mut pairs = url.query_pairs_mut();
-            for (key, value) in &params {
+            for (key, value) in &query_params {
                 let val_str = match value {
                     Value::String(s) => s.clone(),
                     _ => value.to_string(),
@@ -1122,7 +1185,20 @@ pub async fn send_request<T: DeserializeOwned + Send + 'static>(
             headers.insert("X-MBX-APIKEY", HeaderValue::from_str(api_key)?);
         }
 
-        let req_builder = configuration.client.request(method, url).headers(headers);
+        let mut req_builder = configuration.client.request(method, url).headers(headers);
+
+        if !body_params.is_empty() {
+            let mut serializer = form_urlencoded::Serializer::new(String::new());
+            for (key, value) in body_params {
+                let val_str = match value {
+                    Value::String(s) => s,
+                    _ => value.to_string(),
+                };
+                serializer.append_pair(&key, &val_str);
+            }
+            req_builder = req_builder.body(serializer.finish());
+        }
+
         let req = req_builder.build()?;
 
         Ok(http_request::<T>(req, configuration).await?)
@@ -1398,16 +1474,11 @@ pub fn build_websocket_api_message(
     if options.is_signed {
         if is_v3 && !skip_auth {
             let timestamp = get_timestamp().to_string();
-            params.insert("recvWindow".into(), json!("50000"));
             params.insert("timestamp".into(), json!(timestamp));
 
             let nonce = get_nonce();
-            let sig = configuration
-                .signature_gen
-<<<<<<< HEAD
-                .get_signature_v3(&params, nonce)
-                .expect("V3 signature generation");
-
+            // user, signer, nonce must be in params BEFORE signing
+            params.insert("nonce".into(), json!(nonce.to_string()));
             params.insert(
                 "user".into(),
                 json!(configuration.signature_gen.user().unwrap_or("")),
@@ -1416,7 +1487,12 @@ pub fn build_websocket_api_message(
                 "signer".into(),
                 json!(configuration.signature_gen.signer().unwrap_or("")),
             );
-            params.insert("nonce".into(), json!(nonce));
+
+            let sig = configuration
+                .signature_gen
+                .get_signature_v3(&params)
+                .expect("V3 signature generation");
+
             params.insert("signature".into(), Value::String(sig));
         } else {
             let ts = get_timestamp();
@@ -1427,16 +1503,11 @@ pub fn build_websocket_api_message(
             if !skip_auth {
                 let sig = configuration
                     .signature_gen
-                    .get_signature(&sorted)
+                    .get_signature(&sorted, None)
                     .expect("signature generation");
                 sorted.insert("signature".into(), Value::String(sig));
             }
             params = sorted.into_iter().collect();
-=======
-                .get_signature(&sorted, None)
-                .expect("signature generation");
-            sorted.insert("signature".into(), Value::String(sig));
->>>>>>> main
         }
     }
 
@@ -1917,7 +1988,8 @@ mod tests {
             params.insert("b".into(), Value::Number(2.into()));
             params.insert("a".into(), Value::Number(1.into()));
 
-            let signature_gen = SignatureGenerator::new(Some("test-secret".into()), None, None, None, None, None);
+            let signature_gen =
+                SignatureGenerator::new(Some("test-secret".into()), None, None, None, None, None);
             let sig = signature_gen
                 .get_signature(&params, None)
                 .expect("HMAC signing failed");
@@ -1940,7 +2012,7 @@ mod tests {
             body_params.insert("d".into(), Value::Number(4.into()));
             body_params.insert("c".into(), Value::Number(3.into()));
 
-            let signature_gen = SignatureGenerator::new(Some("test-secret".into()), None, None);
+            let signature_gen = SignatureGenerator::new(Some("test-secret".into()), None, None, None, None, None);
             let sig = signature_gen
                 .get_signature(&query_params, Some(&body_params))
                 .expect("HMAC signing with body failed");
@@ -1961,15 +2033,10 @@ mod tests {
         fn repeated_hmac_signature() {
             let mut params = BTreeMap::new();
             params.insert("x".into(), Value::String("y".into()));
-<<<<<<< HEAD
-            let signature_gen = SignatureGenerator::new(Some("abc".into()), None, None, None, None, None);
-            let s1 = signature_gen.get_signature(&params).unwrap();
-            let s2 = signature_gen.get_signature(&params).unwrap();
-=======
-            let signature_gen = SignatureGenerator::new(Some("abc".into()), None, None);
+            let signature_gen =
+                SignatureGenerator::new(Some("abc".into()), None, None, None, None, None);
             let s1 = signature_gen.get_signature(&params, None).unwrap();
             let s2 = signature_gen.get_signature(&params, None).unwrap();
->>>>>>> main
             assert_eq!(s1, s2);
         }
 
@@ -1983,8 +2050,14 @@ mod tests {
             let priv_pem = rsa.private_key_to_pem().unwrap();
             let pub_pem = rsa.public_key_to_pem_pkcs1().unwrap();
 
-            let signature_gen =
-                SignatureGenerator::new(None, Some(PrivateKey::Raw(priv_pem.clone())), None, None, None, None);
+            let signature_gen = SignatureGenerator::new(
+                None,
+                Some(PrivateKey::Raw(priv_pem.clone())),
+                None,
+                None,
+                None,
+                None,
+            );
             let sig = signature_gen
                 .get_signature(&params, None)
                 .expect("RSA signing failed");
@@ -2011,7 +2084,7 @@ mod tests {
             let pub_pem = rsa.public_key_to_pem_pkcs1().unwrap();
 
             let signature_gen =
-                SignatureGenerator::new(None, Some(PrivateKey::Raw(priv_pem.clone())), None);
+                SignatureGenerator::new(None, Some(PrivateKey::Raw(priv_pem.clone())), None, None, None, None);
             let sig = signature_gen
                 .get_signature(&query_params, Some(&body_params))
                 .expect("RSA signing with body failed");
@@ -2029,16 +2102,16 @@ mod tests {
             params.insert("k".into(), Value::Number(5.into()));
             let rsa = Rsa::generate(2048).unwrap();
             let priv_pem = rsa.private_key_to_pem().unwrap();
-            let signature_gen =
-<<<<<<< HEAD
-                SignatureGenerator::new(None, Some(PrivateKey::Raw(priv_pem)), None, None, None, None);
-            let s1 = signature_gen.get_signature(&params).unwrap();
-            let s2 = signature_gen.get_signature(&params).unwrap();
-=======
-                SignatureGenerator::new(None, Some(PrivateKey::Raw(priv_pem)), None);
+            let signature_gen = SignatureGenerator::new(
+                None,
+                Some(PrivateKey::Raw(priv_pem)),
+                None,
+                None,
+                None,
+                None,
+            );
             let s1 = signature_gen.get_signature(&params, None).unwrap();
             let s2 = signature_gen.get_signature(&params, None).unwrap();
->>>>>>> main
             assert_eq!(s1, s2);
         }
 
@@ -2052,8 +2125,14 @@ mod tests {
             let ed = PKey::generate_ed25519().unwrap();
             let priv_pem = ed.private_key_to_pem_pkcs8().unwrap();
 
-            let signature_gen =
-                SignatureGenerator::new(None, Some(PrivateKey::Raw(priv_pem.clone())), None, None, None, None);
+            let signature_gen = SignatureGenerator::new(
+                None,
+                Some(PrivateKey::Raw(priv_pem.clone())),
+                None,
+                None,
+                None,
+                None,
+            );
             let sig = signature_gen
                 .get_signature(&params, None)
                 .expect("Ed25519 signing failed");
@@ -2086,7 +2165,7 @@ mod tests {
             let priv_pem = ed.private_key_to_pem_pkcs8().unwrap();
 
             let signature_gen =
-                SignatureGenerator::new(None, Some(PrivateKey::Raw(priv_pem.clone())), None);
+                SignatureGenerator::new(None, Some(PrivateKey::Raw(priv_pem.clone())), None, None, None, None);
             let sig = signature_gen
                 .get_signature(&query_params, Some(&body_params))
                 .expect("Ed25519 signing with body failed");
@@ -2110,16 +2189,16 @@ mod tests {
             params.insert("m".into(), Value::String("n".into()));
             let ed = PKey::generate_ed25519().unwrap();
             let priv_pem = ed.private_key_to_pem_pkcs8().unwrap();
-            let signature_gen =
-<<<<<<< HEAD
-                SignatureGenerator::new(None, Some(PrivateKey::Raw(priv_pem.clone())), None, None, None, None);
-            let s1 = signature_gen.get_signature(&params).unwrap();
-            let s2 = signature_gen.get_signature(&params).unwrap();
-=======
-                SignatureGenerator::new(None, Some(PrivateKey::Raw(priv_pem.clone())), None);
+            let signature_gen = SignatureGenerator::new(
+                None,
+                Some(PrivateKey::Raw(priv_pem.clone())),
+                None,
+                None,
+                None,
+                None,
+            );
             let s1 = signature_gen.get_signature(&params, None).unwrap();
             let s2 = signature_gen.get_signature(&params, None).unwrap();
->>>>>>> main
             assert_eq!(s1, s2);
         }
 
@@ -2136,13 +2215,9 @@ mod tests {
             let mut params = BTreeMap::new();
             params.insert("z".into(), Value::Number(9.into()));
 
-<<<<<<< HEAD
-            let signature_gen = SignatureGenerator::new(None, Some(PrivateKey::File(path)), None, None, None, None);
-            let sig = signature_gen.get_signature(&params).unwrap();
-=======
-            let signature_gen = SignatureGenerator::new(None, Some(PrivateKey::File(path)), None);
+            let signature_gen =
+                SignatureGenerator::new(None, Some(PrivateKey::File(path)), None, None, None, None);
             let sig = signature_gen.get_signature(&params, None).unwrap();
->>>>>>> main
 
             let sig_bytes = general_purpose::STANDARD.decode(&sig).unwrap();
             let pubkey = PKey::public_key_from_pem(&pub_pem).unwrap();
@@ -2163,7 +2238,8 @@ mod tests {
             let pkey_ec = PKey::from_ec_key(ec_key).unwrap();
             let raw = pkey_ec.private_key_to_pem_pkcs8().unwrap();
 
-            let signature_gen = SignatureGenerator::new(None, Some(PrivateKey::Raw(raw)), None, None, None, None);
+            let signature_gen =
+                SignatureGenerator::new(None, Some(PrivateKey::Raw(raw)), None, None, None, None);
             let err = signature_gen
                 .get_signature(&params, None)
                 .unwrap_err()
@@ -2176,8 +2252,14 @@ mod tests {
             let mut params = BTreeMap::new();
             params.insert("foo".into(), Value::String("bar".into()));
 
-            let signature_gen =
-                SignatureGenerator::new(None, Some(PrivateKey::Raw(b"not a key".to_vec())), None, None, None, None);
+            let signature_gen = SignatureGenerator::new(
+                None,
+                Some(PrivateKey::Raw(b"not a key".to_vec())),
+                None,
+                None,
+                None,
+                None,
+            );
             let err = signature_gen
                 .get_signature(&params, None)
                 .unwrap_err()
@@ -3935,48 +4017,40 @@ mod tests {
     }
 
     mod v3_signing {
-        use crate::common::utils::{
-            SignatureGenerator, get_nonce, normalize_params_to_json,
-        };
+        use crate::common::utils::{SignatureGenerator, get_nonce, url_encode_params};
         use serde_json::json;
         use std::collections::BTreeMap;
 
         #[test]
-        fn normalize_params_to_json_sorts_keys_and_stringifies() {
+        fn url_encode_params_sorts_keys_and_stringifies() {
             let mut params = BTreeMap::new();
             params.insert("symbol".to_string(), json!("BTCUSDT"));
             params.insert("side".to_string(), json!("BUY"));
             params.insert("quantity".to_string(), json!("0.01"));
             params.insert("price".to_string(), json!("110000.2"));
 
-            let result = normalize_params_to_json(&params);
-            // BTreeMap sorts by key, values should all be strings
-            let parsed: serde_json::Value = serde_json::from_str(&result).unwrap();
-            let obj = parsed.as_object().unwrap();
-            let keys: Vec<&String> = obj.keys().collect();
-            assert_eq!(keys, vec!["price", "quantity", "side", "symbol"]);
-            assert_eq!(obj["symbol"], "BTCUSDT");
-            assert_eq!(obj["price"], "110000.2");
+            let result = url_encode_params(&params);
+            // BTreeMap sorts by key, so params are in alphabetical order
+            assert_eq!(result, "price=110000.2&quantity=0.01&side=BUY&symbol=BTCUSDT");
         }
 
         #[test]
-        fn normalize_params_handles_bool_and_number() {
+        fn url_encode_params_handles_bool_and_number() {
             let mut params = BTreeMap::new();
             params.insert("reduceOnly".to_string(), json!(true));
             params.insert("timestamp".to_string(), json!("1700000000000"));
-            params.insert("recvWindow".to_string(), json!("50000"));
 
-            let result = normalize_params_to_json(&params);
-            let parsed: serde_json::Value = serde_json::from_str(&result).unwrap();
-            let obj = parsed.as_object().unwrap();
-            assert_eq!(obj["reduceOnly"], "true");
-            assert_eq!(obj["timestamp"], "1700000000000");
+            let result = url_encode_params(&params);
+            assert!(result.contains("reduceOnly=true"));
+            assert!(result.contains("timestamp=1700000000000"));
         }
 
         #[test]
         fn is_v3_returns_true_when_signer_private_key_set() {
             let sig_gen = SignatureGenerator::new(
-                None, None, None,
+                None,
+                None,
+                None,
                 Some("0x1234".into()),
                 Some("0x5678".into()),
                 Some("0xabcdef".into()),
@@ -3986,10 +4060,8 @@ mod tests {
 
         #[test]
         fn is_v3_returns_false_when_no_signer_private_key() {
-            let sig_gen = SignatureGenerator::new(
-                Some("secret".into()), None, None,
-                None, None, None,
-            );
+            let sig_gen =
+                SignatureGenerator::new(Some("secret".into()), None, None, None, None, None);
             assert!(!sig_gen.is_v3());
         }
 
@@ -4010,7 +4082,9 @@ mod tests {
             let user_addr = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8";
 
             let sig_gen = SignatureGenerator::new(
-                None, None, None,
+                None,
+                None,
+                None,
                 Some(user_addr.into()),
                 Some(signer_addr.into()),
                 Some(private_key_hex.into()),
@@ -4023,13 +4097,13 @@ mod tests {
             params.insert("quantity".to_string(), json!("0.01"));
             params.insert("price".to_string(), json!("110000.2"));
             params.insert("timeInForce".to_string(), json!("GTC"));
-            params.insert("recvWindow".to_string(), json!("50000"));
             params.insert("timestamp".to_string(), json!("1700000000000"));
+            params.insert("nonce".to_string(), json!("1700000000000000"));
+            params.insert("user".to_string(), json!(user_addr));
+            params.insert("signer".to_string(), json!(signer_addr));
 
-            let nonce: u64 = 1_700_000_000_000_000;
-
-            let sig1 = sig_gen.get_signature_v3(&params, nonce).unwrap();
-            let sig2 = sig_gen.get_signature_v3(&params, nonce).unwrap();
+            let sig1 = sig_gen.get_signature_v3(&params).unwrap();
+            let sig2 = sig_gen.get_signature_v3(&params).unwrap();
 
             // Same inputs -> same output
             assert_eq!(sig1, sig2);
@@ -4046,19 +4120,26 @@ mod tests {
             let user_addr = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8";
 
             let sig_gen = SignatureGenerator::new(
-                None, None, None,
+                None,
+                None,
+                None,
                 Some(user_addr.into()),
                 Some(signer_addr.into()),
                 Some(private_key_hex.into()),
             );
 
-            let mut params = BTreeMap::new();
-            params.insert("symbol".to_string(), json!("BTCUSDT"));
-            params.insert("recvWindow".to_string(), json!("50000"));
-            params.insert("timestamp".to_string(), json!("1700000000000"));
+            let mut params1 = BTreeMap::new();
+            params1.insert("symbol".to_string(), json!("BTCUSDT"));
+            params1.insert("timestamp".to_string(), json!("1700000000000"));
+            params1.insert("nonce".to_string(), json!("1700000000000000"));
+            params1.insert("user".to_string(), json!(user_addr));
+            params1.insert("signer".to_string(), json!(signer_addr));
 
-            let sig1 = sig_gen.get_signature_v3(&params, 1_700_000_000_000_000).unwrap();
-            let sig2 = sig_gen.get_signature_v3(&params, 1_700_000_000_000_001).unwrap();
+            let mut params2 = params1.clone();
+            params2.insert("nonce".to_string(), json!("1700000000000001"));
+
+            let sig1 = sig_gen.get_signature_v3(&params1).unwrap();
+            let sig2 = sig_gen.get_signature_v3(&params2).unwrap();
 
             assert_ne!(sig1, sig2);
         }
@@ -4067,24 +4148,33 @@ mod tests {
         fn rewrite_endpoint_v1_to_v3() {
             use crate::common::utils::rewrite_endpoint_to_v3;
             assert_eq!(rewrite_endpoint_to_v3("/fapi/v1/order"), "/fapi/v3/order");
-            assert_eq!(rewrite_endpoint_to_v3("/fapi/v2/account"), "/fapi/v3/account");
+            assert_eq!(
+                rewrite_endpoint_to_v3("/fapi/v2/account"),
+                "/fapi/v3/account"
+            );
             assert_eq!(rewrite_endpoint_to_v3("/fapi/v3/noop"), "/fapi/v3/noop");
             assert_eq!(rewrite_endpoint_to_v3("/api/v1/order"), "/api/v3/order");
+            // Skip rewrite for endpoints without V3 equivalent
+            assert_eq!(
+                rewrite_endpoint_to_v3("/fapi/v1/remainingOpenableNotionalValue"),
+                "/fapi/v1/remainingOpenableNotionalValue"
+            );
         }
 
         #[test]
-        fn v3_signature_fails_without_user() {
+        fn v3_signature_fails_without_signing_key() {
             let sig_gen = SignatureGenerator::new(
-                None, None, None,
                 None,
-                Some("0x1234".into()),
-                Some("ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80".into()),
+                None,
+                None,
+                None,
+                None,
+                None,
             );
 
             let params = BTreeMap::new();
-            let result = sig_gen.get_signature_v3(&params, 1);
+            let result = sig_gen.get_signature_v3(&params);
             assert!(result.is_err());
-            assert!(result.unwrap_err().to_string().contains("user"));
         }
     }
 }

@@ -64,7 +64,6 @@ hmac = "^0.12"
 sha2 = "^0.10"
 hex = "^0.4"
 alloy-primitives = "0.8"
-alloy-sol-types = "0.8"
 base64 = "^0.22"
 flate2 = "^1.0"
 derive_builder = "^0.10"
@@ -1800,6 +1799,11 @@ path = "examples/derivatives_trading_usds_futures/rest_api/account_api/futures_a
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
+name = "derivatives_trading_usds_futures_rest_api_account_api_futures_account_balance_v3_auth"
+path = "examples/derivatives_trading_usds_futures/rest_api/account_api/futures_account_balance_v3_auth.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
 name = "derivatives_trading_usds_futures_rest_api_account_api_futures_account_configuration"
 path = "examples/derivatives_trading_usds_futures/rest_api/account_api/futures_account_configuration.rs"
 required-features = [ "derivatives_trading_usds_futures" ]
@@ -1820,8 +1824,18 @@ path = "examples/derivatives_trading_usds_futures/rest_api/account_api/get_curre
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
+name = "derivatives_trading_usds_futures_rest_api_account_api_get_current_multi_assets_mode_v3"
+path = "examples/derivatives_trading_usds_futures/rest_api/account_api/get_current_multi_assets_mode_v3.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
 name = "derivatives_trading_usds_futures_rest_api_account_api_get_current_position_mode"
 path = "examples/derivatives_trading_usds_futures/rest_api/account_api/get_current_position_mode.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
+name = "derivatives_trading_usds_futures_rest_api_account_api_get_current_position_mode_v3"
+path = "examples/derivatives_trading_usds_futures/rest_api/account_api/get_current_position_mode_v3.rs"
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
@@ -1860,8 +1874,18 @@ path = "examples/derivatives_trading_usds_futures/rest_api/account_api/get_incom
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
+name = "derivatives_trading_usds_futures_rest_api_account_api_get_income_history_v3_auth"
+path = "examples/derivatives_trading_usds_futures/rest_api/account_api/get_income_history_v3_auth.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
 name = "derivatives_trading_usds_futures_rest_api_account_api_notional_and_leverage_brackets"
 path = "examples/derivatives_trading_usds_futures/rest_api/account_api/notional_and_leverage_brackets.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
+name = "derivatives_trading_usds_futures_rest_api_account_api_notional_and_leverage_brackets_v3_auth"
+path = "examples/derivatives_trading_usds_futures/rest_api/account_api/notional_and_leverage_brackets_v3_auth.rs"
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
@@ -1882,6 +1906,11 @@ required-features = [ "derivatives_trading_usds_futures" ]
 [[example]]
 name = "derivatives_trading_usds_futures_rest_api_account_api_user_commission_rate"
 path = "examples/derivatives_trading_usds_futures/rest_api/account_api/user_commission_rate.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
+name = "derivatives_trading_usds_futures_rest_api_account_api_user_commission_rate_v3_auth"
+path = "examples/derivatives_trading_usds_futures/rest_api/account_api/user_commission_rate_v3_auth.rs"
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
@@ -1920,6 +1949,11 @@ path = "examples/derivatives_trading_usds_futures/rest_api/market_data_api/check
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
+name = "derivatives_trading_usds_futures_rest_api_market_data_api_check_server_time_v3"
+path = "examples/derivatives_trading_usds_futures/rest_api/market_data_api/check_server_time_v3.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
 name = "derivatives_trading_usds_futures_rest_api_market_data_api_composite_index_symbol_information"
 path = "examples/derivatives_trading_usds_futures/rest_api/market_data_api/composite_index_symbol_information.rs"
 required-features = [ "derivatives_trading_usds_futures" ]
@@ -1927,6 +1961,11 @@ required-features = [ "derivatives_trading_usds_futures" ]
 [[example]]
 name = "derivatives_trading_usds_futures_rest_api_market_data_api_compressed_aggregate_trades_list"
 path = "examples/derivatives_trading_usds_futures/rest_api/market_data_api/compressed_aggregate_trades_list.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
+name = "derivatives_trading_usds_futures_rest_api_market_data_api_compressed_aggregate_trades_list_v3"
+path = "examples/derivatives_trading_usds_futures/rest_api/market_data_api/compressed_aggregate_trades_list_v3.rs"
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
@@ -1940,8 +1979,18 @@ path = "examples/derivatives_trading_usds_futures/rest_api/market_data_api/excha
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
+name = "derivatives_trading_usds_futures_rest_api_market_data_api_exchange_information_v3"
+path = "examples/derivatives_trading_usds_futures/rest_api/market_data_api/exchange_information_v3.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
 name = "derivatives_trading_usds_futures_rest_api_market_data_api_get_funding_rate_history"
 path = "examples/derivatives_trading_usds_futures/rest_api/market_data_api/get_funding_rate_history.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
+name = "derivatives_trading_usds_futures_rest_api_market_data_api_get_funding_rate_history_v3"
+path = "examples/derivatives_trading_usds_futures/rest_api/market_data_api/get_funding_rate_history_v3.rs"
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
@@ -1950,13 +1999,28 @@ path = "examples/derivatives_trading_usds_futures/rest_api/market_data_api/get_f
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
+name = "derivatives_trading_usds_futures_rest_api_market_data_api_get_funding_rate_info_v3"
+path = "examples/derivatives_trading_usds_futures/rest_api/market_data_api/get_funding_rate_info_v3.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
 name = "derivatives_trading_usds_futures_rest_api_market_data_api_index_price_kline_candlestick_data"
 path = "examples/derivatives_trading_usds_futures/rest_api/market_data_api/index_price_kline_candlestick_data.rs"
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
+name = "derivatives_trading_usds_futures_rest_api_market_data_api_index_price_kline_candlestick_data_v3"
+path = "examples/derivatives_trading_usds_futures/rest_api/market_data_api/index_price_kline_candlestick_data_v3.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
 name = "derivatives_trading_usds_futures_rest_api_market_data_api_kline_candlestick_data"
 path = "examples/derivatives_trading_usds_futures/rest_api/market_data_api/kline_candlestick_data.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
+name = "derivatives_trading_usds_futures_rest_api_market_data_api_kline_candlestick_data_v3"
+path = "examples/derivatives_trading_usds_futures/rest_api/market_data_api/kline_candlestick_data_v3.rs"
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
@@ -1970,8 +2034,18 @@ path = "examples/derivatives_trading_usds_futures/rest_api/market_data_api/mark_
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
+name = "derivatives_trading_usds_futures_rest_api_market_data_api_mark_price_kline_candlestick_data_v3"
+path = "examples/derivatives_trading_usds_futures/rest_api/market_data_api/mark_price_kline_candlestick_data_v3.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
 name = "derivatives_trading_usds_futures_rest_api_market_data_api_mark_price"
 path = "examples/derivatives_trading_usds_futures/rest_api/market_data_api/mark_price.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
+name = "derivatives_trading_usds_futures_rest_api_market_data_api_mark_price_v3"
+path = "examples/derivatives_trading_usds_futures/rest_api/market_data_api/mark_price_v3.rs"
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
@@ -1982,6 +2056,11 @@ required-features = [ "derivatives_trading_usds_futures" ]
 [[example]]
 name = "derivatives_trading_usds_futures_rest_api_market_data_api_old_trades_lookup"
 path = "examples/derivatives_trading_usds_futures/rest_api/market_data_api/old_trades_lookup.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
+name = "derivatives_trading_usds_futures_rest_api_market_data_api_old_trades_lookup_v3"
+path = "examples/derivatives_trading_usds_futures/rest_api/market_data_api/old_trades_lookup_v3.rs"
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
@@ -1997,6 +2076,11 @@ required-features = [ "derivatives_trading_usds_futures" ]
 [[example]]
 name = "derivatives_trading_usds_futures_rest_api_market_data_api_order_book"
 path = "examples/derivatives_trading_usds_futures/rest_api/market_data_api/order_book.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
+name = "derivatives_trading_usds_futures_rest_api_market_data_api_order_book_v3"
+path = "examples/derivatives_trading_usds_futures/rest_api/market_data_api/order_book_v3.rs"
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
@@ -2025,6 +2109,11 @@ path = "examples/derivatives_trading_usds_futures/rest_api/market_data_api/recen
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
+name = "derivatives_trading_usds_futures_rest_api_market_data_api_recent_trades_list_v3"
+path = "examples/derivatives_trading_usds_futures/rest_api/market_data_api/recent_trades_list_v3.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
 name = "derivatives_trading_usds_futures_rest_api_market_data_api_rpi_order_book"
 path = "examples/derivatives_trading_usds_futures/rest_api/market_data_api/rpi_order_book.rs"
 required-features = [ "derivatives_trading_usds_futures" ]
@@ -2032,6 +2121,11 @@ required-features = [ "derivatives_trading_usds_futures" ]
 [[example]]
 name = "derivatives_trading_usds_futures_rest_api_market_data_api_symbol_order_book_ticker"
 path = "examples/derivatives_trading_usds_futures/rest_api/market_data_api/symbol_order_book_ticker.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
+name = "derivatives_trading_usds_futures_rest_api_market_data_api_symbol_order_book_ticker_v3"
+path = "examples/derivatives_trading_usds_futures/rest_api/market_data_api/symbol_order_book_ticker_v3.rs"
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
@@ -2045,6 +2139,11 @@ path = "examples/derivatives_trading_usds_futures/rest_api/market_data_api/symbo
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
+name = "derivatives_trading_usds_futures_rest_api_market_data_api_symbol_price_ticker_v3"
+path = "examples/derivatives_trading_usds_futures/rest_api/market_data_api/symbol_price_ticker_v3.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
 name = "derivatives_trading_usds_futures_rest_api_market_data_api_taker_buy_sell_volume"
 path = "examples/derivatives_trading_usds_futures/rest_api/market_data_api/taker_buy_sell_volume.rs"
 required-features = [ "derivatives_trading_usds_futures" ]
@@ -2055,8 +2154,18 @@ path = "examples/derivatives_trading_usds_futures/rest_api/market_data_api/test_
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
+name = "derivatives_trading_usds_futures_rest_api_market_data_api_test_connectivity_v3"
+path = "examples/derivatives_trading_usds_futures/rest_api/market_data_api/test_connectivity_v3.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
 name = "derivatives_trading_usds_futures_rest_api_market_data_api_ticker24hr_price_change_statistics"
 path = "examples/derivatives_trading_usds_futures/rest_api/market_data_api/ticker24hr_price_change_statistics.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
+name = "derivatives_trading_usds_futures_rest_api_market_data_api_ticker24hr_price_change_statistics_v3"
+path = "examples/derivatives_trading_usds_futures/rest_api/market_data_api/ticker24hr_price_change_statistics_v3.rs"
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
@@ -2085,8 +2194,18 @@ path = "examples/derivatives_trading_usds_futures/rest_api/trade_api/account_tra
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
+name = "derivatives_trading_usds_futures_rest_api_trade_api_account_trade_list_v3_auth"
+path = "examples/derivatives_trading_usds_futures/rest_api/trade_api/account_trade_list_v3_auth.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
 name = "derivatives_trading_usds_futures_rest_api_trade_api_all_orders"
 path = "examples/derivatives_trading_usds_futures/rest_api/trade_api/all_orders.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
+name = "derivatives_trading_usds_futures_rest_api_trade_api_all_orders_v3_auth"
+path = "examples/derivatives_trading_usds_futures/rest_api/trade_api/all_orders_v3_auth.rs"
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
@@ -2110,8 +2229,18 @@ path = "examples/derivatives_trading_usds_futures/rest_api/trade_api/cancel_all_
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
+name = "derivatives_trading_usds_futures_rest_api_trade_api_cancel_all_open_orders_v3_auth"
+path = "examples/derivatives_trading_usds_futures/rest_api/trade_api/cancel_all_open_orders_v3_auth.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
 name = "derivatives_trading_usds_futures_rest_api_trade_api_cancel_multiple_orders"
 path = "examples/derivatives_trading_usds_futures/rest_api/trade_api/cancel_multiple_orders.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
+name = "derivatives_trading_usds_futures_rest_api_trade_api_cancel_multiple_orders_v3_auth"
+path = "examples/derivatives_trading_usds_futures/rest_api/trade_api/cancel_multiple_orders_v3_auth.rs"
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
@@ -2120,8 +2249,18 @@ path = "examples/derivatives_trading_usds_futures/rest_api/trade_api/cancel_orde
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
+name = "derivatives_trading_usds_futures_rest_api_trade_api_cancel_order_v3_auth"
+path = "examples/derivatives_trading_usds_futures/rest_api/trade_api/cancel_order_v3_auth.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
 name = "derivatives_trading_usds_futures_rest_api_trade_api_change_initial_leverage"
 path = "examples/derivatives_trading_usds_futures/rest_api/trade_api/change_initial_leverage.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
+name = "derivatives_trading_usds_futures_rest_api_trade_api_change_initial_leverage_v3_auth"
+path = "examples/derivatives_trading_usds_futures/rest_api/trade_api/change_initial_leverage_v3_auth.rs"
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
@@ -2130,13 +2269,28 @@ path = "examples/derivatives_trading_usds_futures/rest_api/trade_api/change_marg
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
+name = "derivatives_trading_usds_futures_rest_api_trade_api_change_margin_type_v3_auth"
+path = "examples/derivatives_trading_usds_futures/rest_api/trade_api/change_margin_type_v3_auth.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
 name = "derivatives_trading_usds_futures_rest_api_trade_api_change_multi_assets_mode"
 path = "examples/derivatives_trading_usds_futures/rest_api/trade_api/change_multi_assets_mode.rs"
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
+name = "derivatives_trading_usds_futures_rest_api_trade_api_change_multi_assets_mode_v3"
+path = "examples/derivatives_trading_usds_futures/rest_api/trade_api/change_multi_assets_mode_v3.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
 name = "derivatives_trading_usds_futures_rest_api_trade_api_change_position_mode"
 path = "examples/derivatives_trading_usds_futures/rest_api/trade_api/change_position_mode.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
+name = "derivatives_trading_usds_futures_rest_api_trade_api_change_position_mode_v3"
+path = "examples/derivatives_trading_usds_futures/rest_api/trade_api/change_position_mode_v3.rs"
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
@@ -2147,6 +2301,11 @@ required-features = [ "derivatives_trading_usds_futures" ]
 [[example]]
 name = "derivatives_trading_usds_futures_rest_api_trade_api_current_all_open_orders"
 path = "examples/derivatives_trading_usds_futures/rest_api/trade_api/current_all_open_orders.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
+name = "derivatives_trading_usds_futures_rest_api_trade_api_current_all_open_orders_v3_auth"
+path = "examples/derivatives_trading_usds_futures/rest_api/trade_api/current_all_open_orders_v3_auth.rs"
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
@@ -2165,8 +2324,18 @@ path = "examples/derivatives_trading_usds_futures/rest_api/trade_api/get_positio
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
+name = "derivatives_trading_usds_futures_rest_api_trade_api_get_position_margin_change_history_v3_auth"
+path = "examples/derivatives_trading_usds_futures/rest_api/trade_api/get_position_margin_change_history_v3_auth.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
 name = "derivatives_trading_usds_futures_rest_api_trade_api_modify_isolated_position_margin"
 path = "examples/derivatives_trading_usds_futures/rest_api/trade_api/modify_isolated_position_margin.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
+name = "derivatives_trading_usds_futures_rest_api_trade_api_modify_isolated_position_margin_v3_auth"
+path = "examples/derivatives_trading_usds_futures/rest_api/trade_api/modify_isolated_position_margin_v3_auth.rs"
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
@@ -2205,8 +2374,18 @@ path = "examples/derivatives_trading_usds_futures/rest_api/trade_api/place_multi
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
+name = "derivatives_trading_usds_futures_rest_api_trade_api_place_multiple_orders_v3_auth"
+path = "examples/derivatives_trading_usds_futures/rest_api/trade_api/place_multiple_orders_v3_auth.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
 name = "derivatives_trading_usds_futures_rest_api_trade_api_position_adl_quantile_estimation"
 path = "examples/derivatives_trading_usds_futures/rest_api/trade_api/position_adl_quantile_estimation.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
+name = "derivatives_trading_usds_futures_rest_api_trade_api_position_adl_quantile_estimation_v3_auth"
+path = "examples/derivatives_trading_usds_futures/rest_api/trade_api/position_adl_quantile_estimation_v3_auth.rs"
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
@@ -2217,6 +2396,11 @@ required-features = [ "derivatives_trading_usds_futures" ]
 [[example]]
 name = "derivatives_trading_usds_futures_rest_api_trade_api_position_information_v3"
 path = "examples/derivatives_trading_usds_futures/rest_api/trade_api/position_information_v3.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
+name = "derivatives_trading_usds_futures_rest_api_trade_api_position_information_v3_auth"
+path = "examples/derivatives_trading_usds_futures/rest_api/trade_api/position_information_v3_auth.rs"
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
@@ -2235,8 +2419,18 @@ path = "examples/derivatives_trading_usds_futures/rest_api/trade_api/query_curre
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
+name = "derivatives_trading_usds_futures_rest_api_trade_api_query_current_open_order_v3_auth"
+path = "examples/derivatives_trading_usds_futures/rest_api/trade_api/query_current_open_order_v3_auth.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
 name = "derivatives_trading_usds_futures_rest_api_trade_api_query_order"
 path = "examples/derivatives_trading_usds_futures/rest_api/trade_api/query_order.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
+name = "derivatives_trading_usds_futures_rest_api_trade_api_query_order_v3_auth"
+path = "examples/derivatives_trading_usds_futures/rest_api/trade_api/query_order_v3_auth.rs"
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
@@ -2250,8 +2444,18 @@ path = "examples/derivatives_trading_usds_futures/rest_api/trade_api/users_force
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
+name = "derivatives_trading_usds_futures_rest_api_trade_api_users_force_orders_v3_auth"
+path = "examples/derivatives_trading_usds_futures/rest_api/trade_api/users_force_orders_v3_auth.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
 name = "derivatives_trading_usds_futures_rest_api_user_data_streams_api_close_user_data_stream"
 path = "examples/derivatives_trading_usds_futures/rest_api/user_data_streams_api/close_user_data_stream.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
+name = "derivatives_trading_usds_futures_rest_api_user_data_streams_api_close_user_data_stream_v3_auth"
+path = "examples/derivatives_trading_usds_futures/rest_api/user_data_streams_api/close_user_data_stream_v3_auth.rs"
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
@@ -2260,8 +2464,18 @@ path = "examples/derivatives_trading_usds_futures/rest_api/user_data_streams_api
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
+name = "derivatives_trading_usds_futures_rest_api_user_data_streams_api_keepalive_user_data_stream_v3_auth"
+path = "examples/derivatives_trading_usds_futures/rest_api/user_data_streams_api/keepalive_user_data_stream_v3_auth.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
 name = "derivatives_trading_usds_futures_rest_api_user_data_streams_api_start_user_data_stream"
 path = "examples/derivatives_trading_usds_futures/rest_api/user_data_streams_api/start_user_data_stream.rs"
+required-features = [ "derivatives_trading_usds_futures" ]
+
+[[example]]
+name = "derivatives_trading_usds_futures_rest_api_user_data_streams_api_start_user_data_stream_v3_auth"
+path = "examples/derivatives_trading_usds_futures/rest_api/user_data_streams_api/start_user_data_stream_v3_auth.rs"
 required-features = [ "derivatives_trading_usds_futures" ]
 
 [[example]]
@@ -3150,13 +3364,28 @@ path = "examples/spot/rest_api/account_api/all_orders.rs"
 required-features = [ "spot" ]
 
 [[example]]
+name = "spot_rest_api_account_api_all_orders_v3_auth"
+path = "examples/spot/rest_api/account_api/all_orders_v3_auth.rs"
+required-features = [ "spot" ]
+
+[[example]]
 name = "spot_rest_api_account_api_get_account"
 path = "examples/spot/rest_api/account_api/get_account.rs"
 required-features = [ "spot" ]
 
 [[example]]
+name = "spot_rest_api_account_api_get_account_v3_auth"
+path = "examples/spot/rest_api/account_api/get_account_v3_auth.rs"
+required-features = [ "spot" ]
+
+[[example]]
 name = "spot_rest_api_account_api_get_open_orders"
 path = "examples/spot/rest_api/account_api/get_open_orders.rs"
+required-features = [ "spot" ]
+
+[[example]]
+name = "spot_rest_api_account_api_get_open_orders_v3_auth"
+path = "examples/spot/rest_api/account_api/get_open_orders_v3_auth.rs"
 required-features = [ "spot" ]
 
 [[example]]
@@ -3210,6 +3439,11 @@ path = "examples/spot/rest_api/general_api/exchange_info.rs"
 required-features = [ "spot" ]
 
 [[example]]
+name = "spot_rest_api_general_api_exchange_info_v3"
+path = "examples/spot/rest_api/general_api/exchange_info_v3.rs"
+required-features = [ "spot" ]
+
+[[example]]
 name = "spot_rest_api_general_api_ping"
 path = "examples/spot/rest_api/general_api/ping.rs"
 required-features = [ "spot" ]
@@ -3235,8 +3469,18 @@ path = "examples/spot/rest_api/market_api/depth.rs"
 required-features = [ "spot" ]
 
 [[example]]
+name = "spot_rest_api_market_api_depth_v3"
+path = "examples/spot/rest_api/market_api/depth_v3.rs"
+required-features = [ "spot" ]
+
+[[example]]
 name = "spot_rest_api_market_api_get_trades"
 path = "examples/spot/rest_api/market_api/get_trades.rs"
+required-features = [ "spot" ]
+
+[[example]]
+name = "spot_rest_api_market_api_get_trades_v3"
+path = "examples/spot/rest_api/market_api/get_trades_v3.rs"
 required-features = [ "spot" ]
 
 [[example]]
@@ -3255,8 +3499,18 @@ path = "examples/spot/rest_api/market_api/ticker_book_ticker.rs"
 required-features = [ "spot" ]
 
 [[example]]
+name = "spot_rest_api_market_api_ticker_book_ticker_v3"
+path = "examples/spot/rest_api/market_api/ticker_book_ticker_v3.rs"
+required-features = [ "spot" ]
+
+[[example]]
 name = "spot_rest_api_market_api_ticker_price"
 path = "examples/spot/rest_api/market_api/ticker_price.rs"
+required-features = [ "spot" ]
+
+[[example]]
+name = "spot_rest_api_market_api_ticker_price_v3"
+path = "examples/spot/rest_api/market_api/ticker_price_v3.rs"
 required-features = [ "spot" ]
 
 [[example]]
@@ -3290,8 +3544,18 @@ path = "examples/spot/rest_api/trade_api/delete_order_list.rs"
 required-features = [ "spot" ]
 
 [[example]]
+name = "spot_rest_api_trade_api_cancel_all_open_orders_v3_auth"
+path = "examples/spot/rest_api/trade_api/cancel_all_open_orders_v3_auth.rs"
+required-features = [ "spot" ]
+
+[[example]]
 name = "spot_rest_api_trade_api_delete_order"
 path = "examples/spot/rest_api/trade_api/delete_order.rs"
+required-features = [ "spot" ]
+
+[[example]]
+name = "spot_rest_api_trade_api_delete_order_v3_auth"
+path = "examples/spot/rest_api/trade_api/delete_order_v3_auth.rs"
 required-features = [ "spot" ]
 
 [[example]]
@@ -3300,8 +3564,33 @@ path = "examples/spot/rest_api/trade_api/new_order.rs"
 required-features = [ "spot" ]
 
 [[example]]
+name = "spot_rest_api_trade_api_new_order_v3_auth"
+path = "examples/spot/rest_api/trade_api/new_order_v3_auth.rs"
+required-features = [ "spot" ]
+
+[[example]]
 name = "spot_rest_api_trade_api_new_order_v3"
 path = "examples/spot/rest_api/trade_api/new_order_v3.rs"
+required-features = [ "spot" ]
+
+[[example]]
+name = "spot_rest_api_trade_api_user_trades_v3_auth"
+path = "examples/spot/rest_api/trade_api/user_trades_v3_auth.rs"
+required-features = [ "spot" ]
+
+[[example]]
+name = "spot_rest_api_user_data_stream_api_start_listen_key_v3_auth"
+path = "examples/spot/rest_api/user_data_stream_api/start_listen_key_v3_auth.rs"
+required-features = [ "spot" ]
+
+[[example]]
+name = "spot_rest_api_user_data_stream_api_keepalive_listen_key_v3_auth"
+path = "examples/spot/rest_api/user_data_stream_api/keepalive_listen_key_v3_auth.rs"
+required-features = [ "spot" ]
+
+[[example]]
+name = "spot_rest_api_user_data_stream_api_close_listen_key_v3_auth"
+path = "examples/spot/rest_api/user_data_stream_api/close_listen_key_v3_auth.rs"
 required-features = [ "spot" ]
 
 [[example]]

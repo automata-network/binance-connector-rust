@@ -24,3 +24,5 @@ pub mod market_api;
 pub use market_api::*;
 pub mod trade_api;
 pub use trade_api::*;
+pub mod user_data_stream_api;
+pub use user_data_stream_api::*;

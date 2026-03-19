@@ -9,6 +9,7 @@ use binance_sdk::derivatives_trading_usds_futures::{
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    tracing_subscriber::fmt::init();
     // Load V3 credentials from env
     let user = env::var("ASTER_USER").context("ASTER_USER must be set")?;
     let signer = env::var("ASTER_SIGNER").context("ASTER_SIGNER must be set")?;

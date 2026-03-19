@@ -213,6 +213,24 @@ impl RestApi {
         self.account_api_client.account_information_v3(params).await
     }
 
+    /// Account Information V4 (`USER_DATA`)
+    ///
+    /// Get current account information (V4 endpoint).
+    ///
+    /// # Arguments
+    ///
+    /// * `params` - [`AccountInformationV4Params`]
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the request fails or the response cannot be parsed.
+    pub async fn account_information_v4(
+        &self,
+        params: AccountInformationV4Params,
+    ) -> anyhow::Result<RestApiResponse<models::AccountInformationV3Response>> {
+        self.account_api_client.account_information_v4(params).await
+    }
+
     /// Futures Account Balance V2 (`USER_DATA`)
     ///
     /// Query account balance info
@@ -4031,6 +4049,24 @@ impl RestApi {
         params: NoopParams,
     ) -> anyhow::Result<RestApiResponse<models::NoopResponse>> {
         self.trade_api_client.noop(params).await
+    }
+
+    /// Wallet Transfer (TRANSFER)
+    ///
+    /// Transfer assets between futures and spot wallets.
+    ///
+    /// # Arguments
+    ///
+    /// * `params` - [`WalletTransferParams`]
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the request fails or the response cannot be parsed.
+    pub async fn wallet_transfer(
+        &self,
+        params: WalletTransferParams,
+    ) -> anyhow::Result<RestApiResponse<models::WalletTransferResponse>> {
+        self.trade_api_client.wallet_transfer(params).await
     }
 
     /// Place Multiple Orders(TRADE)

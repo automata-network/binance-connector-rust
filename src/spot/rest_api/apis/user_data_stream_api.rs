@@ -131,6 +131,7 @@ impl UserDataStreamApi for UserDataStreamApiClient {
         let DeleteUserDataStreamParams { listen_key } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("listenKey".to_string(), json!(listen_key));
 
@@ -139,6 +140,7 @@ impl UserDataStreamApi for UserDataStreamApiClient {
             "/api/v1/userDataStream",
             reqwest::Method::DELETE,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -153,12 +155,14 @@ impl UserDataStreamApi for UserDataStreamApiClient {
         &self,
     ) -> anyhow::Result<RestApiResponse<models::NewUserDataStreamResponse>> {
         let query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         send_request::<models::NewUserDataStreamResponse>(
             &self.configuration,
             "/api/v1/userDataStream",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -176,6 +180,7 @@ impl UserDataStreamApi for UserDataStreamApiClient {
         let PutUserDataStreamParams { listen_key } = params;
 
         let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
 
         query_params.insert("listenKey".to_string(), json!(listen_key));
 
@@ -184,6 +189,7 @@ impl UserDataStreamApi for UserDataStreamApiClient {
             "/api/v1/userDataStream",
             reqwest::Method::PUT,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -198,18 +204,22 @@ impl UserDataStreamApi for UserDataStreamApiClient {
         &self,
     ) -> anyhow::Result<RestApiResponse<models::NewUserDataStreamResponse>> {
         let query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
+        // V3: USER_STREAM requires signer+signature; V1: uses API key header only
+        let is_signed = self.configuration.signature_gen.is_v3();
 
         send_request::<models::NewUserDataStreamResponse>(
             &self.configuration,
             "/api/v1/listenKey",
             reqwest::Method::POST,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
                 None
             },
-            false,
+            is_signed,
         )
         .await
     }
@@ -218,36 +228,44 @@ impl UserDataStreamApi for UserDataStreamApiClient {
         &self,
     ) -> anyhow::Result<RestApiResponse<models::NewUserDataStreamResponse>> {
         let query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
+        // V3: USER_STREAM requires signer+signature; V1: uses API key header only
+        let is_signed = self.configuration.signature_gen.is_v3();
 
         send_request::<models::NewUserDataStreamResponse>(
             &self.configuration,
             "/api/v1/listenKey",
             reqwest::Method::PUT,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
                 None
             },
-            false,
+            is_signed,
         )
         .await
     }
 
     async fn close_listen_key(&self) -> anyhow::Result<RestApiResponse<Value>> {
         let query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
+        // V3: USER_STREAM requires signer+signature; V1: uses API key header only
+        let is_signed = self.configuration.signature_gen.is_v3();
 
         send_request::<Value>(
             &self.configuration,
             "/api/v1/listenKey",
             reqwest::Method::DELETE,
             query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
                 None
             },
-            false,
+            is_signed,
         )
         .await
     }
@@ -291,7 +309,7 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<Value>> {
             if self.force_error {
                 return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
+                    ConnectorError::ConnectorClientError { msg: "ResponseError".to_string(), code: None }.into(),
                 );
             }
 
@@ -312,7 +330,7 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::NewUserDataStreamResponse>> {
             if self.force_error {
                 return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
+                    ConnectorError::ConnectorClientError { msg: "ResponseError".to_string(), code: None }.into(),
                 );
             }
 
@@ -337,7 +355,7 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<Value>> {
             if self.force_error {
                 return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
+                    ConnectorError::ConnectorClientError { msg: "ResponseError".to_string(), code: None }.into(),
                 );
             }
 
@@ -358,7 +376,7 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::NewUserDataStreamResponse>> {
             if self.force_error {
                 return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
+                    ConnectorError::ConnectorClientError { msg: "ResponseError".to_string(), code: None }.into(),
                 );
             }
 
@@ -382,7 +400,7 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::NewUserDataStreamResponse>> {
             if self.force_error {
                 return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
+                    ConnectorError::ConnectorClientError { msg: "ResponseError".to_string(), code: None }.into(),
                 );
             }
 
@@ -404,7 +422,7 @@ mod tests {
         async fn close_listen_key(&self) -> anyhow::Result<RestApiResponse<Value>> {
             if self.force_error {
                 return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
+                    ConnectorError::ConnectorClientError { msg: "ResponseError".to_string(), code: None }.into(),
                 );
             }
 

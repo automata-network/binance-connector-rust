@@ -163,6 +163,10 @@ pub trait TradeApi: Send + Sync {
         &self,
         params: UsersForceOrdersParams,
     ) -> anyhow::Result<RestApiResponse<Vec<models::UsersForceOrdersResponseInner>>>;
+    async fn wallet_transfer(
+        &self,
+        params: WalletTransferParams,
+    ) -> anyhow::Result<RestApiResponse<models::WalletTransferResponse>>;
 }
 
 #[derive(Debug, Clone)]
@@ -2305,6 +2309,33 @@ impl NoopParams {
     }
 }
 
+/// Request parameters for the [`wallet_transfer`] operation.
+///
+/// Transfer assets between futures and spot wallets.
+#[derive(Clone, Debug)]
+pub struct WalletTransferParams {
+    /// Transfer quantity.
+    pub amount: String,
+    /// Asset identifier (e.g. "USDT").
+    pub asset: String,
+    /// Client-defined transaction identifier.
+    pub client_tran_id: String,
+    /// Transfer direction: "FUTURE_SPOT" or "SPOT_FUTURE".
+    pub kind_type: String,
+}
+
+impl WalletTransferParams {
+    #[must_use]
+    pub fn new(amount: String, asset: String, client_tran_id: String, kind_type: String) -> Self {
+        Self {
+            amount,
+            asset,
+            client_tran_id,
+            kind_type,
+        }
+    }
+}
+
 /// Request parameters for the [`place_multiple_orders`] operation.
 ///
 /// This struct holds all of the inputs you can pass when calling
@@ -4395,6 +4426,42 @@ impl TradeApi for TradeApiClient {
             "/fapi/v3/noop",
             reqwest::Method::POST,
             query_params,
+            BTreeMap::new(),
+            if HAS_TIME_UNIT {
+                self.configuration.time_unit
+            } else {
+                None
+            },
+            true,
+        )
+        .await
+    }
+
+    async fn wallet_transfer(
+        &self,
+        params: WalletTransferParams,
+    ) -> anyhow::Result<RestApiResponse<models::WalletTransferResponse>> {
+        let WalletTransferParams {
+            amount,
+            asset,
+            client_tran_id,
+            kind_type,
+        } = params;
+
+        let mut query_params = BTreeMap::new();
+        let body_params = BTreeMap::new();
+
+        query_params.insert("amount".to_string(), json!(amount));
+        query_params.insert("asset".to_string(), json!(asset));
+        query_params.insert("clientTranId".to_string(), json!(client_tran_id));
+        query_params.insert("kindType".to_string(), json!(kind_type));
+
+        send_request::<models::WalletTransferResponse>(
+            &self.configuration,
+            "/fapi/v3/asset/wallet/transfer",
+            reqwest::Method::POST,
+            query_params,
+            body_params,
             if HAS_TIME_UNIT {
                 self.configuration.time_unit
             } else {
@@ -5329,7 +5396,7 @@ mod tests {
         ) -> anyhow::Result<RestApiResponse<models::NoopResponse>> {
             if self.force_error {
                 return Err(
-                    ConnectorError::ConnectorClientError("ResponseError".to_string()).into(),
+                    ConnectorError::ConnectorClientError { msg: "ResponseError".to_string(), code: None }.into(),
                 );
             }
 
@@ -5338,6 +5405,26 @@ mod tests {
             let dummy_response: models::NoopResponse =
                 serde_json::from_value(resp_json.clone())
                     .expect("should parse into models::NoopResponse");
+
+            let dummy = DummyRestApiResponse {
+                inner: Box::new(move || Box::pin(async move { Ok(dummy_response) })),
+                status: 200,
+                headers: HashMap::new(),
+                rate_limits: None,
+            };
+
+            Ok(dummy.into())
+        }
+
+        async fn wallet_transfer(
+            &self,
+            _params: WalletTransferParams,
+        ) -> anyhow::Result<RestApiResponse<models::WalletTransferResponse>> {
+            let resp_json: Value =
+                serde_json::from_str(r#"{"tranId":21841,"status":"SUCCESS"}"#).unwrap();
+            let dummy_response: models::WalletTransferResponse =
+                serde_json::from_value(resp_json.clone())
+                    .expect("should parse into models::WalletTransferResponse");
 
             let dummy = DummyRestApiResponse {
                 inner: Box::new(move || Box::pin(async move { Ok(dummy_response) })),

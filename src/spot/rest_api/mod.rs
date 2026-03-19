@@ -37,6 +37,7 @@ pub struct RestApi {
     general_api_client: GeneralApiClient,
     market_api_client: MarketApiClient,
     trade_api_client: TradeApiClient,
+    user_data_stream_api_client: UserDataStreamApiClient,
 }
 
 impl RestApi {
@@ -45,6 +46,7 @@ impl RestApi {
         let general_api_client = GeneralApiClient::new(configuration.clone());
         let market_api_client = MarketApiClient::new(configuration.clone());
         let trade_api_client = TradeApiClient::new(configuration.clone());
+        let user_data_stream_api_client = UserDataStreamApiClient::new(configuration.clone());
 
         Self {
             configuration,
@@ -52,6 +54,7 @@ impl RestApi {
             general_api_client,
             market_api_client,
             trade_api_client,
+            user_data_stream_api_client,
         }
     }
 
