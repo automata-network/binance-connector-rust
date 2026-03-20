@@ -3399,6 +3399,11 @@ path = "examples/spot/rest_api/account_api/get_order.rs"
 required-features = [ "spot" ]
 
 [[example]]
+name = "spot_rest_api_account_api_get_order_v3_auth"
+path = "examples/spot/rest_api/account_api/get_order_v3_auth.rs"
+required-features = [ "spot" ]
+
+[[example]]
 name = "spot_rest_api_account_api_my_allocations"
 path = "examples/spot/rest_api/account_api/my_allocations.rs"
 required-features = [ "spot" ]

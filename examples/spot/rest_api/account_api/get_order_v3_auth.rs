@@ -3,31 +3,29 @@ use std::env;
 use tracing::info;
 
 use binance_sdk::config::ConfigurationRestApi;
-use binance_sdk::logger;
 use binance_sdk::spot::{SpotRestApi, rest_api::GetOrderParams};
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    // Initialise logging
-    logger::init();
+    tracing_subscriber::fmt::init();
 
-    // Load credentials from env
-    let api_key = env::var("API_KEY").context("API_KEY must be set")?;
-    let api_secret = env::var("API_SECRET").context("API_SECRET must be set")?;
+    let user = env::var("ASTER_USER").context("ASTER_USER must be set")?;
+    let signer = env::var("ASTER_SIGNER").context("ASTER_SIGNER must be set")?;
+    let signer_private_key =
+        env::var("ASTER_SIGNER_PRIVATE_KEY").context("ASTER_SIGNER_PRIVATE_KEY must be set")?;
 
-    // Build REST config
     let rest_conf = ConfigurationRestApi::builder()
-        .api_key(api_key)
-        .api_secret(api_secret)
+        .user(user)
+        .signer(signer)
+        .signer_private_key(signer_private_key)
         .build()?;
 
-    // Create the Spot REST API client
     let rest_client = SpotRestApi::production(rest_conf);
 
-    // Setup the API parameters
-    let params = GetOrderParams::builder("ETHUSDT".to_string()).build()?;
+    let params = GetOrderParams::builder("ETHUSDT".to_string())
+        .orig_client_order_id("abcde12345".to_string())
+        .build()?;
 
-    // Make the API call
     let response = rest_client
         .get_order(params)
         .await
