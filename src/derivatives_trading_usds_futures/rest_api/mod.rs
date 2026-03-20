@@ -2585,11 +2585,6 @@ impl RestApi {
     ///
     ///
     /// For full API details, see the [Binance API Documentation](https://developers.binance.com/docs/derivatives/usds-margined-futures/market-data/rest-api/Symbol-Price-Ticker).
-    ///
-    /// # Deprecation
-    ///
-    /// **Deprecated:** This method may be removed in a future version.
-    #[deprecated]
     pub async fn symbol_price_ticker(
         &self,
         params: SymbolPriceTickerParams,
