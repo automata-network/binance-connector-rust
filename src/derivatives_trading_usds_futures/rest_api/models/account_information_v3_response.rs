@@ -17,6 +17,22 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct AccountInformationV3Response {
+    #[serde(rename = "feeTier", skip_serializing_if = "Option::is_none")]
+    pub fee_tier: Option<i64>,
+    #[serde(rename = "feeBurn", skip_serializing_if = "Option::is_none")]
+    pub fee_burn: Option<bool>,
+    #[serde(rename = "canTrade", skip_serializing_if = "Option::is_none")]
+    pub can_trade: Option<bool>,
+    #[serde(rename = "canDeposit", skip_serializing_if = "Option::is_none")]
+    pub can_deposit: Option<bool>,
+    #[serde(rename = "canWithdraw", skip_serializing_if = "Option::is_none")]
+    pub can_withdraw: Option<bool>,
+    #[serde(rename = "updateTime", skip_serializing_if = "Option::is_none")]
+    pub update_time: Option<i64>,
+    #[serde(rename = "multiAssetsMargin", skip_serializing_if = "Option::is_none")]
+    pub multi_assets_margin: Option<bool>,
+    #[serde(rename = "tradeGroupId", skip_serializing_if = "Option::is_none")]
+    pub trade_group_id: Option<i64>,
     #[serde(rename = "totalInitialMargin", skip_serializing_if = "Option::is_none")]
     pub total_initial_margin: Option<String>,
     #[serde(rename = "totalMaintMargin", skip_serializing_if = "Option::is_none")]
@@ -61,6 +77,14 @@ impl AccountInformationV3Response {
     #[must_use]
     pub fn new() -> AccountInformationV3Response {
         AccountInformationV3Response {
+            fee_tier: None,
+            fee_burn: None,
+            can_trade: None,
+            can_deposit: None,
+            can_withdraw: None,
+            update_time: None,
+            multi_assets_margin: None,
+            trade_group_id: None,
             total_initial_margin: None,
             total_maint_margin: None,
             total_wallet_balance: None,
