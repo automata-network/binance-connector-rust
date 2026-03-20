@@ -1709,8 +1709,11 @@ impl RestApi {
     ///
     pub async fn get_funding_rate_info(
         &self,
+        params: apis::GetFundingRateInfoParams,
     ) -> anyhow::Result<RestApiResponse<Vec<models::GetFundingRateInfoResponseInner>>> {
-        self.market_data_api_client.get_funding_rate_info().await
+        self.market_data_api_client
+            .get_funding_rate_info(params)
+            .await
     }
 
     /// Index Price Kline/Candlestick Data

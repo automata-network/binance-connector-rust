@@ -35,6 +35,18 @@ pub struct PlaceMultipleOrdersBatchOrdersParameterInner {
     pub price: Option<String>,
     #[serde(rename = "newClientOrderId", skip_serializing_if = "Option::is_none")]
     pub new_client_order_id: Option<String>,
+    #[serde(rename = "stopPrice", skip_serializing_if = "Option::is_none")]
+    pub stop_price: Option<String>,
+    #[serde(rename = "closePosition", skip_serializing_if = "Option::is_none")]
+    pub close_position: Option<String>,
+    #[serde(rename = "activationPrice", skip_serializing_if = "Option::is_none")]
+    pub activation_price: Option<String>,
+    #[serde(rename = "callbackRate", skip_serializing_if = "Option::is_none")]
+    pub callback_rate: Option<String>,
+    #[serde(rename = "workingType", skip_serializing_if = "Option::is_none")]
+    pub working_type: Option<WorkingTypeEnum>,
+    #[serde(rename = "priceProtect", skip_serializing_if = "Option::is_none")]
+    pub price_protect: Option<String>,
     #[serde(rename = "newOrderRespType", skip_serializing_if = "Option::is_none")]
     pub new_order_resp_type: Option<NewOrderRespTypeEnum>,
     #[serde(rename = "priceMatch", skip_serializing_if = "Option::is_none")]
@@ -61,6 +73,12 @@ impl PlaceMultipleOrdersBatchOrdersParameterInner {
             reduce_only: None,
             price: None,
             new_client_order_id: None,
+            stop_price: None,
+            close_position: None,
+            activation_price: None,
+            callback_rate: None,
+            working_type: None,
+            price_protect: None,
             new_order_resp_type: None,
             price_match: None,
             self_trade_prevention_mode: None,
@@ -176,5 +194,19 @@ pub enum SelfTradePreventionModeEnum {
 impl Default for SelfTradePreventionModeEnum {
     fn default() -> SelfTradePreventionModeEnum {
         Self::ExpireTaker
+    }
+}
+///
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+pub enum WorkingTypeEnum {
+    #[serde(rename = "MARK_PRICE")]
+    MarkPrice,
+    #[serde(rename = "CONTRACT_PRICE")]
+    ContractPrice,
+}
+
+impl Default for WorkingTypeEnum {
+    fn default() -> WorkingTypeEnum {
+        Self::ContractPrice
     }
 }

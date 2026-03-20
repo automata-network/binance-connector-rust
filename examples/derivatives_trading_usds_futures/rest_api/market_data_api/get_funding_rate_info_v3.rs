@@ -3,6 +3,7 @@ use std::env;
 use tracing::info;
 
 use binance_sdk::config::ConfigurationRestApi;
+use binance_sdk::derivatives_trading_usds_futures::rest_api::GetFundingRateInfoParams;
 use binance_sdk::derivatives_trading_usds_futures::DerivativesTradingUsdsFuturesRestApi;
 
 #[tokio::main]
@@ -22,8 +23,13 @@ async fn main() -> Result<()> {
 
     let rest_client = DerivativesTradingUsdsFuturesRestApi::production(rest_conf);
 
+    let params = GetFundingRateInfoParams::builder()
+        .symbol("ETHUSDT".to_string())
+        .build()
+        .unwrap();
+
     let response = rest_client
-        .get_funding_rate_info()
+        .get_funding_rate_info(params)
         .await
         .context("get_funding_rate_info request failed")?;
 

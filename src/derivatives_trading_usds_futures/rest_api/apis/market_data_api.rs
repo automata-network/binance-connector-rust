@@ -65,6 +65,7 @@ pub trait MarketDataApi: Send + Sync {
     ) -> anyhow::Result<RestApiResponse<Vec<models::GetFundingRateHistoryResponseInner>>>;
     async fn get_funding_rate_info(
         &self,
+        params: GetFundingRateInfoParams,
     ) -> anyhow::Result<RestApiResponse<Vec<models::GetFundingRateInfoResponseInner>>>;
     async fn index_price_kline_candlestick_data(
         &self,
@@ -1333,6 +1334,29 @@ impl GetFundingRateHistoryParams {
         GetFundingRateHistoryParamsBuilder::default()
     }
 }
+/// Request parameters for the [`get_funding_rate_info`] operation.
+///
+/// This struct holds all of the inputs you can pass when calling
+/// [`get_funding_rate_info`](#method.get_funding_rate_info).
+#[derive(Clone, Debug, Builder, Default)]
+#[builder(pattern = "owned", build_fn(error = "ParamBuildError"))]
+pub struct GetFundingRateInfoParams {
+    ///
+    /// The `symbol` parameter.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub symbol: Option<String>,
+}
+
+impl GetFundingRateInfoParams {
+    /// Create a builder for [`get_funding_rate_info`].
+    ///
+    #[must_use]
+    pub fn builder() -> GetFundingRateInfoParamsBuilder {
+        GetFundingRateInfoParamsBuilder::default()
+    }
+}
 /// Request parameters for the [`index_price_kline_candlestick_data`] operation.
 ///
 /// This struct holds all of the inputs you can pass when calling
@@ -2511,9 +2535,16 @@ impl MarketDataApi for MarketDataApiClient {
 
     async fn get_funding_rate_info(
         &self,
+        params: GetFundingRateInfoParams,
     ) -> anyhow::Result<RestApiResponse<Vec<models::GetFundingRateInfoResponseInner>>> {
-        let query_params = BTreeMap::new();
+        let GetFundingRateInfoParams { symbol } = params;
+
+        let mut query_params = BTreeMap::new();
         let body_params = BTreeMap::new();
+
+        if let Some(rw) = symbol {
+            query_params.insert("symbol".to_string(), json!(rw));
+        }
 
         send_request::<Vec<models::GetFundingRateInfoResponseInner>>(
             &self.configuration,
@@ -3680,6 +3711,7 @@ mod tests {
 
         async fn get_funding_rate_info(
             &self,
+            _params: GetFundingRateInfoParams,
         ) -> anyhow::Result<RestApiResponse<Vec<models::GetFundingRateInfoResponseInner>>> {
             if self.force_error {
                 return Err(ConnectorError::ConnectorClientError {
@@ -4840,7 +4872,9 @@ mod tests {
             let resp_json: Value = serde_json::from_str(r#"[{"symbol":"BLZUSDT","adjustedFundingRateCap":"0.02500000","adjustedFundingRateFloor":"-0.02500000","fundingIntervalHours":8,"disclaimer":false}]"#).unwrap();
             let expected_response : Vec<models::GetFundingRateInfoResponseInner> = serde_json::from_value(resp_json.clone()).expect("should parse into Vec<models::GetFundingRateInfoResponseInner>");
 
-            let resp = client.get_funding_rate_info().await.expect("Expected a response");
+            let params = GetFundingRateInfoParams::builder().build().unwrap();
+
+            let resp = client.get_funding_rate_info(params).await.expect("Expected a response");
             let data_future = resp.data();
             let actual_response = data_future.await.unwrap();
             assert_eq!(actual_response, expected_response);
@@ -4852,11 +4886,12 @@ mod tests {
         TOKIO_SHARED_RT.block_on(async {
             let client = MockMarketDataApiClient { force_error: false };
 
+            let params = GetFundingRateInfoParams::builder().symbol("BLZUSDT".to_string()).build().unwrap();
 
             let resp_json: Value = serde_json::from_str(r#"[{"symbol":"BLZUSDT","adjustedFundingRateCap":"0.02500000","adjustedFundingRateFloor":"-0.02500000","fundingIntervalHours":8,"disclaimer":false}]"#).unwrap();
             let expected_response : Vec<models::GetFundingRateInfoResponseInner> = serde_json::from_value(resp_json.clone()).expect("should parse into Vec<models::GetFundingRateInfoResponseInner>");
 
-            let resp = client.get_funding_rate_info().await.expect("Expected a response");
+            let resp = client.get_funding_rate_info(params).await.expect("Expected a response");
             let data_future = resp.data();
             let actual_response = data_future.await.unwrap();
             assert_eq!(actual_response, expected_response);
@@ -4868,7 +4903,9 @@ mod tests {
         TOKIO_SHARED_RT.block_on(async {
             let client = MockMarketDataApiClient { force_error: true };
 
-            match client.get_funding_rate_info().await {
+            let params = GetFundingRateInfoParams::builder().build().unwrap();
+
+            match client.get_funding_rate_info(params).await {
                 Ok(_) => panic!("Expected an error"),
                 Err(err) => {
                     assert_eq!(err.to_string(), "Connector client error: ResponseError");

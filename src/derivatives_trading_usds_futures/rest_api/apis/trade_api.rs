@@ -851,6 +851,37 @@ impl std::str::FromStr for NewOrderSelfTradePreventionModeEnum {
 
 #[allow(non_camel_case_types)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum NewOrderWorkingTypeEnum {
+    #[serde(rename = "MARK_PRICE")]
+    MarkPrice,
+    #[serde(rename = "CONTRACT_PRICE")]
+    ContractPrice,
+}
+
+impl NewOrderWorkingTypeEnum {
+    #[must_use]
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::MarkPrice => "MARK_PRICE",
+            Self::ContractPrice => "CONTRACT_PRICE",
+        }
+    }
+}
+
+impl std::str::FromStr for NewOrderWorkingTypeEnum {
+    type Err = Box<dyn std::error::Error + Send + Sync>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "MARK_PRICE" => Ok(Self::MarkPrice),
+            "CONTRACT_PRICE" => Ok(Self::ContractPrice),
+            other => Err(format!("invalid NewOrderWorkingTypeEnum: {}", other).into()),
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum TestOrderSideEnum {
     #[serde(rename = "BUY")]
     Buy,
@@ -2229,6 +2260,36 @@ pub struct NewOrderParams {
     /// This field is **optional.
     #[builder(setter(into), default)]
     pub new_client_order_id: Option<String>,
+    /// Used with `STOP/STOP_MARKET` or `TAKE_PROFIT/TAKE_PROFIT_MARKET` orders.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub stop_price: Option<rust_decimal::Decimal>,
+    /// `true`, `false`；Close-All，used with `STOP_MARKET` or `TAKE_PROFIT_MARKET`.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub close_position: Option<String>,
+    /// Used with `TRAILING_STOP_MARKET` orders, default as the latest price(supporting different `workingType`)
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub activation_price: Option<rust_decimal::Decimal>,
+    /// Used with `TRAILING_STOP_MARKET` orders, min 0.1, max 5 where 1 for 1%
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub callback_rate: Option<rust_decimal::Decimal>,
+    /// stopPrice triggered by: "`MARK_PRICE`", "`CONTRACT_PRICE`". Default "`CONTRACT_PRICE`"
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub working_type: Option<NewOrderWorkingTypeEnum>,
+    /// "TRUE" or "FALSE", default "FALSE". Used with `STOP/STOP_MARKET` or `TAKE_PROFIT/TAKE_PROFIT_MARKET` orders.
+    ///
+    /// This field is **optional.
+    #[builder(setter(into), default)]
+    pub price_protect: Option<String>,
     /// "ACK", "RESULT", default "ACK"
     ///
     /// This field is **optional.
@@ -3822,6 +3883,12 @@ impl TradeApi for TradeApiClient {
             reduce_only,
             price,
             new_client_order_id,
+            stop_price,
+            close_position,
+            activation_price,
+            callback_rate,
+            working_type,
+            price_protect,
             new_order_resp_type,
             price_match,
             self_trade_prevention_mode,
@@ -3860,6 +3927,30 @@ impl TradeApi for TradeApiClient {
 
         if let Some(rw) = new_client_order_id {
             query_params.insert("newClientOrderId".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = stop_price {
+            query_params.insert("stopPrice".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = close_position {
+            query_params.insert("closePosition".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = activation_price {
+            query_params.insert("activationPrice".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = callback_rate {
+            query_params.insert("callbackRate".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = working_type {
+            query_params.insert("workingType".to_string(), json!(rw));
+        }
+
+        if let Some(rw) = price_protect {
+            query_params.insert("priceProtect".to_string(), json!(rw));
         }
 
         if let Some(rw) = new_order_resp_type {
